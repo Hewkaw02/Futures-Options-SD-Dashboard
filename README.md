@@ -1,6 +1,11 @@
 # Futures Options S/D Dashboard
 
-> Real-time options analytics platform for CME Futures (Gold `/GC`, S&P 500 `/ES`, NASDAQ `/NQ`) powered by **Tastytrade API** and **DXLink Streamer**.
+> Real-time options analytics platform for CME Futures (Gold `/GC`, S&P 500 `/ES`, NASDAQ `/NQ`) powered by [**Tastytrade API**](https://tastytrade.com/welcome/?referralCode=YGHF9JJZCV) and **DXLink Streamer**.
+
+---
+
+### 💡 Recommendation
+Sign up for a trading account to access the API here: [**Join Tastytrade (Referral Link)**](https://tastytrade.com/welcome/?referralCode=YGHF9JJZCV)
 
 ## Architecture
 
