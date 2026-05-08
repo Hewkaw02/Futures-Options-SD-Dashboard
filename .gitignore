@@ -3,8 +3,7 @@
 __pycache__/
 *.pyc
 .idea/
-trading_results/
-intraday_results/
+# Data results (Removed from ignore to allow GitHub Actions to commit)
 *.png
 
 # Allow dashboard files for GitHub Pages

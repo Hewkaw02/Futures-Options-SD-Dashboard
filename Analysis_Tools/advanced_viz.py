@@ -6,7 +6,7 @@ from datetime import date, datetime
 from pathlib import Path
 from tastytrade import Session, DXLinkStreamer
 from tastytrade.instruments import get_future_option_chain
-from tastytrade.dxfeed import Summary, Greeks
+from tastytrade.dxfeed import Summary, Greeks, Trade
 import math
 import yfinance as yf
 from matplotlib.patches import Ellipse
