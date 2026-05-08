@@ -600,6 +600,24 @@ function createCandleChartOptions(id, ohlcvData, vwapData, annotations) {
     data: ohlcvData ? ohlcvData.map(d => ({ x: d[0], y: [d[1], d[2], d[3], d[4]] })) : []
   }];
   
+  // Calculate Today's Highlight
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  
+  const xaxisAnns = annotations.xaxis || [];
+  // Only highlight if today exists within or after the data range
+  xaxisAnns.push({
+    x: todayStart,
+    x2: Date.now() + 86400000, // Extend to tomorrow to cover future padding
+    fillColor: '#FEB019',
+    opacity: 0.05,
+    label: {
+      text: 'TODAY',
+      style: { color: '#FEB019', background: 'transparent', fontSize: '10px', fontWeight: 'bold' },
+      offsetY: 10
+    }
+  });
+  
   if (vwapData && vwapData.length > 0) {
     series.push({
       name: 'VWAP',
@@ -636,7 +654,10 @@ function createCandleChartOptions(id, ohlcvData, vwapData, annotations) {
       }
     },
     stroke: { width: [1, 2], curve: 'straight' },
-    annotations: annotations,
+    annotations: {
+      yaxis: annotations.yaxis || [],
+      xaxis: xaxisAnns
+    },
     grid: { borderColor: 'var(--border-color)', strokeDashArray: 2, padding: { top: 0, bottom: 0, left: 100, right: 10 } },
     theme: { mode: 'dark' },
     tooltip: { theme: 'dark', x: { format: 'dd MMM yyyy HH:mm' } },
@@ -694,12 +715,9 @@ function renderHybridChart(data) {
 
   const options = createCandleChartOptions('chart-hybrid', candleData.ohlcv, candleData.vwap, { yaxis: yaxisAnns });
   
-  if (state.charts['chart-hybrid']) {
-    state.charts['chart-hybrid'].updateOptions(options, true, true);
-  } else {
-    state.charts['chart-hybrid'] = new ApexCharts(document.querySelector('#chart-hybrid'), options);
-    state.charts['chart-hybrid'].render();
-  }
+  destroyChart('chart-hybrid'); // Kill old instance before new render
+  state.charts['chart-hybrid'] = new ApexCharts(document.querySelector('#chart-hybrid'), options);
+  state.charts['chart-hybrid'].render();
 }
 
 function renderIntradayMasterChart(data) {
@@ -785,12 +803,9 @@ function renderIntradayMasterChart(data) {
     options.xaxis.max = latestTimestamp + (2 * 60 * 60 * 1000); // 2 hours padding
   }
   
-  if (state.charts['chart-intraday-master']) {
-    state.charts['chart-intraday-master'].updateOptions(options, true, true);
-  } else {
-    state.charts['chart-intraday-master'] = new ApexCharts(document.querySelector('#chart-intraday-master'), options);
-    state.charts['chart-intraday-master'].render();
-  }
+  destroyChart('chart-intraday-master');
+  state.charts['chart-intraday-master'] = new ApexCharts(document.querySelector('#chart-intraday-master'), options);
+  state.charts['chart-intraday-master'].render();
 }
 
 function renderIntradayVolChart(data) {
@@ -835,12 +850,9 @@ function renderIntradayVolChart(data) {
     legend: { position: 'top', labels: { colors: 'var(--text-dim)' } }
   };
 
-  if (state.charts['chart-intraday-vol']) {
-    state.charts['chart-intraday-vol'].updateOptions(options, true, true);
-  } else {
-    state.charts['chart-intraday-vol'] = new ApexCharts(document.querySelector('#chart-intraday-vol'), options);
-    state.charts['chart-intraday-vol'].render();
-  }
+  destroyChart('chart-intraday-vol');
+  state.charts['chart-intraday-vol'] = new ApexCharts(document.querySelector('#chart-intraday-vol'), options);
+  state.charts['chart-intraday-vol'].render();
 }
 
 function switchChartTab(group, tabKey) {
