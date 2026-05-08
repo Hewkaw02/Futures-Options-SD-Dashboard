@@ -186,7 +186,7 @@ function renderBiasCard(bias) {
     confEl.textContent = 'Confidence: —';
     priceEl.textContent = '—';
     priceEl.style.fontSize = '';
-    ['metric-iv','metric-pcr','metric-skew','metric-activity','metric-gex','metric-walls']
+    ['metric-iv', 'metric-pcr', 'metric-skew', 'metric-activity', 'metric-gex', 'metric-walls']
       .forEach(id => {
         const el = document.getElementById(id);
         el.textContent = '—';
@@ -599,11 +599,11 @@ function createCandleChartOptions(id, ohlcvData, vwapData, annotations) {
     type: 'candlestick',
     data: ohlcvData ? ohlcvData.map(d => ({ x: d[0], y: [d[1], d[2], d[3], d[4]] })) : []
   }];
-  
+
   // Calculate Today's Highlight
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  
+
   const xaxisAnns = annotations.xaxis || [];
   // Only highlight if today exists within or after the data range
   xaxisAnns.push({
@@ -617,7 +617,7 @@ function createCandleChartOptions(id, ohlcvData, vwapData, annotations) {
       offsetY: 10
     }
   });
-  
+
   if (vwapData && vwapData.length > 0) {
     series.push({
       name: 'VWAP',
@@ -676,15 +676,39 @@ function renderHybridChart(data) {
   const tabKey = state.activeTabs['hybrid'] || 'hybrid_1d';
   const tf = tabKey.split('_')[1]; // 1d, 1h, 15m
   const candleData = data.candlesticks[tf];
-  
+
   if (!candleData || !candleData.ohlcv || candleData.ohlcv.length === 0) {
     clearChart('chart-hybrid');
     document.getElementById('hybrid-nodata').style.display = 'flex';
     return;
   }
 
-  // Create Annotations for OI
+  // Create Annotations for OI and SD
   const yaxisAnns = [];
+
+  // 1. Add SD Bands to Hybrid Chart (Filled Bands like Master)
+  const price = data.sd_bands?.price || data.bias?.price;
+  const step = data.sd_step;
+  if (price && step && step > 0) {
+    for (let i = 1; i <= 3; i++) {
+      yaxisAnns.push({
+        y: price + (step * i),
+        y2: price + (step * (i - 0.1)),
+        fillColor: '#FEB019',
+        opacity: 0.15,
+        label: { text: `+${i}SD`, position: 'right', style: { color: '#FEB019', background: 'transparent', fontSize: '10px' } }
+      });
+      yaxisAnns.push({
+        y: price - (step * i),
+        y2: price - (step * (i - 0.1)),
+        fillColor: '#008FFB',
+        opacity: 0.15,
+        label: { text: `-${i}SD`, position: 'right', style: { color: '#008FFB', background: 'transparent', fontSize: '10px' } }
+      });
+    }
+  }
+
+  // 2. Add OI/Vol Levels
   if (data.intraday_levels) {
     const allOI = [...data.intraday_levels.oi_resistances, ...data.intraday_levels.oi_supports].map(x => x[1]);
     const maxOI = allOI.length > 0 ? Math.max(...allOI) : 1;
@@ -693,8 +717,8 @@ function renderHybridChart(data) {
       const isHigh = r[1] >= maxOI * 0.7;
       const isLow = r[1] <= maxOI * 0.3;
       yaxisAnns.push({
-        y: r[0], 
-        borderColor: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.3)' : 'rgba(255, 69, 96, 0.6)'), 
+        y: r[0],
+        borderColor: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.3)' : 'rgba(255, 69, 96, 0.6)'),
         strokeDashArray: isLow ? 4 : 0,
         borderWidth: isHigh ? 3 : 1,
         label: { text: `OI Res: ${r[0]} (${formatCompact(r[1])})`, position: 'left', offsetX: 10, style: { color: '#ffffff', background: 'rgba(255, 69, 96, 1)', fontSize: '10px', fontWeight: 'bold' } }
@@ -704,8 +728,8 @@ function renderHybridChart(data) {
       const isHigh = s[1] >= maxOI * 0.7;
       const isLow = s[1] <= maxOI * 0.3;
       yaxisAnns.push({
-        y: s[0], 
-        borderColor: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.3)' : 'rgba(0, 227, 150, 0.6)'), 
+        y: s[0],
+        borderColor: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.3)' : 'rgba(0, 227, 150, 0.6)'),
         strokeDashArray: isLow ? 4 : 0,
         borderWidth: isHigh ? 3 : 1,
         label: { text: `OI Sup: ${s[0]} (${formatCompact(s[1])})`, position: 'left', offsetX: 10, style: { color: '#ffffff', background: 'rgba(0, 227, 150, 1)', fontSize: '10px', fontWeight: 'bold' } }
@@ -713,8 +737,9 @@ function renderHybridChart(data) {
     });
   }
 
+
   const options = createCandleChartOptions('chart-hybrid', candleData.ohlcv, candleData.vwap, { yaxis: yaxisAnns });
-  
+
   destroyChart('chart-hybrid'); // Kill old instance before new render
   state.charts['chart-hybrid'] = new ApexCharts(document.querySelector('#chart-hybrid'), options);
   state.charts['chart-hybrid'].render();
@@ -731,7 +756,7 @@ function renderIntradayMasterChart(data) {
   const tabKey = state.activeTabs['intraday-master'] || 'intraday_master_5m';
   const tf = tabKey.split('_')[2]; // 5m, 1h
   const candleData = data.candlesticks[tf];
-  
+
   if (!candleData || !candleData.ohlcv || candleData.ohlcv.length === 0) {
     clearChart('chart-intraday-master');
     document.getElementById('intraday-master-nodata').style.display = 'flex';
@@ -739,70 +764,135 @@ function renderIntradayMasterChart(data) {
   }
 
   const yaxisAnns = [];
-  
-  // SD Bands
-  const price = data.bias?.price;
+
+  // 0. Calculate Candle Range to filter far-away annotations
+  let viewMin = 0;
+  let viewMax = Infinity;
+  if (candleData.ohlcv && candleData.ohlcv.length > 0) {
+    const prices = candleData.ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
+    const minY = Math.min(...prices);
+    const maxY = Math.max(...prices);
+    const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
+
+    // STRICT FILTER: Only allow annotations within 20% of the candle range!
+    viewMin = minY;
+    viewMax = maxY;
+  }
+
+  // 1. SD Bands (Yellow/Blue)
+  const price = data.sd_bands?.price || data.bias?.price;
   const step = data.sd_step;
   if (price && step && step > 0) {
     for (let i = 1; i <= 3; i++) {
-      yaxisAnns.push({ y: price + (step*i), y2: price + (step*(i-0.05)), fillColor: 'rgba(255, 152, 0, 0.1)', opacity: 0.2 });
-      yaxisAnns.push({ y: price - (step*i), y2: price - (step*(i-0.05)), fillColor: 'rgba(0, 143, 251, 0.1)', opacity: 0.2 });
+      const upSD = price + (step * i);
+      const dnSD = price - (step * i);
+
+      if (upSD >= viewMin && upSD <= viewMax) {
+        yaxisAnns.push({
+          y: upSD,
+          y2: price + (step * (i - 0.1)),
+          fillColor: '#FEB019',
+          opacity: 0.15,
+          label: { text: `+${i}SD`, position: 'right', style: { color: '#FEB019', background: 'transparent' } }
+        });
+      }
+
+      if (dnSD >= viewMin && dnSD <= viewMax) {
+        yaxisAnns.push({
+          y: dnSD,
+          y2: price - (step * (i - 0.1)),
+          fillColor: '#008FFB',
+          opacity: 0.15,
+          label: { text: `-${i}SD`, position: 'right', style: { color: '#008FFB', background: 'transparent' } }
+        });
+      }
     }
   }
 
-  // OI and Vol levels
-  if (data.intraday_levels) {
-    const allVol = [...data.intraday_levels.vol_resistances, ...data.intraday_levels.vol_supports].map(x => x[1]);
-    const maxVol = allVol.length > 0 ? Math.max(...allVol) : 1;
+  // 2. Volume S/R Lines (from Intraday Volume Profile)
+  if (data.intraday_volume_profile && data.intraday_volume_profile.length > 0) {
+    const profile = data.intraday_volume_profile;
 
-    data.intraday_levels.vol_resistances.forEach(r => {
-      const isHigh = r[1] >= maxVol * 0.7;
-      const isLow = r[1] <= maxVol * 0.3;
-      yaxisAnns.push({ 
-        y: r[0], 
-        borderColor: isHigh ? 'rgba(255, 69, 96, 0.7)' : (isLow ? 'rgba(255, 69, 96, 0.2)' : 'rgba(255, 69, 96, 0.4)'), 
-        strokeDashArray: isLow ? 8 : 4,
-        borderWidth: isHigh ? 3 : 1,
-        label: { text: `Vol Res: ${r[0]} (${formatCompact(r[1])})`, position: 'left', offsetX: 10, style: { color: '#ffffff', background: 'rgba(255, 69, 96, 1)', fontSize: '10px', fontWeight: 'bold' } } 
+    const topCalls = [...profile].sort((a, b) => b.call_vol - a.call_vol).slice(0, 5);
+    const topPuts = [...profile].sort((a, b) => b.put_vol - a.put_vol).slice(0, 5);
+
+    topCalls.forEach((p, idx) => {
+      if (p.call_vol === 0) return;
+      if (p.strike < viewMin || p.strike > viewMax) return; // Strict range filter
+      yaxisAnns.push({
+        y: p.strike,
+        borderColor: '#00E396',
+        borderWidth: idx === 0 ? 3 : 2,
+        strokeDashArray: idx === 0 ? 0 : 4,
+        label: {
+          text: `Intraday Res: ${p.strike} (${formatCompact(p.call_vol)})`,
+          position: 'left',
+          offsetX: 50,
+          style: { color: '#fff', background: '#00E396', fontSize: '9px', fontWeight: 'bold' }
+        }
       });
     });
-    data.intraday_levels.vol_supports.forEach(s => {
-      const isHigh = s[1] >= maxVol * 0.7;
-      const isLow = s[1] <= maxVol * 0.3;
-      yaxisAnns.push({ 
-        y: s[0], 
-        borderColor: isHigh ? 'rgba(0, 227, 150, 0.7)' : (isLow ? 'rgba(0, 227, 150, 0.2)' : 'rgba(0, 227, 150, 0.4)'), 
-        strokeDashArray: isLow ? 8 : 4,
-        borderWidth: isHigh ? 3 : 1,
-        label: { text: `Vol Sup: ${s[0]} (${formatCompact(s[1])})`, position: 'left', offsetX: 10, style: { color: '#ffffff', background: 'rgba(0, 227, 150, 1)', fontSize: '10px', fontWeight: 'bold' } } 
+
+    topPuts.forEach((p, idx) => {
+      if (p.put_vol === 0) return;
+      if (p.strike < viewMin || p.strike > viewMax) return; // Strict range filter
+      yaxisAnns.push({
+        y: p.strike,
+        borderColor: '#FF4560',
+        borderWidth: idx === 0 ? 3 : 2,
+        strokeDashArray: idx === 0 ? 0 : 4,
+        label: {
+          text: `Intraday Sup: ${p.strike} (${formatCompact(p.put_vol)})`,
+          position: 'left',
+          offsetX: 50,
+          style: { color: '#fff', background: '#FF4560', fontSize: '9px', fontWeight: 'bold' }
+        }
       });
     });
   }
 
   const options = createCandleChartOptions('chart-intraday-master', candleData.ohlcv, candleData.vwap, { yaxis: yaxisAnns });
-  
+
+  // Fix Y-axis scaling: Focus on candles and nearby annotations
+  // Fix Y-axis scaling: Focus on candles and nearby annotations
   if (candleData.ohlcv && candleData.ohlcv.length > 0) {
     const latestTimestamp = candleData.ohlcv[candleData.ohlcv.length - 1][0];
     const latestDateStr = new Date(latestTimestamp).toLocaleDateString();
     let prevDateStr = null;
     let minTs = candleData.ohlcv[0][0];
-    
+
     for (let i = candleData.ohlcv.length - 1; i >= 0; i--) {
       const ts = candleData.ohlcv[i][0];
       const dStr = new Date(ts).toLocaleDateString();
       if (dStr !== latestDateStr) {
         if (!prevDateStr) prevDateStr = dStr;
         if (dStr !== prevDateStr) {
-          minTs = candleData.ohlcv[i+1][0];
+          minTs = candleData.ohlcv[i + 1][0];
           break;
         }
       }
     }
-    
+
+    // Filter to only visible candles to calculate strict min/max
+    const visibleCandles = candleData.ohlcv.filter(c => c[0] >= minTs);
+    if (visibleCandles.length > 0) {
+      const prices = visibleCandles.flatMap(c => [c[1], c[2], c[3], c[4]]);
+      const minY = Math.min(...prices);
+      const maxY = Math.max(...prices);
+      const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
+      
+      // Override viewMin and viewMax with strict visible range
+      options.yaxis.min = minY - (range * 0.05); // 5% buffer
+      options.yaxis.max = maxY + (range * 0.05);
+    }
+
     options.xaxis.min = minTs;
     options.xaxis.max = latestTimestamp + (2 * 60 * 60 * 1000); // 2 hours padding
+    
+    // Disable forceNiceScale to strictly honor our min/max bounds
+    options.yaxis.forceNiceScale = false;
   }
-  
+
   destroyChart('chart-intraday-master');
   state.charts['chart-intraday-master'] = new ApexCharts(document.querySelector('#chart-intraday-master'), options);
   state.charts['chart-intraday-master'].render();
@@ -831,18 +921,18 @@ function renderIntradayVolChart(data) {
     colors: ['#FF4560', '#00E396'],
     dataLabels: { enabled: false },
     stroke: { width: 1, colors: ['#1E1E24'] },
-    xaxis: { 
-      categories: strikes.map(String), 
-      labels: { 
+    xaxis: {
+      categories: strikes.map(String),
+      labels: {
         style: { colors: 'var(--text-muted)', fontSize: '10px' },
         rotate: -45,
         rotateAlways: true
-      }, 
-      axisBorder: { show: false }, 
-      axisTicks: { show: false } 
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false }
     },
-    yaxis: { 
-      labels: { formatter: val => formatCompact(val), style: { colors: 'var(--text-dim)' } } 
+    yaxis: {
+      labels: { formatter: val => formatCompact(val), style: { colors: 'var(--text-dim)' } }
     },
     grid: { borderColor: 'var(--border-color)', strokeDashArray: 2 },
     theme: { mode: 'dark' },

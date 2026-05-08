@@ -225,7 +225,40 @@ def parse_option_data_csv(csv_path):
         "vanna_exp": vanna_values,
     }
 
-    return oi_walls, net_oi, resistances, supports, gex_profile, vanna
+    # Find top Volume resistance (call) and support (put) walls
+    vol_resistances = []
+    vol_supports = []
+    
+    # Top 3 call Vol strikes
+    vol_c_sorted = sorted([(s, r['Volume']) for r in rows if r['Type'] == 'Call'], key=lambda x: -x[1])
+    for s, v in vol_c_sorted[:3]:
+        if v > 0: vol_resistances.append([float(s), float(v)])
+        
+    # Top 3 put Vol strikes
+    vol_p_sorted = sorted([(s, r['Volume']) for r in rows if r['Type'] == 'Put'], key=lambda x: -x[1])
+    for s, v in vol_p_sorted[:3]:
+        if v > 0: vol_supports.append([float(s), float(v)])
+
+    # Build Volume Profile
+    profile = []
+    all_strikes = sorted(set(r['Strike'] for r in rows))
+    for s in all_strikes:
+        c_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] == 'Call')
+        p_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] == 'Put')
+        if c_v > 0 or p_v > 0:
+            profile.append({"strike": float(s), "call_vol": float(c_v), "put_vol": float(p_v)})
+
+    return {
+        "oi_walls": oi_walls,
+        "net_oi": net_oi,
+        "resistances": resistances,
+        "supports": supports,
+        "gex_profile": gex_profile,
+        "vanna": vanna,
+        "vol_resistances": vol_resistances,
+        "vol_supports": vol_supports,
+        "volume_profile": profile
+    }
 
 
 def get_multi_timeframe_candles(asset_symbol):
@@ -422,16 +455,16 @@ def process_timestamp(date_str, hour_str):
 
         # 2. Option data (OI, Net OI, GEX, Vanna)
         opt_csv = find_latest_csv(asset_dir, f"{asset_lower}_data_*.csv")
+        opt_data = None
         if opt_csv:
-            result = parse_option_data_csv(opt_csv)
-            if result:
-                oi_walls, net_oi, resistances, supports, gex_profile, vanna = result
-                data["oi_walls"] = oi_walls
-                data["net_oi"] = net_oi
-                data["resistances"] = resistances
-                data["supports"] = supports
-                data["gex_profile"] = gex_profile
-                data["vanna"] = vanna
+            opt_data = parse_option_data_csv(opt_csv)
+            if opt_data:
+                data["oi_walls"] = opt_data["oi_walls"]
+                data["net_oi"] = opt_data["net_oi"]
+                data["resistances"] = opt_data["resistances"]
+                data["supports"] = opt_data["supports"]
+                data["gex_profile"] = opt_data["gex_profile"]
+                data["vanna"] = opt_data["vanna"]
             else:
                 data["oi_walls"] = None
                 data["net_oi"] = None
@@ -484,6 +517,15 @@ def process_timestamp(date_str, hour_str):
                 "vol_supports": intraday_data["vol_supports"]
             }
             data["intraday_volume_profile"] = intraday_data["volume_profile"]
+        elif opt_data:
+            # Fallback to option data if intraday file is missing
+            data["intraday_levels"] = {
+                "oi_resistances": [[r["strike"], r["oi"]] for r in opt_data["resistances"]],
+                "oi_supports": [[r["strike"], r["oi"]] for r in opt_data["supports"]],
+                "vol_resistances": opt_data["vol_resistances"],
+                "vol_supports": opt_data["vol_supports"]
+            }
+            data["intraday_volume_profile"] = opt_data["volume_profile"]
         else:
             data["intraday_levels"] = None
             data["intraday_volume_profile"] = None
