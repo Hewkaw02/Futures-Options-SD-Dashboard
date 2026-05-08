@@ -352,31 +352,34 @@ def get_intraday_data(date_str, hour_str, asset):
         return None
 
 
-def compute_sd_bands(price, candle_data):
-    """Compute simplified SD bands from candle data."""
-    if not candle_data or not candle_data['ohlc']:
+def compute_sd_bands(price, iv, candle_data=None):
+    """Compute SD bands using IV (Primary) or Historical Volatility (Fallback)."""
+    if price <= 0:
         return None
 
-    # Calculate daily returns for volatility
-    closes = [c['y'][3] if isinstance(c, dict) and 'y' in c else c[3] for c in candle_data['ohlc']]
-    if len(closes) < 10:
+    # Calculate SD based on IV if available
+    if iv > 0:
+        # Standard Daily SD formula: Price * IV * sqrt(DTE/365)
+        # For a "daily" view, we use 1/365
+        sd1 = price * iv * math.sqrt(1.0 / 365.0)
+        daily_vol = iv * math.sqrt(1.0 / 365.0)
+    elif candle_data and candle_data.get('ohlc'):
+        # Fallback to historical volatility
+        closes = [c['y'][3] if isinstance(c, dict) and 'y' in c else c[3] for c in candle_data['ohlc']]
+        if len(closes) < 5: return None
+        
+        returns = []
+        for i in range(1, len(closes)):
+            if closes[i - 1] > 0:
+                returns.append((closes[i] - closes[i - 1]) / closes[i - 1])
+        
+        if not returns: return None
+        mean_ret = sum(returns) / len(returns)
+        variance = sum((r - mean_ret) ** 2 for r in returns) / len(returns)
+        daily_vol = math.sqrt(variance)
+        sd1 = price * daily_vol
+    else:
         return None
-
-    returns = []
-    for i in range(1, len(closes)):
-        if closes[i - 1] > 0:
-            returns.append((closes[i] - closes[i - 1]) / closes[i - 1])
-
-    if not returns:
-        return None
-
-    import math
-    mean_ret = sum(returns) / len(returns)
-    variance = sum((r - mean_ret) ** 2 for r in returns) / len(returns)
-    daily_vol = math.sqrt(variance)
-
-    # 1 SD in price terms (annualized to daily using 365)
-    sd1 = price * daily_vol
 
     return {
         "price": round(price, 2),
@@ -461,15 +464,12 @@ def process_timestamp(date_str, hour_str):
         else:
             data["candlestick"] = {"dates": [], "ohlc": []}
 
-        # 4. SD bands
+        # 4. SD bands (Primary: IV-based)
         price = data.get("bias", {}).get("price", 0)
         iv_str = data.get("bias", {}).get("iv", "0%")
         iv = float(iv_str.replace('%', '')) / 100 if iv_str and '%' in iv_str else 0
         
-        if price > 0 and data["candlestick"]["ohlc"]:
-            data["sd_bands"] = compute_sd_bands(price, data["candlestick"])
-        else:
-            data["sd_bands"] = None
+        data["sd_bands"] = compute_sd_bands(price, iv, data.get("candlestick"))
             
         # Add 1 SD step calculation for intraday master
         data["sd_step"] = price * iv * math.sqrt(1.0 / 365) if iv else 0

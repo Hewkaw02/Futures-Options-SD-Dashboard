@@ -163,6 +163,21 @@ async def generate_hybrid_chart(session, asset, output_base):
         # Add rectangular zones (axhspan)
         ax = axlist[0]
         import numpy as np
+
+        # Highlight Today's Section
+        today_data = df_candles.index[df_candles.index.date == date.today()]
+        if not today_data.empty:
+            # Find the index of the first 'today' candle in the current view
+            first_today_ts = today_data[0]
+            try:
+                # Find its integer position in df_candles
+                idx_pos = df_candles.index.get_loc(first_today_ts)
+                # Highlight from today's start to the end of the chart
+                ax.axvspan(idx_pos - 0.5, len(df_candles) + 20, color='gold', alpha=0.08, label='Today Session')
+                # Add a small vertical divider
+                ax.axvline(idx_pos - 0.5, color='orange', linestyle='--', alpha=0.3, linewidth=1)
+            except:
+                pass
         
         # Calculate visual boundaries to filter out extreme out-of-bounds data
         y_min = df_candles['Low'].min()

@@ -190,6 +190,21 @@ async def generate_intraday_master(session, asset, output_base):
         )
         ax = axlist[0]
         ax.set_ylim(view_min, view_max)
+
+        # Highlight Today's Section
+        today_data = df_plot.index[df_plot.index.date == date.today()]
+        if not today_data.empty:
+            # Find the index of the first 'today' candle in the zoomed view
+            first_today_ts = today_data[0]
+            try:
+                # Find its integer position in the df_plot index
+                idx_pos = df_plot.index.get_loc(first_today_ts)
+                # Highlight from today's start to the end of the chart
+                ax.axvspan(idx_pos - 0.5, len(df_plot) + 20, color='gold', alpha=0.08)
+                # Add a vertical divider
+                ax.axvline(idx_pos - 0.5, color='orange', linestyle='--', alpha=0.4, linewidth=1)
+            except:
+                pass
         
         x_pos = len(df_plot) - 1
         bbox_props = dict(facecolor='white', alpha=0.7, edgecolor='none')
