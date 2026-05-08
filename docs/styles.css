@@ -1,0 +1,677 @@
+/* ═══════════════════════════════════════════════════════════════
+   FUTURES OPTIONS TRADING DASHBOARD — Design System
+   Aesthetic: Industrial / Utilitarian (Bloomberg Terminal × Cyberpunk)
+   DFII Score: 15 (Excellent)
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ── Tokens ─────────────────────────────────────────────────── */
+:root {
+  /* Background */
+  --bg-primary:    #0A0A0C;
+  --bg-card:       #111115;
+  --bg-card-hover: #16161B;
+  --bg-elevated:   #1C1C22;
+
+  /* Borders */
+  --border-color:  #1A1B20;
+  --border-active: #2A2B30;
+
+  /* Text */
+  --text-primary:  #E0E0E5;
+  --text-secondary:#9A9AA5;
+  --text-dim:      #6B6B75;
+  --text-muted:    #45454D;
+
+  /* Accent — BULL (Calls / Bullish) */
+  --accent-bull:       #00FF66;
+  --accent-bull-dim:   #00CC52;
+  --accent-bull-bg:    rgba(0, 255, 102, 0.08);
+  --accent-bull-glow:  0 0 20px rgba(0, 255, 102, 0.3);
+
+  /* Accent — BEAR (Puts / Bearish) */
+  --accent-bear:       #FF0055;
+  --accent-bear-dim:   #CC0044;
+  --accent-bear-bg:    rgba(255, 0, 85, 0.08);
+  --accent-bear-glow:  0 0 20px rgba(255, 0, 85, 0.3);
+
+  /* Accent — Neutral / Highlight */
+  --accent-neutral:    #FFB800;
+  --accent-neutral-bg: rgba(255, 184, 0, 0.08);
+  --accent-info:       #4D9EFF;
+  --accent-info-bg:    rgba(77, 158, 255, 0.08);
+  --accent-purple:     #A855F7;
+
+  /* Fonts */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* Chart */
+  --chart-height: 320px;
+}
+
+/* ── Reset & Base ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* CRT Scanline Overlay — subtle texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+.dashboard {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.dashboard-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.dashboard-title .logo-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--accent-bull);
+  box-shadow: var(--accent-bull-glow);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Controls Bar ───────────────────────────────────────────── */
+.controls-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+/* Asset Selector */
+.asset-selector {
+  display: flex;
+  gap: 2px;
+}
+
+.asset-btn {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.asset-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-active);
+}
+
+.asset-btn.active {
+  background: var(--bg-elevated);
+  color: var(--accent-neutral);
+  border-color: var(--accent-neutral);
+  box-shadow: 0 0 12px rgba(255, 184, 0, 0.15);
+}
+
+.asset-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-neutral);
+}
+
+/* Time Navigator */
+.time-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.time-btn {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  line-height: 1;
+}
+
+.time-btn:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-active);
+}
+
+.time-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.time-display {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  min-width: 200px;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+.time-index {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-left: var(--space-sm);
+}
+
+/* ── Grid Layout ────────────────────────────────────────────── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  padding: var(--space-lg);
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--border-active);
+}
+
+.card.full-width {
+  grid-column: 1 / -1;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.card-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border: 1px solid var(--border-color);
+  color: var(--text-dim);
+}
+
+/* ── Bias Card (Hero Section) ───────────────────────────────── */
+.bias-card {
+  grid-column: 1 / -1;
+}
+
+.bias-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.bias-hero {
+  text-align: center;
+  padding: var(--space-lg) var(--space-xl);
+  border-right: 1px solid var(--border-color);
+  min-width: 220px;
+}
+
+.bias-label {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-xs);
+}
+
+.bias-label.bull {
+  color: var(--accent-bull);
+  text-shadow: var(--accent-bull-glow);
+}
+
+.bias-label.bear {
+  color: var(--accent-bear);
+  text-shadow: var(--accent-bear-glow);
+}
+
+.bias-label.neutral {
+  color: var(--accent-neutral);
+}
+
+.bias-confidence {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.bias-price {
+  font-family: var(--font-mono);
+  font-size: 2.4rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  margin-top: var(--space-sm);
+  letter-spacing: -0.02em;
+}
+
+.bias-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--space-md);
+}
+
+.metric-item {
+  padding: var(--space-sm) 0;
+}
+
+.metric-label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: var(--space-xs);
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.metric-value.bull { color: var(--accent-bull); }
+.metric-value.bear { color: var(--accent-bear); }
+.metric-value.neutral { color: var(--accent-neutral); }
+.metric-value.info { color: var(--accent-info); }
+
+/* ── Chart Container ────────────────────────────────────────── */
+.chart-container {
+  height: var(--chart-height);
+  position: relative;
+}
+
+.chart-container.tall {
+  height: 400px;
+}
+
+/* ── Walls Display ──────────────────────────────────────────── */
+.walls-display {
+  display: flex;
+  gap: var(--space-xl);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.wall-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.wall-dot {
+  width: 6px;
+  height: 6px;
+}
+
+.wall-dot.resistance { background: var(--accent-bear); }
+.wall-dot.support { background: var(--accent-bull); }
+
+.wall-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.wall-value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ── Loading & Error States ─────────────────────────────────── */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 12, 0.85);
+  z-index: 10;
+}
+
+.loading-spinner {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-sm);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  border: 1px dashed var(--border-color);
+}
+
+/* ── Image Chart Panels (Removed) ──────────────────────────── */
+
+/* ── Chart Tab Navigation ──────────────────────────────────── */
+.chart-tab-group {
+  display: flex;
+  gap: 2px;
+}
+
+.chart-tab {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 14px;
+  background: var(--bg-card);
+  color: var(--text-dim);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-transform: uppercase;
+}
+
+.chart-tab:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-active);
+}
+
+.chart-tab.active {
+  background: var(--bg-elevated);
+  color: var(--accent-info);
+  border-color: var(--accent-info);
+  box-shadow: 0 0 8px rgba(77, 158, 255, 0.15);
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.dashboard-footer {
+  margin-top: var(--space-xl);
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.footer-text {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent-bull);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Keyboard Shortcut Hints ────────────────────────────────── */
+.kbd-hint {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  padding: 1px 5px;
+  border: 1px solid var(--border-color);
+  margin-left: var(--space-xs);
+  vertical-align: middle;
+}
+
+/* ── Regime Badge ───────────────────────────────────────────── */
+.regime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border: 1px solid;
+}
+
+.regime-badge.stable {
+  color: var(--accent-bull);
+  border-color: var(--accent-bull-dim);
+  background: var(--accent-bull-bg);
+}
+
+.regime-badge.volatile {
+  color: var(--accent-bear);
+  border-color: var(--accent-bear-dim);
+  background: var(--accent-bear-bg);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bias-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bias-hero {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--space-md);
+  }
+}
+
+@media (max-width: 768px) {
+  html { font-size: 13px; }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .controls-bar {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .asset-selector {
+    width: 100%;
+  }
+
+  .asset-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .time-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .time-display {
+    flex: 1;
+  }
+
+  .bias-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart-container {
+    height: 260px;
+  }
+}
+
+/* ── ApexCharts Theme Overrides ──────────────────────────────── */
+.apexcharts-tooltip {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-active) !important;
+  border-radius: 0 !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem !important;
+}
+
+.apexcharts-tooltip-title {
+  background: var(--bg-card) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  font-family: var(--font-mono) !important;
+  color: var(--text-secondary) !important;
+}
+
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-active) !important;
+  border-radius: 0 !important;
+  color: var(--text-primary) !important;
+}
+
+.apexcharts-gridline {
+  stroke: var(--border-color) !important;
+}
+
+.apexcharts-text {
+  fill: var(--text-dim) !important;
+  font-family: var(--font-mono) !important;
+}
+
+.apexcharts-legend-text {
+  color: var(--text-secondary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem !important;
+}

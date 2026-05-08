@@ -1,0 +1,47 @@
+name: Hourly Dashboard Update
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch: {}   # Manual trigger
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create .env for credentials
+        run: |
+          echo "TASTYTRADE_CLIENT_SECRET=${{ secrets.TASTYTRADE_CLIENT_SECRET }}" >> .env
+          echo "TASTYTRADE_REFRESH_TOKEN=${{ secrets.TASTYTRADE_REFRESH_TOKEN }}" >> .env
+
+      - name: Run analysis pipeline
+        run: python run_all.py
+        env:
+          TASTYTRADE_CLIENT_SECRET: ${{ secrets.TASTYTRADE_CLIENT_SECRET }}
+          TASTYTRADE_REFRESH_TOKEN: ${{ secrets.TASTYTRADE_REFRESH_TOKEN }}
+
+      - name: Update dashboard JSON from results
+        run: python update_dashboard.py
+
+      - name: Commit and push data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/ trading_results/
+          git commit -m "📊 Auto-update $(date -u +'%Y-%m-%d %H:%M') UTC" || echo "No changes to commit"
+          git push

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Futures Options S/D Dashboard</title>
+  <meta name="description" content="Real-time Futures Options Trading Dashboard — GC, ES, NQ with OI Walls, SD Bands, GEX Profile, and Master Bias Reports.">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- ApexCharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
+</head>
+<body>
+
+<div class="dashboard" id="app">
+
+  <!-- ══════ HEADER ══════ -->
+  <header class="dashboard-header">
+    <div class="dashboard-title">
+      <span class="logo-dot"></span>
+      FUTURES OPTIONS S/D DASHBOARD
+    </div>
+
+    <div class="controls-bar">
+      <!-- Asset Selector -->
+      <div class="asset-selector" id="asset-selector">
+        <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')">
+          GC <span class="kbd-hint">1</span>
+        </button>
+        <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')">
+          ES <span class="kbd-hint">2</span>
+        </button>
+        <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')">
+          NQ <span class="kbd-hint">3</span>
+        </button>
+      </div>
+
+      <!-- Time Navigator -->
+      <div class="time-nav" id="time-nav">
+        <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)">◀</button>
+        <div class="time-display" id="time-display">
+          <span id="time-label">Loading...</span>
+          <span class="time-index" id="time-index"></span>
+        </div>
+        <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)">▶</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════ BIAS CARD (Hero) ══════ -->
+  <section class="dashboard-grid">
+
+    <div class="card bias-card" id="card-bias">
+      <div class="card-header">
+        <span class="card-title">Master Trading Bias</span>
+        <span class="card-badge" id="bias-asset-label">GC — GOLD</span>
+      </div>
+      <div class="bias-grid">
+        <div class="bias-hero">
+          <div class="bias-label neutral" id="bias-direction">—</div>
+          <div class="bias-confidence" id="bias-confidence">Confidence: —</div>
+          <div class="bias-price" id="bias-price">—</div>
+        </div>
+        <div class="bias-metrics" id="bias-metrics">
+          <div class="metric-item">
+            <div class="metric-label">Implied Vol</div>
+            <div class="metric-value" id="metric-iv">—</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">PCR (Volume)</div>
+            <div class="metric-value" id="metric-pcr">—</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">IV Skew</div>
+            <div class="metric-value" id="metric-skew">—</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Activity %</div>
+            <div class="metric-value" id="metric-activity">—</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">GEX Regime</div>
+            <div class="metric-value" id="metric-gex">—</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-label">Call Wall / Put Wall</div>
+            <div class="metric-value" id="metric-walls">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══════ HYBRID CANDLE + OI CHARTS (Tabbed) ══════ -->
+    <div class="card full-width" id="card-hybrid">
+      <div class="card-header">
+        <span class="card-title">Hybrid Candle &amp; OI S/R Zones</span>
+        <div class="chart-tab-group" id="hybrid-tabs">
+          <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')">1D</button>
+          <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')">1H</button>
+          <button class="chart-tab active" data-tab="hybrid_15m" onclick="switchChartTab('hybrid', 'hybrid_15m')">15M</button>
+        </div>
+      </div>
+      <div class="chart-container tall" id="chart-hybrid"></div>
+      <div class="no-data" id="hybrid-nodata" style="display: none;">NO CHART DATA</div>
+    </div>
+
+    <!-- ══════ INTRADAY MASTER CHARTS (Tabbed) ══════ -->
+    <div class="card full-width" id="card-intraday-master">
+      <div class="card-header">
+        <span class="card-title">Intraday Master Chart</span>
+        <div class="chart-tab-group" id="intraday-master-tabs">
+          <button class="chart-tab active" data-tab="intraday_master_5m" onclick="switchChartTab('intraday-master', 'intraday_master_5m')">5M</button>
+          <button class="chart-tab" data-tab="intraday_master_1h" onclick="switchChartTab('intraday-master', 'intraday_master_1h')">1H</button>
+        </div>
+      </div>
+      <div class="chart-container tall" id="chart-intraday-master"></div>
+      <div class="no-data" id="intraday-master-nodata" style="display: none;">NO CHART DATA</div>
+    </div>
+
+    <!-- ══════ INTRADAY VOLUME ══════ -->
+    <div class="card full-width" id="card-intraday-vol">
+      <div class="card-header">
+        <span class="card-title">Intraday Volume Profile</span>
+        <span class="card-badge">CALL vs PUT</span>
+      </div>
+      <div class="chart-container" id="chart-intraday-vol"></div>
+      <div class="no-data" id="intraday-vol-nodata" style="display: none;">NO CHART DATA</div>
+    </div>
+
+    <!-- ══════ OI WALLS CHART ══════ -->
+    <div class="card" id="card-oi-walls">
+      <div class="card-header">
+        <span class="card-title">Open Interest Walls</span>
+        <span class="card-badge">CALL vs PUT</span>
+      </div>
+      <div class="chart-container" id="chart-oi-walls"></div>
+    </div>
+
+    <!-- ══════ NET OI CHART ══════ -->
+    <div class="card" id="card-net-oi">
+      <div class="card-header">
+        <span class="card-title">Net Open Interest</span>
+        <span class="card-badge">CALL − PUT</span>
+      </div>
+      <div class="chart-container" id="chart-net-oi"></div>
+    </div>
+
+    <!-- ══════ GEX PROFILE ══════ -->
+    <div class="card" id="card-gex">
+      <div class="card-header">
+        <span class="card-title">Gamma Exposure Profile</span>
+        <span class="card-badge" id="gex-regime-badge">—</span>
+      </div>
+      <div class="chart-container" id="chart-gex"></div>
+    </div>
+
+    <!-- ══════ VANNA / CHARM ══════ -->
+    <div class="card" id="card-vanna">
+      <div class="card-header">
+        <span class="card-title">Vanna Exposure</span>
+        <span class="card-badge">IV RISK</span>
+      </div>
+      <div class="chart-container" id="chart-vanna"></div>
+    </div>
+
+  </section>
+
+  <!-- ══════ FOOTER ══════ -->
+  <footer class="dashboard-footer">
+    <div class="footer-text">
+      FUTURES OPTIONS S/D DASHBOARD v1.0 — DATA: TASTYTRADE + YAHOO FINANCE
+    </div>
+    <div class="footer-status">
+      <span class="status-dot"></span>
+      <span class="footer-text" id="footer-updated">Last updated: —</span>
+    </div>
+  </footer>
+
+</div>
+
+<!-- App Logic -->
+<script src="app.js"></script>
+
+</body>
+</html>
