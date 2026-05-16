@@ -1,17 +1,5 @@
 {
-  "bias": {
-    "label": "Mild BEAR",
-    "confidence": "40%",
-    "price": 29231.75,
-    "iv": "14.5%",
-    "pcr_vol": 1.15,
-    "skew": "+3.0%",
-    "activity": "648.7%",
-    "gex": "VOLTL",
-    "walls": "29300.0/29200.0",
-    "wall_resistance": 29300.0,
-    "wall_support": 29200.0
-  },
+  "bias": {},
   "oi_walls": {
     "strikes": [
       27775.0,
@@ -29969,18 +29957,8 @@
       }
     ]
   },
-  "sd_bands": {
-    "price": 29231.75,
-    "sd1": 221.86,
-    "daily_vol_pct": 0.76,
-    "levels": {
-      "+1SD": 29453.61,
-      "+2SD": 29675.47,
-      "-1SD": 29009.89,
-      "-2SD": 28788.03
-    }
-  },
-  "sd_step": 221.8586601130589,
+  "sd_bands": null,
+  "sd_step": 0,
   "intraday_levels": {
     "oi_resistances": [
       [

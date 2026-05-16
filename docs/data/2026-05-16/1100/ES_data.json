@@ -1,17 +1,5 @@
 {
-  "bias": {
-    "label": "Mild BULL",
-    "confidence": "20%",
-    "price": 7432.25,
-    "iv": "10.0%",
-    "pcr_vol": 2.08,
-    "skew": "+3.5%",
-    "activity": "322.0%",
-    "gex": "STABLE",
-    "walls": "7460.0/7400.0",
-    "wall_resistance": 7460.0,
-    "wall_support": 7400.0
-  },
+  "bias": {},
   "oi_walls": {
     "strikes": [
       7065.0,
@@ -29285,18 +29273,8 @@
       }
     ]
   },
-  "sd_bands": {
-    "price": 7432.25,
-    "sd1": 38.9,
-    "daily_vol_pct": 0.52,
-    "levels": {
-      "+1SD": 7471.15,
-      "+2SD": 7510.05,
-      "-1SD": 7393.35,
-      "-2SD": 7354.45
-    }
-  },
-  "sd_step": 38.90217448671116,
+  "sd_bands": null,
+  "sd_step": 0,
   "intraday_levels": {
     "oi_resistances": [
       [
