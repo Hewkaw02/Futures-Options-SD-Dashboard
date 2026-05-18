@@ -150,6 +150,55 @@ function showGlobalError(msg) {
   document.getElementById('bias-price').style.fontSize = '0.9rem';
 }
 
+function getAnalysisDate() {
+  const ts = state.manifest[state.currentIndex];
+  let analysisDate = new Date();
+  if (ts) {
+    const dateStr = ts.split('/')[0];
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      analysisDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    }
+  }
+  return analysisDate;
+}
+
+function getAnalysisTimestampMs(ts) {
+  if (!ts) return Date.now();
+  const parts = ts.split('/');
+  const datePart = parts[0];
+  const hourPart = parts[1] || '0000';
+  const formattedStr = `${datePart}T${hourPart.substring(0, 2)}:${hourPart.substring(2, 4)}:00Z`;
+  return new Date(formattedStr).getTime();
+}
+
+function getAnalysisDateUtcRange(ts) {
+  if (!ts) return null;
+  const datePart = ts.split('/')[0];
+  return {
+    start: new Date(`${datePart}T00:00:00Z`).getTime(),
+    end: new Date(`${datePart}T23:59:59Z`).getTime()
+  };
+}
+
+function getOneDayBackMinTs(ohlcv, analysisDateStr) {
+  let prevDateStr = null;
+  let minTs = ohlcv[0][0];
+
+  for (let i = ohlcv.length - 1; i >= 0; i--) {
+    const ts = ohlcv[i][0];
+    const dStr = new Date(ts).toLocaleDateString();
+    if (dStr !== analysisDateStr) {
+      if (!prevDateStr) prevDateStr = dStr;
+      if (dStr !== prevDateStr) {
+        minTs = ohlcv[i + 1][0];
+        break;
+      }
+    }
+  }
+  return minTs;
+}
+
 // ── Render All ───────────────────────────────────────────────
 function renderAll(data) {
   if (!data) {
@@ -600,23 +649,22 @@ function createCandleChartOptions(id, ohlcvData, vwapData, annotations) {
     data: ohlcvData ? ohlcvData.map(d => ({ x: d[0], y: [d[1], d[2], d[3], d[4]] })) : []
   }];
 
-  // Calculate Today's Highlight
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-
+  // Highlight the Analysis Date (UTC Aligned)
+  const utcRange = getAnalysisDateUtcRange(state.manifest[state.currentIndex]);
   const xaxisAnns = annotations.xaxis || [];
-  // Only highlight if today exists within or after the data range
-  xaxisAnns.push({
-    x: todayStart,
-    x2: Date.now() + 86400000, // Extend to tomorrow to cover future padding
-    fillColor: '#FEB019',
-    opacity: 0.05,
-    label: {
-      text: 'TODAY',
-      style: { color: '#FEB019', background: 'transparent', fontSize: '10px', fontWeight: 'bold' },
-      offsetY: 10
-    }
-  });
+  if (utcRange) {
+    xaxisAnns.push({
+      x: utcRange.start,
+      x2: utcRange.end,
+      fillColor: '#FEB019',
+      opacity: 0.08,
+      label: {
+        text: 'ANALYSIS DATE',
+        style: { color: '#FEB019', background: 'transparent', fontSize: '10px', fontWeight: 'bold' },
+        offsetY: 10
+      }
+    });
+  }
 
   if (vwapData && vwapData.length > 0) {
     series.push({
@@ -683,6 +731,24 @@ function renderHybridChart(data) {
     return;
   }
 
+  // Filter candles if not the latest run to prevent future leak
+  const isLatest = state.currentIndex === state.manifest.length - 1;
+  const ts = state.manifest[state.currentIndex];
+  let ohlcv = candleData.ohlcv;
+  let vwap = candleData.vwap;
+
+  if (!isLatest && ts) {
+    const maxTs = getAnalysisTimestampMs(ts);
+    ohlcv = ohlcv.filter(c => c[0] <= maxTs);
+    vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+  }
+
+  if (ohlcv.length === 0) {
+    clearChart('chart-hybrid');
+    document.getElementById('hybrid-nodata').style.display = 'flex';
+    return;
+  }
+
   // Create Annotations for OI and SD
   const yaxisAnns = [];
 
@@ -738,7 +804,28 @@ function renderHybridChart(data) {
   }
 
 
-  const options = createCandleChartOptions('chart-hybrid', candleData.ohlcv, candleData.vwap, { yaxis: yaxisAnns });
+  const options = createCandleChartOptions('chart-hybrid', ohlcv, vwap, { yaxis: yaxisAnns });
+
+  // 1-day lookback for 15m
+  if (tf === '15m' && ohlcv && ohlcv.length > 0) {
+    const analysisDateStr = getAnalysisDate().toLocaleDateString();
+    const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
+    
+    const visibleCandles = ohlcv.filter(c => c[0] >= minTs);
+    if (visibleCandles.length > 0) {
+      const prices = visibleCandles.flatMap(c => [c[1], c[2], c[3], c[4]]);
+      const minY = Math.min(...prices);
+      const maxY = Math.max(...prices);
+      const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
+      
+      options.yaxis.min = minY - (range * 0.05); // 5% buffer
+      options.yaxis.max = maxY + (range * 0.05);
+    }
+    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
+    options.xaxis.min = minTs;
+    options.xaxis.max = latestTimestamp + (2 * 60 * 60 * 1000); // 2 hours padding
+    options.yaxis.forceNiceScale = false;
+  }
 
   destroyChart('chart-hybrid'); // Kill old instance before new render
   state.charts['chart-hybrid'] = new ApexCharts(document.querySelector('#chart-hybrid'), options);
@@ -763,13 +850,31 @@ function renderIntradayMasterChart(data) {
     return;
   }
 
+  // Filter candles if not the latest run to prevent future leak
+  const isLatest = state.currentIndex === state.manifest.length - 1;
+  const ts = state.manifest[state.currentIndex];
+  let ohlcv = candleData.ohlcv;
+  let vwap = candleData.vwap;
+
+  if (!isLatest && ts) {
+    const maxTs = getAnalysisTimestampMs(ts);
+    ohlcv = ohlcv.filter(c => c[0] <= maxTs);
+    vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+  }
+
+  if (ohlcv.length === 0) {
+    clearChart('chart-intraday-master');
+    document.getElementById('intraday-master-nodata').style.display = 'flex';
+    return;
+  }
+
   const yaxisAnns = [];
 
   // 0. Calculate Candle Range to filter far-away annotations
   let viewMin = 0;
   let viewMax = Infinity;
-  if (candleData.ohlcv && candleData.ohlcv.length > 0) {
-    const prices = candleData.ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
+  if (ohlcv && ohlcv.length > 0) {
+    const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
     const minY = Math.min(...prices);
     const maxY = Math.max(...prices);
     const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
@@ -851,30 +956,15 @@ function renderIntradayMasterChart(data) {
     });
   }
 
-  const options = createCandleChartOptions('chart-intraday-master', candleData.ohlcv, candleData.vwap, { yaxis: yaxisAnns });
+  const options = createCandleChartOptions('chart-intraday-master', ohlcv, vwap, { yaxis: yaxisAnns });
 
   // Fix Y-axis scaling: Focus on candles and nearby annotations
-  // Fix Y-axis scaling: Focus on candles and nearby annotations
-  if (candleData.ohlcv && candleData.ohlcv.length > 0) {
-    const latestTimestamp = candleData.ohlcv[candleData.ohlcv.length - 1][0];
-    const latestDateStr = new Date(latestTimestamp).toLocaleDateString();
-    let prevDateStr = null;
-    let minTs = candleData.ohlcv[0][0];
-
-    for (let i = candleData.ohlcv.length - 1; i >= 0; i--) {
-      const ts = candleData.ohlcv[i][0];
-      const dStr = new Date(ts).toLocaleDateString();
-      if (dStr !== latestDateStr) {
-        if (!prevDateStr) prevDateStr = dStr;
-        if (dStr !== prevDateStr) {
-          minTs = candleData.ohlcv[i + 1][0];
-          break;
-        }
-      }
-    }
+  if (tf === '5m' && ohlcv && ohlcv.length > 0) {
+    const analysisDateStr = getAnalysisDate().toLocaleDateString();
+    const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
 
     // Filter to only visible candles to calculate strict min/max
-    const visibleCandles = candleData.ohlcv.filter(c => c[0] >= minTs);
+    const visibleCandles = ohlcv.filter(c => c[0] >= minTs);
     if (visibleCandles.length > 0) {
       const prices = visibleCandles.flatMap(c => [c[1], c[2], c[3], c[4]]);
       const minY = Math.min(...prices);
@@ -886,10 +976,20 @@ function renderIntradayMasterChart(data) {
       options.yaxis.max = maxY + (range * 0.05);
     }
 
+    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
     options.xaxis.min = minTs;
     options.xaxis.max = latestTimestamp + (2 * 60 * 60 * 1000); // 2 hours padding
     
     // Disable forceNiceScale to strictly honor our min/max bounds
+    options.yaxis.forceNiceScale = false;
+  } else if (ohlcv && ohlcv.length > 0) {
+    // For other timeframes, just use a basic fit
+    const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
+    const minY = Math.min(...prices);
+    const maxY = Math.max(...prices);
+    const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
+    options.yaxis.min = minY - (range * 0.05);
+    options.yaxis.max = maxY + (range * 0.05);
     options.yaxis.forceNiceScale = false;
   }
 

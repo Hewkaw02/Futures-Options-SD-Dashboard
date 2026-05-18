@@ -2,7 +2,7 @@ name: Hourly Dashboard Update
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    - cron: '0 */3 * * 1-5'  # Every 3 hours, Monday through Friday
   workflow_dispatch: {}   # Manual trigger
 
 jobs:
