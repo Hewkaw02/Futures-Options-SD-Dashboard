@@ -10,11 +10,478 @@ const state = {
   manifest: [],            // sorted array of "YYYY-MM-DD/HH00"
   cache: {},               // "GC:2026-05-08/1100" -> data
   charts: {},              // chart instance refs for cleanup
+  resizeObservers: {},     // resize observer refs for cleanup
   activeTabs: {            // active tab per image chart group
     'hybrid': 'hybrid_15m',
     'intraday-master': 'intraday_master_5m',
   },
+  toggles: {
+    hybrid: {
+      sdBands: true,
+      sessionLevels: true,
+      oiWalls: true
+    },
+    master: {
+      vwap: true,
+      tradeSetup: true,
+      oiWalls: true
+    }
+  }
 };
+
+// ── Decision Terminal Toggles & Helper Functions ─────────────
+function toggleLayer(chartType, layerKey) {
+  let checkboxId = '';
+  if (chartType === 'hybrid') {
+    if (layerKey === 'sdBands') checkboxId = 'toggle-hybrid-sdbands';
+    else if (layerKey === 'sessionLevels') checkboxId = 'toggle-hybrid-session';
+    else if (layerKey === 'oiWalls') checkboxId = 'toggle-hybrid-oiwalls';
+  } else if (chartType === 'master') {
+    if (layerKey === 'vwap') checkboxId = 'toggle-master-vwap';
+    else if (layerKey === 'tradeSetup') checkboxId = 'toggle-master-setup';
+    else if (layerKey === 'oiWalls') checkboxId = 'toggle-master-walls';
+  }
+
+  const checkbox = document.getElementById(checkboxId);
+  if (checkbox) {
+    state.toggles[chartType][layerKey] = checkbox.checked;
+  } else {
+    state.toggles[chartType][layerKey] = !state.toggles[chartType][layerKey];
+  }
+
+  // Live update the affected chart!
+  const ts = state.manifest[state.currentIndex];
+  if (ts) {
+    const cacheKey = `${state.currentAsset}:${ts}`;
+    const data = state.cache[cacheKey];
+    if (data) {
+      if (chartType === 'hybrid') {
+        renderHybridChart(data);
+      } else {
+        renderIntradayMasterChart(data);
+      }
+    }
+  }
+}
+
+// Wall Strength Scoring Logic
+function calculateWallStrength(strike, isRes, oi, vol, price, vwap, step, maxOI, maxVol) {
+  if (!price) return 0;
+  
+  // 1. Normalized OI (up to 3.5 points)
+  const oiScore = maxOI > 0 ? Math.min(3.5, (oi / maxOI) * 3.5) : 0;
+  
+  // 2. Normalized Volume (up to 2.5 points)
+  const volScore = maxVol > 0 ? Math.min(2.5, (vol / maxVol) * 2.5) : 0;
+  
+  // 3. Proximity to price (up to 1.5 points)
+  const distance = Math.abs(strike - price);
+  const proximityScore = step ? Math.max(0, 1.5 * (1 - (distance / (step * 3)))) : 0;
+  
+  // 4. Confluence with VWAP or SD bands (up to 1.5 points)
+  let confluenceScore = 0;
+  if (vwap && Math.abs(strike - vwap) < (step * 0.15)) {
+    confluenceScore = 1.5;
+  } else if (step) {
+    // SD levels confluence
+    for (let i = 1; i <= 3; i++) {
+      if (Math.abs(strike - (price + step * i)) < (step * 0.15) || 
+          Math.abs(strike - (price - step * i)) < (step * 0.15)) {
+        confluenceScore = 1.0;
+        break;
+      }
+    }
+  }
+  
+  // 5. Persistence Score (base 1.0 points)
+  const persistenceScore = 1.0;
+  
+  const score = oiScore + volScore + proximityScore + confluenceScore + persistenceScore;
+  return Math.min(10, Math.max(1, score));
+}
+
+// Tactical Trade Setup Generator & Live Tracker
+function getSetupDetails(data, currentPrice, vwap, step) {
+  const biasLabel = data.bias ? data.bias.label || 'Neutral' : 'Neutral';
+  const isBull = biasLabel.toLowerCase().includes('bull');
+  const isBear = biasLabel.toLowerCase().includes('bear');
+  
+  // Find strongest option/volume walls from real-time Intraday Volume Profile S/R
+  let maxSupport = null;
+  let maxResistance = null;
+  
+  if (data.intraday_levels) {
+    const supports = data.intraday_levels.vol_supports || [];
+    const resistances = data.intraday_levels.vol_resistances || [];
+    
+    if (supports.length > 0) {
+      const sorted = [...supports].sort((a,b) => b[1] - a[1]);
+      maxSupport = sorted[0][0]; // strike
+    }
+    if (resistances.length > 0) {
+      const sorted = [...resistances].sort((a,b) => b[1] - a[1]);
+      maxResistance = sorted[0][0]; // strike
+    }
+  }
+  
+  // Fallbacks to OI if volume profile is empty
+  if (!maxSupport && data.intraday_levels) {
+    const supports = data.intraday_levels.oi_supports || [];
+    if (supports.length > 0) {
+      const sorted = [...supports].sort((a,b) => b[1] - a[1]);
+      maxSupport = sorted[0][0]; // strike
+    }
+  }
+  if (!maxResistance && data.intraday_levels) {
+    const resistances = data.intraday_levels.oi_resistances || [];
+    if (resistances.length > 0) {
+      const sorted = [...resistances].sort((a,b) => b[1] - a[1]);
+      maxResistance = sorted[0][0]; // strike
+    }
+  }
+  
+  if (!maxSupport) maxSupport = currentPrice - (step || 50);
+  if (!maxResistance) maxResistance = currentPrice + (step || 50);
+  if (!step) step = (maxResistance - maxSupport) / 2;
+  
+  let entryMin, entryMax, stopLoss, target1, target2, action, prefPlay;
+  
+  if (isBull) {
+    action = "BUY / LONG";
+    prefPlay = "Buy Support Rejection";
+    entryMin = maxSupport - step * 0.05;
+    entryMax = maxSupport + step * 0.10;
+    stopLoss = maxSupport - step * 0.15; // Tighter stop loss (15% of SD)
+    target1 = Math.min(maxResistance, maxSupport + step * 0.40); // Highly achievable T1
+    target2 = Math.min(maxResistance + step * 0.20, maxSupport + step * 0.70); // Stretch T2
+  } else if (isBear) {
+    action = "SELL / SHORT";
+    prefPlay = "Sell Resistance Rejection";
+    entryMin = maxResistance - step * 0.10;
+    entryMax = maxResistance + step * 0.05;
+    stopLoss = maxResistance + step * 0.15; // Tighter stop loss
+    target1 = Math.max(maxSupport, maxResistance - step * 0.40); // Achievable T1
+    target2 = Math.max(maxSupport - step * 0.20, maxResistance - step * 0.70); // Stretch T2
+  } else {
+    action = "RANGE PLAY";
+    prefPlay = "Buy Support / Sell Resistance";
+    entryMin = maxSupport;
+    entryMax = maxResistance;
+    stopLoss = maxSupport - step * 0.15;
+    target1 = Math.min((maxSupport + maxResistance) / 2, maxSupport + step * 0.40);
+    target2 = Math.min(maxResistance, maxSupport + step * 0.70);
+  }
+  
+  let status = "ACTIVE";
+  let statusClass = "active";
+  if (isBull && currentPrice < stopLoss) {
+    status = "SETUP FAILED";
+    statusClass = "failed";
+  } else if (isBear && currentPrice > stopLoss) {
+    status = "SETUP FAILED";
+    statusClass = "failed";
+  }
+  
+  let rr = "1 : 2.0";
+  let risk = 0;
+  let reward = 0;
+  
+  if (isBull) {
+    risk = Math.abs(maxSupport - stopLoss);
+    reward = Math.abs(target1 - maxSupport);
+  } else if (isBear) {
+    risk = Math.abs(maxResistance - stopLoss);
+    reward = Math.abs(target1 - maxResistance);
+  } else {
+    risk = Math.abs(maxSupport - stopLoss);
+    reward = Math.abs(target1 - maxSupport);
+  }
+  
+  if (risk > 0) {
+    rr = `1 : ${(reward / risk).toFixed(1)}`;
+  }
+  
+  return {
+    bias: biasLabel,
+    action,
+    prefPlay,
+    entryMin,
+    entryMax,
+    stopLoss,
+    target1,
+    target2,
+    status,
+    statusClass,
+    rr
+  };
+}
+
+// Detect and analyze option wall collisions & breakouts during the current trading day
+function getWallInteractionDetails(ohlcv, currentPrice, maxSupport, maxResistance, step, gexRegime, datePart) {
+  let callStatus = "STABLE";
+  let callColor = "var(--text-primary)";
+  let putStatus = "STABLE";
+  let putColor = "var(--text-primary)";
+  
+  if (!ohlcv || ohlcv.length === 0 || !step || !datePart) {
+    return { callStatus, callColor, putStatus, putColor, hedgingFlow: "No data available", flowColor: "var(--text-muted)" };
+  }
+  
+  // Filter candles to only include bars from 00:00 UTC of the current trading day
+  const startOfDayMs = new Date(datePart + "T00:00:00Z").getTime();
+  const scanBars = ohlcv.filter(bar => bar[0] >= startOfDayMs);
+  
+  const isNegGex = (gexRegime || '').toUpperCase() === 'VOLTL';
+  
+  // 1. Call Wall Interactions
+  let hasCallBreakout = false;
+  let hasCallRejection = false;
+  
+  for (const bar of scanBars) {
+    const high = bar[2];
+    const close = bar[4];
+    
+    if (close > maxResistance) {
+      hasCallBreakout = true;
+    } else if (Math.abs(high - maxResistance) < step * 0.08 && close < maxResistance - step * 0.05) {
+      hasCallRejection = true;
+    }
+  }
+  
+  if (currentPrice > maxResistance) {
+    hasCallBreakout = true;
+  }
+  
+  if (hasCallBreakout) {
+    callStatus = "BROKEN (UP)";
+    callColor = "var(--accent-bull)";
+  } else if (hasCallRejection) {
+    callStatus = "REJECTED (DOWN)";
+    callColor = "var(--accent-bear)";
+  } else if (Math.abs(currentPrice - maxResistance) < step * 0.03) {
+    callStatus = "TESTING WALL";
+    callColor = "#FEB019";
+  }
+  
+  // 2. Put Wall Interactions
+  let hasPutBreakout = false;
+  let hasPutRejection = false;
+  
+  for (const bar of scanBars) {
+    const low = bar[3];
+    const close = bar[4];
+    
+    if (close < maxSupport) {
+      hasPutBreakout = true;
+    } else if (Math.abs(low - maxSupport) < step * 0.08 && close > maxSupport + step * 0.05) {
+      hasPutRejection = true;
+    }
+  }
+  
+  if (currentPrice < maxSupport) {
+    hasPutBreakout = true;
+  }
+  
+  if (hasPutBreakout) {
+    putStatus = "BROKEN (DOWN)";
+    putColor = "var(--accent-bear)";
+  } else if (hasPutRejection) {
+    putStatus = "REJECTED (UP)";
+    putColor = "var(--accent-bull)";
+  } else if (Math.abs(currentPrice - maxSupport) < step * 0.03) {
+    putStatus = "TESTING WALL";
+    putColor = "#FEB019";
+  }
+  
+  // 3. Gamma Hedging Flow determination
+  let hedgingFlow = "⚪ Stable Neutral Flow: Standard market balance";
+  let flowColor = "var(--text-muted)";
+  
+  if (callStatus === "BROKEN (UP)") {
+    if (isNegGex) {
+      hedgingFlow = "🔴 GAMMA SQUEEZE: Dealer short covering (fast buy flow)";
+      flowColor = "var(--accent-bull)";
+    } else {
+      hedgingFlow = "🟢 Dealer Short Hedging: Selling futures (reins in rise)";
+      flowColor = "rgba(0, 227, 150, 0.7)";
+    }
+  } else if (putStatus === "BROKEN (DOWN)") {
+    if (isNegGex) {
+      hedgingFlow = "🔴 DELTA CASCADE: Dealer shorting underlying (fast sell flow)";
+      flowColor = "var(--accent-bear)";
+    } else {
+      hedgingFlow = "🟢 Dealer Long Hedging: Buying futures (reins in drop)";
+      flowColor = "rgba(255, 69, 96, 0.7)";
+    }
+  } else if (callStatus === "REJECTED (DOWN)") {
+    hedgingFlow = "🟢 SELLER DEFENSE: Dealer short hedging active (mean reversion)";
+    flowColor = "rgba(255, 69, 96, 0.8)";
+  } else if (putStatus === "REJECTED (UP)") {
+    hedgingFlow = "🟢 BUYER DEFENSE: Dealer long hedging active (mean reversion)";
+    flowColor = "rgba(0, 227, 150, 0.8)";
+  } else if (callStatus === "TESTING WALL" || putStatus === "TESTING WALL") {
+    hedgingFlow = "🟡 VOLATILITY TRIGGER: Expect heavy hedging adjustments";
+    flowColor = "#FEB019";
+  }
+  
+  return { callStatus, callColor, putStatus, putColor, hedgingFlow, flowColor };
+}
+
+// Bias score flow timeline loader
+async function renderBiasTimeline() {
+  const container = document.getElementById('bias-timeline-flow');
+  if (!container) return;
+  
+  const count = 4;
+  const startIndex = Math.max(0, state.currentIndex - count + 1);
+  const snapshots = [];
+  
+  for (let i = startIndex; i <= state.currentIndex; i++) {
+    snapshots.push(state.manifest[i]);
+  }
+  
+  if (snapshots.length === 0) {
+    container.innerHTML = '<span class="timeline-empty">No historical data available.</span>';
+    return;
+  }
+  
+  const promises = snapshots.map(async (ts) => {
+    const cacheKey = `${state.currentAsset}:${ts}`;
+    if (state.cache[cacheKey]) {
+      return { ts, bias: state.cache[cacheKey].bias };
+    }
+    try {
+      const url = `data/${ts}/${state.currentAsset}_data.json`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const d = await res.json();
+        state.cache[cacheKey] = d;
+        return { ts, bias: d.bias };
+      }
+    } catch (e) {
+      console.warn("Failed to prefetch for timeline:", e);
+    }
+    return { ts, bias: null };
+  });
+  
+  const results = await Promise.all(promises);
+  
+  let html = '';
+  results.forEach((r, idx) => {
+    const timeLabel = r.ts.split('/')[1] || '';
+    const biasLabel = r.bias ? r.bias.label || '—' : '—';
+    
+    let score = '0';
+    let scoreClass = 'neutral';
+    
+    const labelLower = biasLabel.toLowerCase();
+    if (labelLower.includes('strong bull')) { score = '+4'; scoreClass = 'bull'; }
+    else if (labelLower.includes('bull')) { score = '+2'; scoreClass = 'bull'; }
+    else if (labelLower.includes('strong bear')) { score = '-4'; scoreClass = 'bear'; }
+    else if (labelLower.includes('bear')) { score = '-2'; scoreClass = 'bear'; }
+    else if (labelLower.includes('neutral')) { score = '0'; scoreClass = 'neutral'; }
+    
+    html += `
+      <div class="timeline-step">
+        <span class="time">${timeLabel}</span>
+        <span class="score ${scoreClass}">${score}</span>
+        <span class="label" style="font-size: 0.65rem;">${biasLabel}</span>
+      </div>
+    `;
+    
+    if (idx < results.length - 1) {
+      html += `<span class="timeline-arrow">➔</span>`;
+    }
+  });
+  
+  container.innerHTML = html;
+}
+
+// PCR / GEX / Skew Mini-Panels Updater
+function updateMiniPanels(data) {
+  if (!data || !data.bias) return;
+  
+  const bias = data.bias;
+  
+  // 1. PCR
+  const pcrVal = parseFloat(bias.pcr_vol) || 0;
+  document.getElementById('mini-pcr-vol').textContent = pcrVal ? pcrVal.toFixed(2) : '—';
+  const pcrPercent = Math.min(100, (pcrVal / 2.0) * 100);
+  const pcrBar = document.getElementById('mini-pcr-bar');
+  if (pcrBar) {
+    pcrBar.style.width = `${pcrPercent}%`;
+    pcrBar.style.background = pcrVal > 1.0 ? 'var(--accent-bear)' : 'var(--accent-bull)';
+  }
+  
+  // 2. GEX Regime
+  const gexVal = bias.gex || '—';
+  document.getElementById('mini-gex-state').textContent = gexVal;
+  const gexBanner = document.getElementById('mini-gex-banner');
+  if (gexBanner) {
+    gexBanner.textContent = gexVal.toUpperCase();
+    gexBanner.className = 'gex-status-banner';
+    if (gexVal.toLowerCase().includes('pos') || gexVal.toLowerCase().includes('bull')) {
+      gexBanner.classList.add('bull');
+    } else if (gexVal.toLowerCase().includes('neg') || gexVal.toLowerCase().includes('bear')) {
+      gexBanner.classList.add('bear');
+    }
+  }
+  
+  // 3. Skew
+  const skewStr = bias.skew || '0%';
+  document.getElementById('mini-skew-val').textContent = skewStr;
+  const skewVal = parseFloat(skewStr.replace('%', '')) || 0;
+  const skewPercent = Math.min(100, Math.abs(skewVal) * 10);
+  const skewBar = document.getElementById('mini-skew-bar');
+  if (skewBar) {
+    skewBar.style.width = `${skewPercent}%`;
+    skewBar.style.background = skewVal > 0 ? 'var(--accent-bull)' : 'var(--accent-bear)';
+  }
+}
+
+// Freshness Badge Updater
+function updateFreshnessBadge(ts) {
+  const statusEl = document.getElementById('freshness-status');
+  const ageEl = document.getElementById('freshness-age');
+  const dotEl = document.querySelector('#freshness-badge .pulse-dot');
+  
+  if (!statusEl || !ageEl || !dotEl) return;
+  
+  try {
+    const parts = ts.split('/');
+    const dateStr = parts[0];
+    const hourStr = parts[1];
+    
+    const year = parseInt(dateStr.substring(0, 4));
+    const month = parseInt(dateStr.substring(5, 7)) - 1;
+    const day = parseInt(dateStr.substring(8, 10));
+    const hour = parseInt(hourStr.substring(0, 2));
+    
+    const snapUtc = Date.UTC(year, month, day, hour, 0, 0);
+    const nowUtc = Date.now();
+    
+    const diffMs = nowUtc - snapUtc;
+    const diffMin = Math.max(0, Math.floor(diffMs / 60000));
+    
+    ageEl.textContent = `${diffMin}m`;
+    
+    if (diffMin < 15) {
+      statusEl.textContent = 'Fresh';
+      dotEl.className = 'pulse-dot';
+    } else if (diffMin < 60) {
+      statusEl.textContent = 'Delayed';
+      dotEl.className = 'pulse-dot delayed';
+    } else {
+      statusEl.textContent = 'Stale';
+      dotEl.className = 'pulse-dot stale';
+    }
+  } catch (e) {
+    console.warn("Freshness parse error:", e);
+    statusEl.textContent = '—';
+    ageEl.textContent = '—';
+  }
+}
+
 
 const ASSET_LABELS = {
   GC: 'GC — GOLD',
@@ -201,6 +668,31 @@ function getOneDayBackMinTs(ohlcv, analysisDateStr) {
 
 // ── Render All ───────────────────────────────────────────────
 function renderAll(data) {
+  // Sync vol_resistances and vol_supports directly with the intraday_volume_profile to guarantee 100% chart/widget data alignment
+  if (data && data.intraday_volume_profile && data.intraday_volume_profile.length > 0) {
+    const sortedCalls = [...data.intraday_volume_profile]
+      .filter(p => p.call_vol > 0)
+      .sort((a, b) => b.call_vol - a.call_vol);
+    const topCalls = sortedCalls.slice(0, 3).map(p => [p.strike, p.call_vol]);
+
+    const sortedPuts = [...data.intraday_volume_profile]
+      .filter(p => p.put_vol > 0)
+      .sort((a, b) => b.put_vol - a.put_vol);
+    const topPuts = sortedPuts.slice(0, 3).map(p => [p.strike, p.put_vol]);
+
+    if (!data.intraday_levels) {
+      data.intraday_levels = {};
+    }
+    data.intraday_levels.vol_resistances = topCalls;
+    data.intraday_levels.vol_supports = topPuts;
+  }
+
+  const ts = state.manifest[state.currentIndex];
+  if (ts) {
+    updateFreshnessBadge(ts);
+    renderBiasTimeline();
+  }
+
   if (!data) {
     renderBiasCard(null);
     clearChart('chart-oi-walls');
@@ -221,6 +713,8 @@ function renderAll(data) {
   renderNetOIChart(data.net_oi);
   renderGEXChart(data.gex_profile);
   renderVannaChart(data.vanna);
+  
+  updateMiniPanels(data);
 }
 
 // ── Bias Card ────────────────────────────────────────────────
@@ -610,8 +1104,22 @@ function renderVannaChart(vannaData) {
 // ── Chart Utilities ──────────────────────────────────────────
 function destroyChart(id) {
   if (state.charts[id]) {
-    try { state.charts[id].destroy(); } catch (e) { /* ignore */ }
+    try {
+      if (typeof state.charts[id].remove === 'function') {
+        state.charts[id].remove(); // Lightweight Charts uses remove()
+      } else if (typeof state.charts[id].destroy === 'function') {
+        state.charts[id].destroy(); // ApexCharts uses destroy()
+      }
+    } catch (e) {
+      console.warn(`Error destroying chart ${id}:`, e);
+    }
     delete state.charts[id];
+  }
+  if (state.resizeObservers && state.resizeObservers[id]) {
+    try {
+      state.resizeObservers[id].disconnect();
+    } catch (e) { /* ignore */ }
+    delete state.resizeObservers[id];
   }
 }
 
@@ -642,75 +1150,236 @@ function formatCompact(n) {
 }
 
 // ── Interactive Chart Rendering ────────────────────────────────
-function createCandleChartOptions(id, ohlcvData, vwapData, annotations) {
-  const series = [{
-    name: 'Candle',
-    type: 'candlestick',
-    data: ohlcvData ? ohlcvData.map(d => ({ x: d[0], y: [d[1], d[2], d[3], d[4]] })) : []
-  }];
+// ── Interactive Chart Rendering — TradingView Lightweight Charts ────────────────
+function createTradingViewChart(containerId, ohlcv, vwap, options = {}) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
 
-  // Highlight the Analysis Date (UTC Aligned)
-  const utcRange = getAnalysisDateUtcRange(state.manifest[state.currentIndex]);
-  const xaxisAnns = annotations.xaxis || [];
-  if (utcRange) {
-    xaxisAnns.push({
-      x: utcRange.start,
-      x2: utcRange.end,
-      fillColor: '#FEB019',
-      opacity: 0.08,
-      label: {
-        text: 'ANALYSIS DATE',
-        style: { color: '#FEB019', background: 'transparent', fontSize: '10px', fontWeight: 'bold' },
-        offsetY: 10
-      }
+  // Clear any existing chart DOM
+  container.innerHTML = '';
+
+  // 1. Create custom HTML tooltip element inside the container
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tv-chart-tooltip';
+  container.appendChild(tooltip);
+
+  // 2. Create the chart element
+  const chartEl = document.createElement('div');
+  chartEl.className = 'tv-chart-container';
+  container.appendChild(chartEl);
+
+  // 3. Create Lightweight Chart instance with price scale on the LEFT
+  const chart = LightweightCharts.createChart(chartEl, {
+    width: container.clientWidth || 600,
+    height: container.clientHeight || 400,
+    layout: {
+      background: { type: 'solid', color: '#111115' },
+      textColor: '#9A9AA5',
+    },
+    grid: {
+      vertLines: { color: 'rgba(26, 27, 32, 0.4)' },
+      horzLines: { color: 'rgba(26, 27, 32, 0.4)' },
+    },
+    crosshair: {
+      mode: LightweightCharts.CrosshairMode.Normal,
+    },
+    rightPriceScale: {
+      visible: false, // Turn off right axis completely!
+    },
+    leftPriceScale: {
+      visible: true,  // Turn on left axis!
+      borderColor: '#1A1B20',
+      autoScale: true,
+    },
+    timeScale: {
+      borderColor: '#1A1B20',
+      timeVisible: true,
+      secondsVisible: false,
+    },
+  });
+
+  // [NEW] Yellow Background highlight for Today's Active Intraday session (Day-bounded)
+  if (options.datePart && ohlcv.length > 0) {
+    const startOfDayMs = new Date(options.datePart + "T00:00:00Z").getTime();
+    const scanBars = ohlcv.filter(bar => bar[0] >= startOfDayMs);
+    
+    if (scanBars.length > 0) {
+      const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
+      const viewMax = Math.max(...prices);
+      const viewMin = Math.min(...prices);
+      
+      const todayBgSeries = chart.addAreaSeries({
+        priceScaleId: 'left',
+        topColor: 'rgba(254, 176, 25, 0.15)',
+        bottomColor: 'rgba(254, 176, 25, 0.01)',
+        lineColor: 'rgba(254, 176, 25, 0.18)',
+        lineWidth: 1.5,
+        priceLineVisible: false,
+        lastValueVisible: false,
+        crosshairMarkerVisible: false,
+        autoscaleInfoProvider: () => ({
+          priceRange: {
+            min: viewMin,
+            max: viewMax,
+          },
+        }),
+      });
+      
+      const backgroundData = scanBars.map(bar => ({
+        time: bar[0] / 1000,
+        value: viewMax * 1.1
+      }));
+      todayBgSeries.setData(backgroundData);
+    }
+  }
+
+  // 4. Add Candlestick Series bound to the LEFT scale
+  const candlestickSeries = chart.addCandlestickSeries({
+    priceScaleId: 'left', // Bind candlestick to left scale!
+    upColor: '#00E396',
+    downColor: '#FF4560',
+    borderUpColor: '#00E396',
+    borderDownColor: '#FF4560',
+    wickUpColor: '#00E396',
+    wickDownColor: '#FF4560',
+  });
+
+  // Map OHLCV and set data
+  const mappedCandles = ohlcv.map(d => ({
+    time: d[0] / 1000,
+    open: d[1],
+    high: d[2],
+    low: d[3],
+    close: d[4],
+  }));
+  candlestickSeries.setData(mappedCandles);
+
+  // 5. Add VWAP Series (if available) bound to the LEFT scale
+  let vwapSeries = null;
+  if (vwap && vwap.length > 0) {
+    vwapSeries = chart.addLineSeries({
+      priceScaleId: 'left', // Bind VWAP to left scale!
+      color: '#4D9EFF',
+      lineWidth: 1.5,
+      priceLineVisible: false,
+      title: 'VWAP',
+    });
+    const mappedVwap = vwap
+      .filter(d => d[1] != null)
+      .map(d => ({
+        time: d[0] / 1000,
+        value: d[1],
+      }));
+    vwapSeries.setData(mappedVwap);
+  }
+
+  // 6. Draw Horizontal Levels (SD Bands, S/R Levels)
+  if (options.levels && options.levels.length > 0) {
+    options.levels.forEach(level => {
+      candlestickSeries.createPriceLine({
+        price: level.price,
+        color: level.color || '#FEB019',
+        lineWidth: level.lineWidth || 1,
+        lineStyle: level.lineStyle || LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: level.title || '',
+      });
     });
   }
 
-  if (vwapData && vwapData.length > 0) {
-    series.push({
-      name: 'VWAP',
-      type: 'line',
-      data: vwapData.map(d => ({ x: d[0], y: d[1] }))
-    });
-  }
+  // 7. Subscribe to crosshair movement to update the custom HTML tooltip
+  chart.subscribeCrosshairMove(param => {
+    if (
+      param.point === undefined ||
+      !param.time ||
+      param.point.x < 0 ||
+      param.point.x > container.clientWidth ||
+      param.point.y < 0 ||
+      param.point.y > container.clientHeight
+    ) {
+      tooltip.style.display = 'none';
+      return;
+    }
 
-  return {
-    series: series,
-    chart: {
-      type: 'candlestick',
-      height: '100%',
-      background: 'transparent',
-      toolbar: { show: true },
-      animations: { enabled: false },
-      id: id
-    },
-    title: { align: 'left', style: { color: 'var(--text-dim)', fontSize: '11px', fontFamily: 'var(--font-mono)' } },
-    xaxis: {
-      type: 'datetime',
-      labels: { style: { colors: 'var(--text-muted)' }, datetimeUTC: false },
-      axisBorder: { color: 'var(--border-color)' },
-      axisTicks: { color: 'var(--border-color)' }
-    },
-    yaxis: {
-      tooltip: { enabled: true },
-      labels: { style: { colors: 'var(--text-dim)' }, formatter: val => formatNumber(val) }
-    },
-    plotOptions: {
-      candlestick: {
-        colors: { upward: '#00E396', downward: '#FF4560' },
-        wick: { useFillColor: true }
+    const candle = param.seriesData.get(candlestickSeries);
+    if (!candle) {
+      tooltip.style.display = 'none';
+      return;
+    }
+
+    const dateStr = new Date(param.time * 1000).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
+    let vwapValueText = '—';
+    if (vwapSeries) {
+      const vwapVal = param.seriesData.get(vwapSeries);
+      if (vwapVal && vwapVal.value != null) {
+        vwapValueText = formatNumber(vwapVal.value);
       }
-    },
-    stroke: { width: [1, 2], curve: 'straight' },
-    annotations: {
-      yaxis: annotations.yaxis || [],
-      xaxis: xaxisAnns
-    },
-    grid: { borderColor: 'var(--border-color)', strokeDashArray: 2, padding: { top: 0, bottom: 0, left: 100, right: 10 } },
-    theme: { mode: 'dark' },
-    tooltip: { theme: 'dark', x: { format: 'dd MMM yyyy HH:mm' } },
-    legend: { show: true, position: 'top', labels: { colors: 'var(--text-dim)' } }
-  };
+    }
+
+    tooltip.style.display = 'block';
+    tooltip.innerHTML = `
+      <div class="tv-chart-tooltip-title">${dateStr}</div>
+      <div class="tv-chart-tooltip-row">
+        <span class="tv-chart-tooltip-label">O</span>
+        <span class="tv-chart-tooltip-value">${formatNumber(candle.open)}</span>
+      </div>
+      <div class="tv-chart-tooltip-row">
+        <span class="tv-chart-tooltip-label">H</span>
+        <span class="tv-chart-tooltip-value bull">${formatNumber(candle.high)}</span>
+      </div>
+      <div class="tv-chart-tooltip-row">
+        <span class="tv-chart-tooltip-label">L</span>
+        <span class="tv-chart-tooltip-value bear">${formatNumber(candle.low)}</span>
+      </div>
+      <div class="tv-chart-tooltip-row">
+        <span class="tv-chart-tooltip-label">C</span>
+        <span class="tv-chart-tooltip-value">${formatNumber(candle.close)}</span>
+      </div>
+      <div class="tv-chart-tooltip-row">
+        <span class="tv-chart-tooltip-label">VWAP</span>
+        <span class="tv-chart-tooltip-value" style="color: #4D9EFF">${vwapValueText}</span>
+      </div>
+    `;
+
+    // Position the tooltip
+    const coordinate = param.point.x;
+    const tooltipWidth = 140;
+    const tooltipHeight = 150;
+
+    let left = coordinate + 15;
+    if (left > container.clientWidth - tooltipWidth - 20) {
+      left = coordinate - tooltipWidth - 15;
+    }
+
+    let top = param.point.y + 15;
+    if (top > container.clientHeight - tooltipHeight - 20) {
+      top = param.point.y - tooltipHeight - 15;
+    }
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  });
+
+  // 8. Handle responsiveness
+  const resizeObserver = new ResizeObserver(entries => {
+    if (entries.length === 0 || !entries[0].contentRect) return;
+    const { width, height } = entries[0].contentRect;
+    chart.resize(width, height);
+  });
+  resizeObserver.observe(container);
+
+  // Cache ResizeObserver for cleanup
+  if (!state.resizeObservers) state.resizeObservers = {};
+  state.resizeObservers[containerId] = resizeObserver;
+
+  return chart;
 }
 
 function renderHybridChart(data) {
@@ -721,7 +1390,7 @@ function renderHybridChart(data) {
   }
   document.getElementById('hybrid-nodata').style.display = 'none';
 
-  const tabKey = state.activeTabs['hybrid'] || 'hybrid_1d';
+  const tabKey = state.activeTabs['hybrid'] || 'hybrid_15m';
   const tf = tabKey.split('_')[1]; // 1d, 1h, 15m
   const candleData = data.candlesticks[tf];
 
@@ -749,87 +1418,133 @@ function renderHybridChart(data) {
     return;
   }
 
-  // Create Annotations for OI and SD
-  const yaxisAnns = [];
+  const levels = [];
 
-  // 1. Add SD Bands to Hybrid Chart (Filled Bands like Master)
-  const price = data.sd_bands?.price || data.bias?.price;
-  const step = data.sd_step;
-  if (price && step && step > 0) {
-    for (let i = 1; i <= 3; i++) {
-      yaxisAnns.push({
-        y: price + (step * i),
-        y2: price + (step * (i - 0.1)),
-        fillColor: '#FEB019',
-        opacity: 0.15,
-        label: { text: `+${i}SD`, position: 'right', style: { color: '#FEB019', background: 'transparent', fontSize: '10px' } }
-      });
-      yaxisAnns.push({
-        y: price - (step * i),
-        y2: price - (step * (i - 0.1)),
-        fillColor: '#008FFB',
-        opacity: 0.15,
-        label: { text: `-${i}SD`, position: 'right', style: { color: '#008FFB', background: 'transparent', fontSize: '10px' } }
-      });
+  // 1. Calculate price and SD bands (if toggled)
+  if (state.toggles.hybrid.sdBands) {
+    const price = data.sd_bands?.price || data.bias?.price;
+    const step = data.sd_step;
+    if (price && step && step > 0) {
+      for (let i = 1; i <= 3; i++) {
+        levels.push({
+          price: price + (step * i),
+          color: '#FEB019',
+          lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          title: `+${i}SD`
+        });
+        levels.push({
+          price: price - (step * i),
+          color: '#008FFB',
+          lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          title: `-${i}SD`
+        });
+      }
     }
   }
 
-  // 2. Add OI/Vol Levels
-  if (data.intraday_levels) {
+  // 2. Extract Session Levels (PDH, PDL, Session H/L) (if toggled)
+  if (state.toggles.hybrid.sessionLevels) {
+    // Previous Day High/Low
+    if (data.candlesticks && data.candlesticks["1d"] && data.candlesticks["1d"].ohlcv) {
+      const d1 = data.candlesticks["1d"].ohlcv;
+      if (d1.length >= 2) {
+        const pdCandle = d1[d1.length - 2];
+        levels.push({
+          price: pdCandle[2],
+          color: '#B57CFF',
+          lineWidth: 1.5,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          title: `PDH (${pdCandle[2]})`
+        });
+        levels.push({
+          price: pdCandle[3],
+          color: '#B57CFF',
+          lineWidth: 1.5,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          title: `PDL (${pdCandle[3]})`
+        });
+      }
+    }
+
+    // Session High/Low
+    if (ohlcv && ohlcv.length > 0) {
+      let sH = -Infinity;
+      let sL = Infinity;
+      ohlcv.forEach(c => {
+        if (c[2] > sH) sH = c[2];
+        if (c[3] < sL) sL = c[3];
+      });
+      if (sH !== -Infinity) {
+        levels.push({
+          price: sH,
+          color: '#FF9F43',
+          lineWidth: 1.2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          title: `Session High (${sH})`
+        });
+      }
+      if (sL !== Infinity) {
+        levels.push({
+          price: sL,
+          color: '#FF9F43',
+          lineWidth: 1.2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          title: `Session Low (${sL})`
+        });
+      }
+    }
+  }
+
+  // 3. Add OI Walls (if toggled)
+  if (state.toggles.hybrid.oiWalls && data.intraday_levels) {
     const allOI = [...data.intraday_levels.oi_resistances, ...data.intraday_levels.oi_supports].map(x => x[1]);
     const maxOI = allOI.length > 0 ? Math.max(...allOI) : 1;
 
     data.intraday_levels.oi_resistances.forEach(r => {
       const isHigh = r[1] >= maxOI * 0.7;
       const isLow = r[1] <= maxOI * 0.3;
-      yaxisAnns.push({
-        y: r[0],
-        borderColor: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.3)' : 'rgba(255, 69, 96, 0.6)'),
-        strokeDashArray: isLow ? 4 : 0,
-        borderWidth: isHigh ? 3 : 1,
-        label: { text: `OI Res: ${r[0]} (${formatCompact(r[1])})`, position: 'left', offsetX: 10, style: { color: '#ffffff', background: 'rgba(255, 69, 96, 1)', fontSize: '10px', fontWeight: 'bold' } }
+      levels.push({
+        price: r[0],
+        color: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.3)' : 'rgba(255, 69, 96, 0.6)'),
+        lineWidth: isHigh ? 2 : 1,
+        lineStyle: isLow ? LightweightCharts.LineStyle.Dashed : LightweightCharts.LineStyle.Solid,
+        title: `OI Res: ${r[0]} (${formatCompact(r[1])})`
       });
     });
+
     data.intraday_levels.oi_supports.forEach(s => {
       const isHigh = s[1] >= maxOI * 0.7;
       const isLow = s[1] <= maxOI * 0.3;
-      yaxisAnns.push({
-        y: s[0],
-        borderColor: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.3)' : 'rgba(0, 227, 150, 0.6)'),
-        strokeDashArray: isLow ? 4 : 0,
-        borderWidth: isHigh ? 3 : 1,
-        label: { text: `OI Sup: ${s[0]} (${formatCompact(s[1])})`, position: 'left', offsetX: 10, style: { color: '#ffffff', background: 'rgba(0, 227, 150, 1)', fontSize: '10px', fontWeight: 'bold' } }
+      levels.push({
+        price: s[0],
+        color: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.3)' : 'rgba(0, 227, 150, 0.6)'),
+        lineWidth: isHigh ? 2 : 1,
+        lineStyle: isLow ? LightweightCharts.LineStyle.Dashed : LightweightCharts.LineStyle.Solid,
+        title: `OI Sup: ${s[0]} (${formatCompact(s[1])})`
       });
     });
   }
 
+  destroyChart('chart-hybrid');
 
-  const options = createCandleChartOptions('chart-hybrid', ohlcv, vwap, { yaxis: yaxisAnns });
+  const datePart = ts ? ts.split('/')[0] : null;
+  const chart = createTradingViewChart('chart-hybrid', ohlcv, vwap, { levels, datePart });
+  state.charts['chart-hybrid'] = chart;
 
-  // 1-day lookback for 15m
-  if (tf === '15m' && ohlcv && ohlcv.length > 0) {
+  // Zoom visible viewport on load: Show last day of action for intraday (15m)
+  if (tf === '15m' && ohlcv.length > 0 && chart) {
+    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
     const analysisDateStr = getAnalysisDate().toLocaleDateString();
     const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
-    
-    const visibleCandles = ohlcv.filter(c => c[0] >= minTs);
-    if (visibleCandles.length > 0) {
-      const prices = visibleCandles.flatMap(c => [c[1], c[2], c[3], c[4]]);
-      const minY = Math.min(...prices);
-      const maxY = Math.max(...prices);
-      const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
-      
-      options.yaxis.min = minY - (range * 0.05); // 5% buffer
-      options.yaxis.max = maxY + (range * 0.05);
-    }
-    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
-    options.xaxis.min = minTs;
-    options.xaxis.max = latestTimestamp + (2 * 60 * 60 * 1000); // 2 hours padding
-    options.yaxis.forceNiceScale = false;
+    chart.timeScale().setVisibleRange({
+      from: minTs / 1000,
+      to: latestTimestamp / 1000
+    });
+  } else if (chart) {
+    chart.timeScale().fitContent();
   }
-
-  destroyChart('chart-hybrid'); // Kill old instance before new render
-  state.charts['chart-hybrid'] = new ApexCharts(document.querySelector('#chart-hybrid'), options);
-  state.charts['chart-hybrid'].render();
 }
 
 function renderIntradayMasterChart(data) {
@@ -868,134 +1583,257 @@ function renderIntradayMasterChart(data) {
     return;
   }
 
-  const yaxisAnns = [];
+  const levels = [];
 
-  // 0. Calculate Candle Range to filter far-away annotations
+  // Filter viewport min/max bounds so we only show levels close to the trading range
   let viewMin = 0;
   let viewMax = Infinity;
-  if (ohlcv && ohlcv.length > 0) {
+  if (ohlcv.length > 0) {
     const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
-    const minY = Math.min(...prices);
-    const maxY = Math.max(...prices);
-    const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
-
-    // STRICT FILTER: Only allow annotations within 20% of the candle range!
-    viewMin = minY;
-    viewMax = maxY;
+    viewMin = Math.min(...prices);
+    viewMax = Math.max(...prices);
   }
+  const tolerance = (viewMax - viewMin) * 0.5 || viewMax * 0.05;
 
-  // 1. SD Bands (Yellow/Blue)
-  const price = data.sd_bands?.price || data.bias?.price;
+  const currentPrice = ohlcv[ohlcv.length - 1][4];
   const step = data.sd_step;
-  if (price && step && step > 0) {
-    for (let i = 1; i <= 3; i++) {
-      const upSD = price + (step * i);
-      const dnSD = price - (step * i);
+  const latestVwap = vwap && vwap.length > 0 ? vwap[vwap.length - 1][1] : null;
 
-      if (upSD >= viewMin && upSD <= viewMax) {
-        yaxisAnns.push({
-          y: upSD,
-          y2: price + (step * (i - 0.1)),
-          fillColor: '#FEB019',
-          opacity: 0.15,
-          label: { text: `+${i}SD`, position: 'right', style: { color: '#FEB019', background: 'transparent' } }
-        });
-      }
-
-      if (dnSD >= viewMin && dnSD <= viewMax) {
-        yaxisAnns.push({
-          y: dnSD,
-          y2: price - (step * (i - 0.1)),
-          fillColor: '#008FFB',
-          opacity: 0.15,
-          label: { text: `-${i}SD`, position: 'right', style: { color: '#008FFB', background: 'transparent' } }
-        });
-      }
-    }
-  }
-
-  // 2. Volume S/R Lines (from Intraday Volume Profile)
-  if (data.intraday_volume_profile && data.intraday_volume_profile.length > 0) {
-    const profile = data.intraday_volume_profile;
-
-    const topCalls = [...profile].sort((a, b) => b.call_vol - a.call_vol).slice(0, 5);
-    const topPuts = [...profile].sort((a, b) => b.put_vol - a.put_vol).slice(0, 5);
-
-    topCalls.forEach((p, idx) => {
-      if (p.call_vol === 0) return;
-      if (p.strike < viewMin || p.strike > viewMax) return; // Strict range filter
-      yaxisAnns.push({
-        y: p.strike,
-        borderColor: '#00E396',
-        borderWidth: idx === 0 ? 3 : 2,
-        strokeDashArray: idx === 0 ? 0 : 4,
-        label: {
-          text: `Intraday Res: ${p.strike} (${formatCompact(p.call_vol)})`,
-          position: 'left',
-          offsetX: 50,
-          style: { color: '#fff', background: '#00E396', fontSize: '9px', fontWeight: 'bold' }
-        }
-      });
-    });
-
-    topPuts.forEach((p, idx) => {
-      if (p.put_vol === 0) return;
-      if (p.strike < viewMin || p.strike > viewMax) return; // Strict range filter
-      yaxisAnns.push({
-        y: p.strike,
-        borderColor: '#FF4560',
-        borderWidth: idx === 0 ? 3 : 2,
-        strokeDashArray: idx === 0 ? 0 : 4,
-        label: {
-          text: `Intraday Sup: ${p.strike} (${formatCompact(p.put_vol)})`,
-          position: 'left',
-          offsetX: 50,
-          style: { color: '#fff', background: '#FF4560', fontSize: '9px', fontWeight: 'bold' }
-        }
-      });
-    });
-  }
-
-  const options = createCandleChartOptions('chart-intraday-master', ohlcv, vwap, { yaxis: yaxisAnns });
-
-  // Fix Y-axis scaling: Focus on candles and nearby annotations
-  if (tf === '5m' && ohlcv && ohlcv.length > 0) {
-    const analysisDateStr = getAnalysisDate().toLocaleDateString();
-    const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
-
-    // Filter to only visible candles to calculate strict min/max
-    const visibleCandles = ohlcv.filter(c => c[0] >= minTs);
-    if (visibleCandles.length > 0) {
-      const prices = visibleCandles.flatMap(c => [c[1], c[2], c[3], c[4]]);
-      const minY = Math.min(...prices);
-      const maxY = Math.max(...prices);
-      const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
-      
-      // Override viewMin and viewMax with strict visible range
-      options.yaxis.min = minY - (range * 0.05); // 5% buffer
-      options.yaxis.max = maxY + (range * 0.05);
-    }
-
-    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
-    options.xaxis.min = minTs;
-    options.xaxis.max = latestTimestamp + (2 * 60 * 60 * 1000); // 2 hours padding
+  // 1. Calculate Option Walls and Strength Scores (if toggled)
+  if (state.toggles.master.oiWalls && data.intraday_levels) {
+    const supports = data.intraday_levels.vol_supports || [];
+    const resistances = data.intraday_levels.vol_resistances || [];
     
-    // Disable forceNiceScale to strictly honor our min/max bounds
-    options.yaxis.forceNiceScale = false;
-  } else if (ohlcv && ohlcv.length > 0) {
-    // For other timeframes, just use a basic fit
-    const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
-    const minY = Math.min(...prices);
-    const maxY = Math.max(...prices);
-    const range = (maxY - minY) === 0 ? maxY * 0.01 : (maxY - minY);
-    options.yaxis.min = minY - (range * 0.05);
-    options.yaxis.max = maxY + (range * 0.05);
-    options.yaxis.forceNiceScale = false;
+    // Find max Vol for normalization
+    let maxVol = 0;
+    supports.forEach(s => { if (s[1] > maxVol) maxVol = s[1]; });
+    resistances.forEach(r => { if (r[1] > maxVol) maxVol = r[1]; });
+
+    // Process resistances (Intraday Call Volume Walls)
+    resistances.forEach(r => {
+      const strike = r[0];
+      if (strike < viewMin - tolerance || strike > viewMax + tolerance) return;
+      
+      const vol = r[1];
+      // Use vol as both oi and vol for dynamic volume wall strength scoring!
+      const score = calculateWallStrength(strike, true, vol, vol, currentPrice, latestVwap, step, maxVol, maxVol);
+      
+      // Determine line styles based on score
+      let color = 'rgba(255, 69, 96, 0.4)';
+      let lineWidth = 1;
+      let lineStyle = LightweightCharts.LineStyle.Dotted;
+      if (score >= 8.0) {
+        color = 'rgba(255, 69, 96, 1.0)';
+        lineWidth = 2.5;
+        lineStyle = LightweightCharts.LineStyle.Solid;
+      } else if (score >= 5.0) {
+        color = 'rgba(255, 69, 96, 0.7)';
+        lineWidth = 1.5;
+        lineStyle = LightweightCharts.LineStyle.Dashed;
+      }
+
+      levels.push({
+        price: strike,
+        color,
+        lineWidth,
+        lineStyle,
+        title: `Intraday Call Wall: ${strike} (${formatCompact(vol)} Vol, Score: ${score.toFixed(1)})`
+      });
+    });
+
+    // Process supports (Intraday Put Volume Walls)
+    supports.forEach(s => {
+      const strike = s[0];
+      if (strike < viewMin - tolerance || strike > viewMax + tolerance) return;
+      
+      const vol = s[1];
+      const score = calculateWallStrength(strike, false, vol, vol, currentPrice, latestVwap, step, maxVol, maxVol);
+      
+      let color = 'rgba(0, 227, 150, 0.4)';
+      let lineWidth = 1;
+      let lineStyle = LightweightCharts.LineStyle.Dotted;
+      if (score >= 8.0) {
+        color = 'rgba(0, 227, 150, 1.0)';
+        lineWidth = 2.5;
+        lineStyle = LightweightCharts.LineStyle.Solid;
+      } else if (score >= 5.0) {
+        color = 'rgba(0, 227, 150, 0.7)';
+        lineWidth = 1.5;
+        lineStyle = LightweightCharts.LineStyle.Dashed;
+      }
+
+      levels.push({
+        price: strike,
+        color,
+        lineWidth,
+        lineStyle,
+        title: `Intraday Put Wall: ${strike} (${formatCompact(vol)} Vol, Score: ${score.toFixed(1)})`
+      });
+    });
+  }
+
+  // 2. Compute Distance to Dynamic Real-time Volume Profile Walls
+  let nearestCall = null;
+  let nearestPut = null;
+  if (data.intraday_levels) {
+    const resistances = data.intraday_levels.vol_resistances || [];
+    const supports = data.intraday_levels.vol_supports || [];
+    
+    // Find the nearest among the top Call volume strikes above spot price
+    const callsAbove = resistances.filter(r => r[0] > currentPrice).sort((a,b) => a[0] - b[0]);
+    if (callsAbove.length > 0) nearestCall = callsAbove[0][0];
+    
+    // Find the nearest among the top Put volume strikes below spot price
+    const putsBelow = supports.filter(s => s[0] < currentPrice).sort((a,b) => b[0] - a[0]);
+    if (putsBelow.length > 0) nearestPut = putsBelow[0][0];
+  }
+  
+  // Safe Fallback to OI levels if Volume profile has no active strikes
+  if (!nearestCall && data.intraday_levels) {
+    const resistances = data.intraday_levels.oi_resistances || [];
+    const callsAbove = resistances.filter(r => r[0] > currentPrice).sort((a,b) => a[0] - b[0]);
+    if (callsAbove.length > 0) nearestCall = callsAbove[0][0];
+  }
+  if (!nearestPut && data.intraday_levels) {
+    const supports = data.intraday_levels.oi_supports || [];
+    const putsBelow = supports.filter(s => s[0] < currentPrice).sort((a,b) => b[0] - a[0]);
+    if (putsBelow.length > 0) nearestPut = putsBelow[0][0];
+  }
+  
+  const callDistEl = document.getElementById('distance-call');
+  if (callDistEl) {
+    if (nearestCall) {
+      const diff = nearestCall - currentPrice;
+      const pct = (diff / currentPrice) * 100;
+      callDistEl.textContent = `+${diff.toFixed(1)} pts (+${pct.toFixed(2)}%)`;
+    } else {
+      callDistEl.textContent = 'None Above';
+    }
+  }
+  
+  const putDistEl = document.getElementById('distance-put');
+  if (putDistEl) {
+    if (nearestPut) {
+      const diff = currentPrice - nearestPut;
+      const pct = (diff / currentPrice) * 100;
+      putDistEl.textContent = `-${diff.toFixed(1)} pts (-${pct.toFixed(2)}%)`;
+    } else {
+      putDistEl.textContent = 'None Below';
+    }
+  }
+
+  // 3. Trade Setup Calculations & UI Widget updates
+  const setup = getSetupDetails(data, currentPrice, latestVwap, step);
+  
+  // Calculate Wall Interaction & Gamma Hedging Status (Day-bounded intraday scan)
+  const gexRegime = data.bias ? data.bias.gex : 'NEUTRAL';
+  const maxSupportVal = setup.entryMin + step * 0.15; // Put wall strike (aligned with Tighter tactical Entry)
+  const maxResistanceVal = setup.entryMax - step * 0.15; // Call wall strike (aligned with Tighter tactical Entry)
+  const datePart = ts ? ts.split('/')[0] : null;
+  const wallInteractions = getWallInteractionDetails(ohlcv, currentPrice, maxSupportVal, maxResistanceVal, step, gexRegime, datePart);
+  
+  const setElVal = (id, val, color) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = val;
+      if (color) el.style.color = color;
+    }
+  };
+  setElVal('wall-call-status', wallInteractions.callStatus, wallInteractions.callColor);
+  setElVal('wall-put-status', wallInteractions.putStatus, wallInteractions.putColor);
+  setElVal('wall-hedging-flow', wallInteractions.hedgingFlow, wallInteractions.flowColor);
+
+  const hedgingWidget = document.getElementById('hedging-widget');
+  const hedgingLiveBadge = document.getElementById('hedging-live-badge');
+  if (hedgingWidget) {
+    if (isLatest) {
+      hedgingWidget.classList.add('live-today');
+      if (hedgingLiveBadge) hedgingLiveBadge.style.display = 'inline-block';
+    } else {
+      hedgingWidget.classList.remove('live-today');
+      if (hedgingLiveBadge) hedgingLiveBadge.style.display = 'none';
+    }
+  }
+
+  const setupStatusEl = document.getElementById('setup-status');
+  if (setupStatusEl) {
+    setupStatusEl.textContent = setup.status;
+    setupStatusEl.className = `setup-status-badge ${setup.statusClass}`;
+  }
+  
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  setVal('setup-bias', setup.bias);
+  setVal('setup-action', setup.action);
+  setVal('setup-entry', `${setup.entryMin.toFixed(1)} - ${setup.entryMax.toFixed(1)}`);
+  setVal('setup-invalidation', setup.stopLoss.toFixed(1));
+  setVal('setup-targets', `${setup.target1.toFixed(1)} / ${setup.target2.toFixed(1)}`);
+  setVal('setup-rr', setup.rr);
+
+  // Draw setup zones on chart (if toggled)
+  if (state.toggles.master.tradeSetup) {
+    // Invalidation
+    levels.push({
+      price: setup.stopLoss,
+      color: '#FF4560',
+      lineWidth: 2,
+      lineStyle: LightweightCharts.LineStyle.Solid,
+      title: `STOP LOSS (INVALIDATION): ${setup.stopLoss.toFixed(1)}`
+    });
+    // Entry Min/Max
+    levels.push({
+      price: setup.entryMin,
+      color: '#FEB019',
+      lineWidth: 1.5,
+      lineStyle: LightweightCharts.LineStyle.Dashed,
+      title: `ENTRY ZONE MIN: ${setup.entryMin.toFixed(1)}`
+    });
+    levels.push({
+      price: setup.entryMax,
+      color: '#FEB019',
+      lineWidth: 1.5,
+      lineStyle: LightweightCharts.LineStyle.Dashed,
+      title: `ENTRY ZONE MAX: ${setup.entryMax.toFixed(1)}`
+    });
+    // Targets
+    levels.push({
+      price: setup.target1,
+      color: '#00E396',
+      lineWidth: 1.5,
+      lineStyle: LightweightCharts.LineStyle.Solid,
+      title: `TARGET 1: ${setup.target1.toFixed(1)}`
+    });
+    levels.push({
+      price: setup.target2,
+      color: '#00E396',
+      lineWidth: 1.5,
+      lineStyle: LightweightCharts.LineStyle.Dashed,
+      title: `TARGET 2: ${setup.target2.toFixed(1)}`
+    });
   }
 
   destroyChart('chart-intraday-master');
-  state.charts['chart-intraday-master'] = new ApexCharts(document.querySelector('#chart-intraday-master'), options);
-  state.charts['chart-intraday-master'].render();
+
+  // If VWAP is toggled off, pass null vwap to createTradingViewChart
+  const activeVwap = state.toggles.master.vwap ? vwap : null;
+
+  const chart = createTradingViewChart('chart-intraday-master', ohlcv, activeVwap, { levels, datePart });
+  state.charts['chart-intraday-master'] = chart;
+
+  // Zoom visible viewport on load: Show last day of action for intraday (5m)
+  if (tf === '5m' && ohlcv.length > 0 && chart) {
+    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
+    const analysisDateStr = getAnalysisDate().toLocaleDateString();
+    const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
+    chart.timeScale().setVisibleRange({
+      from: minTs / 1000,
+      to: latestTimestamp / 1000
+    });
+  } else if (chart) {
+    chart.timeScale().fitContent();
+  }
 }
 
 function renderIntradayVolChart(data) {
@@ -1006,10 +1844,55 @@ function renderIntradayVolChart(data) {
   }
   document.getElementById('intraday-vol-nodata').style.display = 'none';
 
-  const profile = data.intraday_volume_profile;
+  const tf = state.selectedTf || '5m';
+  let viewMin = 0;
+  let viewMax = Infinity;
+  if (data.candlesticks && data.candlesticks[tf] && data.candlesticks[tf].ohlcv) {
+    const ohlcv = data.candlesticks[tf].ohlcv;
+    if (ohlcv.length > 0) {
+      const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
+      viewMin = Math.min(...prices);
+      viewMax = Math.max(...prices);
+    }
+  }
+
+  let profile = data.intraday_volume_profile;
+  // Smart Filter: Focus strikes exactly within the active chart view window (plus 30% margin) to prevent unreadable cluttered bars
+  if (viewMin > 0 && viewMax < Infinity && profile.length > 10) {
+    const margin = (viewMax - viewMin) * 0.3;
+    const minStrike = viewMin - margin;
+    const maxStrike = viewMax + margin;
+    const filtered = profile.filter(p => p.strike >= minStrike && p.strike <= maxStrike);
+    // Only apply if it keeps a reasonable number of strikes for context
+    if (filtered.length >= 5) {
+      profile = filtered;
+    }
+  }
+
   const strikes = profile.map(p => p.strike);
   const callVol = profile.map(p => p.call_vol);
   const putVol = profile.map(p => p.put_vol);
+
+  // Calculate Put vs Call Volume Dominance
+  const totalCallVol = callVol.reduce((a, b) => a + b, 0);
+  const totalPutVol = putVol.reduce((a, b) => a + b, 0);
+  const totalVol = totalCallVol + totalPutVol;
+  const badgeEl = document.getElementById('vol-dominance-badge');
+  if (badgeEl && totalVol > 0) {
+    const callPct = ((totalCallVol / totalVol) * 100).toFixed(1);
+    const putPct = ((totalPutVol / totalVol) * 100).toFixed(1);
+    const ratio = totalCallVol > 0 ? (totalPutVol / totalCallVol).toFixed(2) : '∞';
+    if (totalCallVol > totalPutVol) {
+      badgeEl.textContent = `🟢 CALL DOMINANT: ${callPct}% (Ratio: ${ratio})`;
+      badgeEl.className = 'card-badge bull';
+    } else if (totalPutVol > totalCallVol) {
+      badgeEl.textContent = `🔴 PUT DOMINANT: ${putPct}% (Ratio: ${ratio})`;
+      badgeEl.className = 'card-badge bear';
+    } else {
+      badgeEl.textContent = `🟡 BALANCED (Ratio: 1.00)`;
+      badgeEl.className = 'card-badge neutral';
+    }
+  }
 
   const options = {
     series: [

@@ -124,24 +124,37 @@ def parse_bias_csv_manual(csv_path, asset_name):
 
 
 def parse_option_data_csv(csv_path):
-    """Parse asset option data CSV (Strike, Type, OI, Volume)."""
+    """Parse asset option data CSV (Strike, Type, OI, Volume, optional Greeks)."""
     rows = []
     with open(csv_path, 'r') as f:
         lines = f.readlines()
     if len(lines) < 2:
         return None
 
-    headers = lines[0].strip().split(',')
+    headers = [h.strip() for h in lines[0].strip().split(',')]
+    has_greeks = 'GEX' in headers and 'Vanna' in headers
+    
     for line in lines[1:]:
         vals = line.strip().split(',')
         if len(vals) < 4:
             continue
-        rows.append({
+        row_dict = {
             'Strike': float(vals[0]),
             'Type': vals[1],
             'OI': float(vals[2]),
             'Volume': float(vals[3]),
-        })
+        }
+        if has_greeks and len(vals) >= 8:
+            row_dict['GEX'] = float(vals[4])
+            row_dict['Vanna'] = float(vals[5])
+            row_dict['DEX'] = float(vals[6])
+            row_dict['Charm'] = float(vals[7])
+        else:
+            row_dict['GEX'] = 0.0
+            row_dict['Vanna'] = 0.0
+            row_dict['DEX'] = 0.0
+            row_dict['Charm'] = 0.0
+        rows.append(row_dict)
 
     if not rows:
         return None
@@ -153,7 +166,7 @@ def parse_option_data_csv(csv_path):
 
     for r in rows:
         s = r['Strike']
-        if r['Type'] == 'Call':
+        if r['Type'] in ['Call', 'C']:
             call_oi[s] = call_oi.get(s, 0) + r['OI']
         else:
             put_oi[s] = put_oi.get(s, 0) + r['OI']
@@ -191,19 +204,42 @@ def parse_option_data_csv(csv_path):
         if oi > 0:
             supports.append({"strike": s, "oi": int(oi)})
 
-    # Approximate GEX profile (simplified: call_oi - put_oi weighted by distance from ATM)
-    # Find approximate ATM
-    atm = active_strikes[len(active_strikes) // 2]
+    # Parse GEX & Vanna (Exact vs Proxy)
     gex_values = []
-    for s in active_strikes:
-        dist = abs(s - atm) / atm if atm > 0 else 1
-        gex = (call_oi.get(s, 0) - put_oi.get(s, 0)) * (1 - min(dist, 1))
-        gex_values.append(gex)
+    vanna_values = []
+    
+    gex_map = {}
+    vanna_map = {}
+    for r in rows:
+        s = r['Strike']
+        gex_map[s] = gex_map.get(s, 0.0) + r['GEX']
+        vanna_map[s] = vanna_map.get(s, 0.0) + r['Vanna']
 
-    # Find gamma flip (where GEX crosses zero)
+    atm = active_strikes[len(active_strikes) // 2]
+    for s in active_strikes:
+        if has_greeks:
+            gex_values.append(gex_map.get(s, 0.0))
+            vanna_values.append(vanna_map.get(s, 0.0))
+        else:
+            # Approximate GEX profile (simplified: call_oi - put_oi weighted by distance from ATM)
+            dist = abs(s - atm) / atm if atm > 0 else 1
+            gex = (call_oi.get(s, 0) - put_oi.get(s, 0)) * (1 - min(dist, 1))
+            gex_values.append(gex)
+            
+            # Approximate Vanna (call_oi * strike distance from ATM / IV proxy)
+            delta_proxy = (s - atm) / atm if atm > 0 else 0
+            vanna_approx = (call_oi.get(s, 0) - put_oi.get(s, 0)) * delta_proxy * 100
+            vanna_values.append(round(vanna_approx, 2))
+
+    # Find gamma flip price (linear interpolation)
     flip_price = None
     for i in range(len(gex_values) - 1):
-        if gex_values[i] * gex_values[i + 1] < 0:
+        y1, y2 = gex_values[i], gex_values[i + 1]
+        if y1 * y2 < 0:
+            x1, x2 = active_strikes[i], active_strikes[i + 1]
+            flip_price = round(x1 - y1 * (x2 - x1) / (y2 - y1), 2)
+            break
+        elif y1 == 0:
             flip_price = active_strikes[i]
             break
 
@@ -212,13 +248,6 @@ def parse_option_data_csv(csv_path):
         "gex": gex_values,
         "flip_price": flip_price,
     }
-
-    # Approximate Vanna (call_oi * strike distance from ATM / IV proxy)
-    vanna_values = []
-    for s in active_strikes:
-        delta_proxy = (s - atm) / atm if atm > 0 else 0
-        vanna_approx = (call_oi.get(s, 0) - put_oi.get(s, 0)) * delta_proxy * 100
-        vanna_values.append(round(vanna_approx, 2))
 
     vanna = {
         "strikes": active_strikes,
@@ -230,12 +259,12 @@ def parse_option_data_csv(csv_path):
     vol_supports = []
     
     # Top 3 call Vol strikes
-    vol_c_sorted = sorted([(s, r['Volume']) for r in rows if r['Type'] == 'Call'], key=lambda x: -x[1])
+    vol_c_sorted = sorted([(r['Strike'], r['Volume']) for r in rows if r['Type'] in ['Call', 'C']], key=lambda x: -x[1])
     for s, v in vol_c_sorted[:3]:
         if v > 0: vol_resistances.append([float(s), float(v)])
         
     # Top 3 put Vol strikes
-    vol_p_sorted = sorted([(s, r['Volume']) for r in rows if r['Type'] == 'Put'], key=lambda x: -x[1])
+    vol_p_sorted = sorted([(r['Strike'], r['Volume']) for r in rows if r['Type'] in ['Put', 'P']], key=lambda x: -x[1])
     for s, v in vol_p_sorted[:3]:
         if v > 0: vol_supports.append([float(s), float(v)])
 
@@ -243,8 +272,8 @@ def parse_option_data_csv(csv_path):
     profile = []
     all_strikes = sorted(set(r['Strike'] for r in rows))
     for s in all_strikes:
-        c_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] == 'Call')
-        p_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] == 'Put')
+        c_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] in ['Call', 'C'])
+        p_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] in ['Put', 'P'])
         if c_v > 0 or p_v > 0:
             profile.append({"strike": float(s), "call_vol": float(c_v), "put_vol": float(p_v)})
 
@@ -261,8 +290,15 @@ def parse_option_data_csv(csv_path):
     }
 
 
+# In-memory cache for yfinance downloads to prevent redundant API calls
+YF_CACHE = {}
+
+
 def get_multi_timeframe_candles(asset_symbol):
     """Fetch multi-timeframe candlestick data from yfinance and calculate VWAP."""
+    if asset_symbol in YF_CACHE:
+        return YF_CACHE[asset_symbol]
+
     yf_symbol = {"GC": "GC=F", "ES": "ES=F", "NQ": "NQ=F"}.get(asset_symbol)
     if not yf_symbol:
         return {}
@@ -328,6 +364,7 @@ def get_multi_timeframe_candles(asset_symbol):
         except Exception as e:
             print(f"    [WARN] Failed to fetch {conf['tf']} data for {yf_symbol}: {e}")
             
+    YF_CACHE[asset_symbol] = result
     return result
 
 

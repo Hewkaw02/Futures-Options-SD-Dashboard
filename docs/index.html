@@ -13,6 +13,9 @@
 
   <!-- ApexCharts CDN -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
+
+  <!-- TradingView Lightweight Charts CDN -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 
 <body>
@@ -100,11 +103,18 @@
       <div class="card full-width" id="card-hybrid">
         <div class="card-header">
           <span class="card-title">Hybrid Candle &amp; OI S/R Zones</span>
-          <div class="chart-tab-group" id="hybrid-tabs">
-            <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')">1D</button>
-            <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')">1H</button>
-            <button class="chart-tab active" data-tab="hybrid_15m"
-              onclick="switchChartTab('hybrid', 'hybrid_15m')">15M</button>
+          <div class="header-controls-group">
+            <div class="layer-control-panel">
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-sdbands" checked onchange="toggleLayer('hybrid', 'sdBands')"> SD Bands</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-session" checked onchange="toggleLayer('hybrid', 'sessionLevels')"> Session Levels</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-oiwalls" checked onchange="toggleLayer('hybrid', 'oiWalls')"> OI Walls</label>
+            </div>
+            <div class="chart-tab-group" id="hybrid-tabs">
+              <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')">1D</button>
+              <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')">1H</button>
+              <button class="chart-tab active" data-tab="hybrid_15m"
+                onclick="switchChartTab('hybrid', 'hybrid_15m')">15M</button>
+            </div>
           </div>
         </div>
         <div class="chart-container tall" id="chart-hybrid"></div>
@@ -114,23 +124,120 @@
       <!-- ══════ INTRADAY MASTER CHARTS (Tabbed) ══════ -->
       <div class="card full-width" id="card-intraday-master">
         <div class="card-header">
-          <span class="card-title">Intraday Master Chart</span>
-          <div class="chart-tab-group" id="intraday-master-tabs">
-            <button class="chart-tab active" data-tab="intraday_master_5m"
-              onclick="switchChartTab('intraday-master', 'intraday_master_5m')">5M</button>
-            <button class="chart-tab" data-tab="intraday_master_1h"
-              onclick="switchChartTab('intraday-master', 'intraday_master_1h')">1H</button>
+          <span class="card-title">Intraday Master Chart (Decision Terminal)</span>
+          <div class="header-controls-group">
+            <div class="layer-control-panel">
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-vwap" checked onchange="toggleLayer('master', 'vwap')"> VWAP</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-setup" checked onchange="toggleLayer('master', 'tradeSetup')"> Trade Setup</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-walls" checked onchange="toggleLayer('master', 'oiWalls')"> Option Walls</label>
+            </div>
+            <div class="chart-tab-group" id="intraday-master-tabs">
+              <button class="chart-tab active" data-tab="intraday_master_5m"
+                onclick="switchChartTab('intraday-master', 'intraday_master_5m')">5M</button>
+              <button class="chart-tab" data-tab="intraday_master_1h"
+                onclick="switchChartTab('intraday-master', 'intraday_master_1h')">1H</button>
+            </div>
           </div>
         </div>
-        <div class="chart-container tall" id="chart-intraday-master"></div>
+        <div class="chart-wrapper">
+          <!-- Freshness Badge -->
+          <div class="freshness-badge" id="freshness-badge">
+            <span class="pulse-dot"></span>
+            Data: <span id="freshness-status">Fresh</span> (<span id="freshness-age">0m</span> age)
+          </div>
+
+          <!-- Execution Widgets Flex Container (Aligned side-by-side at bottom) -->
+          <div class="execution-widgets-container">
+            <!-- Floating Trade Setup Overlay -->
+            <div class="trade-setup-overlay" id="trade-setup-overlay">
+              <div class="setup-header">TACTICAL TRADE SETUP <span class="setup-status-badge" id="setup-status">WAITING</span></div>
+              <div class="setup-grid">
+                <div class="setup-item"><span class="setup-label">Bias:</span> <span class="setup-value" id="setup-bias">—</span></div>
+                <div class="setup-item"><span class="setup-label">Action:</span> <span class="setup-value" id="setup-action">—</span></div>
+                <div class="setup-item"><span class="setup-label">Entry Zone:</span> <span class="setup-value highlight-yellow" id="setup-entry">—</span></div>
+                <div class="setup-item"><span class="setup-label">Invalidation:</span> <span class="setup-value highlight-red" id="setup-invalidation">—</span></div>
+                <div class="setup-item"><span class="setup-label">Targets:</span> <span class="setup-value highlight-green" id="setup-targets">—</span></div>
+                <div class="setup-item"><span class="setup-label">Risk/Reward:</span> <span class="setup-value" id="setup-rr">—</span></div>
+              </div>
+            </div>
+
+            <!-- Distance to Key Level Widget -->
+            <div class="distance-widget" id="distance-widget">
+              <div class="distance-header">DISTANCE TO KEY WALLS</div>
+              <div class="distance-row">
+                <span>Call Wall:</span>
+                <span class="distance-value resist" id="distance-call">—</span>
+              </div>
+              <div class="distance-row">
+                <span>Put Wall:</span>
+                <span class="distance-value support" id="distance-put">—</span>
+              </div>
+            </div>
+
+            <!-- Wall Interaction & Hedging Status Widget -->
+            <div class="distance-widget" id="hedging-widget">
+              <div class="distance-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 6px;">
+                <span>WALL INTERACTION &amp; HEDGING STATUS</span>
+                <span class="setup-status-badge" id="hedging-live-badge" style="display: none; background: rgba(254, 176, 25, 0.15); color: #FEB019; border-color: #FEB019; font-size: 0.55rem; padding: 1px 5px; border-radius: 2px; height: 14px; line-height: 11px;">⚡ LIVE TODAY</span>
+              </div>
+              <div class="distance-row">
+                <span>Call Wall:</span>
+                <span class="setup-value" id="wall-call-status">STABLE</span>
+              </div>
+              <div class="distance-row">
+                <span>Put Wall:</span>
+                <span class="setup-value" id="wall-put-status">STABLE</span>
+              </div>
+              <div class="distance-row" style="font-size: 0.65rem; color: var(--text-dim); margin-top: 4px;">
+                <span style="white-space: nowrap;">Hedging Flow:</span>
+                <span id="wall-hedging-flow" style="font-weight: bold; color: var(--text-muted); text-align: right; width: 100%;">Stable Neutral Flow</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-container tall" id="chart-intraday-master"></div>
+        </div>
         <div class="no-data" id="intraday-master-nodata" style="display: none;">NO CHART DATA</div>
+
+        <!-- Bias score flow timeline -->
+        <div class="bias-timeline-card">
+          <div class="timeline-title">INTRADAY BIAS SCORE FLOW (TIMELINE)</div>
+          <div class="timeline-flow" id="bias-timeline-flow">
+            <span class="timeline-empty">Loading historical bias trend...</span>
+          </div>
+        </div>
+
+        <!-- PCR / GEX / Skew Mini-Panels -->
+        <div class="mini-panels-grid">
+          <div class="mini-panel">
+            <div class="panel-header">PUT/CALL RATIO (PCR)</div>
+            <div class="panel-body">
+              <div class="gauge-label">Volume PCR: <span id="mini-pcr-vol">—</span></div>
+              <div class="gauge-container"><div class="gauge-bar" id="mini-pcr-bar" style="width: 0%"></div></div>
+            </div>
+          </div>
+          <div class="mini-panel">
+            <div class="panel-header">GEX REGIME</div>
+            <div class="panel-body">
+              <div class="gauge-label">Gamma State: <span id="mini-gex-state">—</span></div>
+              <div class="gex-status-banner" id="mini-gex-banner">NEUTRAL</div>
+            </div>
+          </div>
+          <div class="mini-panel">
+            <div class="panel-header">IV SKEW</div>
+            <div class="panel-body">
+              <div class="gauge-label">Option Skew: <span id="mini-skew-val">—</span></div>
+              <div class="gauge-container"><div class="gauge-bar" id="mini-skew-bar" style="width: 0%"></div></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ══════ INTRADAY VOLUME ══════ -->
       <div class="card full-width" id="card-intraday-vol">
         <div class="card-header">
           <span class="card-title">Intraday Volume Profile</span>
-          <span class="card-badge">CALL vs PUT</span>
+          <span class="card-badge" id="vol-dominance-badge">CALL vs PUT</span>
         </div>
         <div class="chart-container" id="chart-intraday-vol"></div>
         <div class="no-data" id="intraday-vol-nodata" style="display: none;">NO CHART DATA</div>

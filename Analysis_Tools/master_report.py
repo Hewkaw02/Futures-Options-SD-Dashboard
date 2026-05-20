@@ -13,6 +13,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import CLIENT_SECRET, REFRESH_TOKEN, CONTRACT_MULTIPLIERS
 
+from analytics.exposure import black76_greeks, calculate_dealer_exposures
+from analytics.volatility import interpolate_atm_iv
+from analytics.quality import score_data_quality
+
 # --- Helper Functions -----------------------------------------
 def get_yf_price(symbol_root):
     """Fetch current price from yfinance."""
@@ -45,6 +49,9 @@ def get_bias(price, call_wall, put_wall, pcr_oi, pcr_vol, gex_sum, skew):
     # PCR Sentiment
     if pcr_oi < 0.8: score += 1
     elif pcr_oi > 1.2: score -= 1
+    # PCR Volume Sentiment (Intraday momentum flow)
+    if pcr_vol < 0.8: score += 1
+    elif pcr_vol > 1.2: score -= 1
     # GEX Sentiment
     if gex_sum > 0: score += 1
     else: score -= 1
@@ -52,7 +59,8 @@ def get_bias(price, call_wall, put_wall, pcr_oi, pcr_vol, gex_sum, skew):
     if skew > 0.05: score -= 1
     elif skew < -0.05: score += 1
 
-    conf = min(abs(score) * 20, 100) # Confidence %
+    conf = min(abs(score) * 16.7, 100.0) # Confidence %
+    conf = round(conf)
     
     label = "NEUTRAL"
     if score >= 3: label = "Strong BULL"
@@ -132,6 +140,9 @@ async def analyze_asset(session, symbol, title):
         # 3. Calculations
         records = []
         gex_total = 0
+        dte_days = max(1.0, float((expiry - today).days))
+        T_years = dte_days / 365.0
+        
         for o in relevant_options:
             s = summary_cache.get(o.streamer_symbol)
             t = trade_cache.get(o.streamer_symbol)
@@ -143,8 +154,23 @@ async def analyze_asset(session, symbol, title):
                     g = greek_cache[o.streamer_symbol]
                     product_code = symbol.lstrip('/')
                     multiplier = CONTRACT_MULTIPLIERS.get(product_code, 1)
-                    direction = 1 if o.option_type.value == 'C' else -1
-                    gex_total += oi * float(g.gamma or 0) * direction * multiplier
+                    
+                    # Exact Black-76 GEX
+                    opt_iv = float(g.volatility or 0.2)
+                    greeks = black76_greeks(F=mark, K=float(o.strike_price), T=T_years, sigma=opt_iv, option_type=o.option_type.value)
+                    exposures = calculate_dealer_exposures(
+                        oi=oi,
+                        delta=greeks["delta"],
+                        gamma=greeks["gamma"],
+                        vega=greeks["vega"],
+                        vanna=greeks["vanna"],
+                        charm=greeks["charm"],
+                        spot=mark,
+                        multiplier=multiplier,
+                        option_type=o.option_type.value,
+                        dealer_assumed_side="short"
+                    )
+                    gex_total += exposures["gex"]
 
         df = pd.DataFrame(records)
         c_oi = df[df['Type'] == 'C']['OI'].sum()
@@ -167,10 +193,38 @@ async def analyze_asset(session, symbol, title):
         iv_c = float(greek_cache[call_skew_opt.streamer_symbol].volatility or 0) if call_skew_opt.streamer_symbol in greek_cache else 0
         skew = iv_p - iv_c
 
-        # Calculate atm_iv from the minimum of all captured Greeks
-        iv_values = [float(g.volatility) for g in greek_cache.values() if g.volatility and float(g.volatility) > 0]
-        atm_iv = min(iv_values) if iv_values else 0.0
+        # Build (strike, IV) pairs from greek_cache to interpolate the true ATM IV
+        strike_ivs = []
+        for o in relevant_options:
+            if o.streamer_symbol in greek_cache:
+                g = greek_cache[o.streamer_symbol]
+                if g.volatility and float(g.volatility) > 0:
+                    strike_ivs.append((float(o.strike_price), float(g.volatility)))
+        atm_iv = interpolate_atm_iv(mark, strike_ivs)
         
+        # Data Quality Scoring
+        quality_inputs = []
+        for o in relevant_options:
+            s = summary_cache.get(o.streamer_symbol)
+            t = trade_cache.get(o.streamer_symbol)
+            if s:
+                oi = float(s.open_interest or 0)
+                vol = float(t.day_volume or 0) if t else 0.0
+                bid = float(s.bid or 0.0)
+                ask = float(s.ask or 0.0)
+                quality_inputs.append({
+                    'strike': float(o.strike_price),
+                    'type': o.option_type.value,
+                    'oi': oi,
+                    'vol': vol,
+                    'bid': bid,
+                    'ask': ask
+                })
+        dq_results = score_data_quality(quality_inputs)
+        print(f"  Data Quality Score: {dq_results['quality_score']}%")
+        for w in dq_results['warnings']:
+            print(f"  ⚠ [WARN] {w}")
+            
         bias_label, conf_str = get_bias(mark, call_wall, put_wall, pcr_oi, pcr_vol, gex_total, skew)
 
         return {
@@ -181,7 +235,9 @@ async def analyze_asset(session, symbol, title):
             'Skew%': f"{skew*100:+.1f}%",
             'Act%': f"{activity:.1f}%",
             'GEX': "STABLE" if gex_total > 0 else "VOLTL",
-            'Wall(R/S)': f"{call_wall}/{put_wall}"
+            'Wall(R/S)': f"{call_wall}/{put_wall}",
+            'QualityScore': dq_results['quality_score'],
+            'QualityWarnings': "; ".join(dq_results['warnings']) if dq_results['warnings'] else "None"
         }
     except Exception as e:
         print(f"  [FAIL] Error: {e}")

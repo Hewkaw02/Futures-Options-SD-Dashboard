@@ -14,7 +14,9 @@ from matplotlib.patches import Ellipse
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import CLIENT_SECRET, REFRESH_TOKEN
+from config import CLIENT_SECRET, REFRESH_TOKEN, CONTRACT_MULTIPLIERS
+
+from analytics.exposure import black76_greeks, calculate_dealer_exposures
 
 def get_yf_price(symbol_root):
     mapping = {'/GC': 'GC=F', '/ES': 'ES=F', '/NQ': 'NQ=F'}
@@ -110,6 +112,9 @@ async def analyze_advanced_exposure(session, symbol, title, output_base):
 
         # Process Data
         records = []
+        dte_days = max(1.0, float((expiry - today).days))
+        T_years = dte_days / 365.0
+        
         for o in relevant_options:
             s = summary_cache.get(o.streamer_symbol)
             g = greek_cache.get(o.streamer_symbol)
@@ -117,29 +122,33 @@ async def analyze_advanced_exposure(session, symbol, title, output_base):
             if s and g:
                 oi = float(s.open_interest or 0)
                 vol = float(t.day_volume or 0) if t else 0.0
-                gamma = float(g.gamma or 0)
-                vega = float(g.vega or 0)
-                delta = float(g.delta or 0)
-                theta = float(g.theta or 0)
+                opt_iv = float(g.volatility or 0.2)
                 
-                mult = 1 if o.option_type.value == 'C' else -1
+                product_code = symbol.lstrip('/')
+                multiplier = CONTRACT_MULTIPLIERS.get(product_code, 1)
                 
-                # Quantitative Exposures
-                gex = oi * gamma * (mark**2) * 0.01 * mult
-                vanna_exp = oi * vega * mult 
-                dex = oi * delta * mark * mult # Net Delta Exposure
-                
-                # Charm Approximation (Delta decay over time)
-                # Simplified: How much delta changes as DTE -> 0. Correlated with Theta.
-                charm_exp = oi * theta * mult if abs(theta) > 0 else 0
+                # Exact Black-76 Greeks & Exposures
+                greeks = black76_greeks(F=mark, K=float(o.strike_price), T=T_years, sigma=opt_iv, option_type=o.option_type.value)
+                exposures = calculate_dealer_exposures(
+                    oi=oi,
+                    delta=greeks["delta"],
+                    gamma=greeks["gamma"],
+                    vega=greeks["vega"],
+                    vanna=greeks["vanna"],
+                    charm=greeks["charm"],
+                    spot=mark,
+                    multiplier=multiplier,
+                    option_type=o.option_type.value,
+                    dealer_assumed_side="short"
+                )
                 
                 records.append({
                     'Strike': float(o.strike_price),
                     'Type': o.option_type.value,
-                    'GEX': gex,
-                    'VannaExp': vanna_exp,
-                    'DEX': dex,
-                    'Charm': charm_exp,
+                    'GEX': exposures["gex"],
+                    'VannaExp': exposures["vanna_exp"],
+                    'DEX': exposures["dex"],
+                    'Charm': exposures["charm_exp"],
                     'Vol': vol,
                     'OI': oi
                 })
