@@ -7,9 +7,9 @@
 ### 💡 Recommendation
 Sign up for a trading account to access the API here: [**Join Tastytrade (Referral Link)**](https://tastytrade.com/welcome/?referralCode=YGHF9JJZCV)
 
-## 🚀 What's New in v3.0 (Interactive TradingView Engine & Performance Boost)
+## 🚀 What's New in v1.0.0 (Interactive TradingView Engine & Performance Boost)
 
-The latest **v3.0 update** introduces institutional-grade interactive charting and massive pipeline performance optimizations:
+The latest **v1.0.0 release** introduces institutional-grade interactive charting and massive pipeline performance optimizations:
 
 * **TradingView Lightweight Charts Integration**: Interactive candlestick rendering replaces ApexCharts for Master and Hybrid charts, featuring:
   * **Left-Aligned Price Axes**: Leaves plenty of wicks breathing room on the right side of the canvas.
@@ -81,7 +81,7 @@ pip install tastytrade yfinance pandas matplotlib mplfinance httpx scipy
 
 ## 🆕 Quantitative Analytics Module (`analytics/`)
 
-In version 3.0, all calculations are standardized to modern quantitative finance best practices:
+In version 1.0.0, all calculations are standardized to modern quantitative finance best practices:
 
 ### 1. Black-76 Math & Exposures (`analytics/exposure.py`)
 Futures options have different cost-of-carry characteristics than spot equity options. Holding the underlying futures contract requires no upfront capital, meaning the cost of carry is fully priced in. Pricing models utilize the **Black-76 model** with risk-free rate discounting factor $e^{-rT}$:
@@ -145,17 +145,17 @@ Output: `trading_results/{date}/{hour}/{ASSET}/{asset}_data_{ts}.csv`
 
 ---
 
-## ✅ Issues Resolved (v3.0 Quantitative Refactoring)
+## ✅ Core Quantitative Architecture (v1.0.0)
 
-| # | Category | Issue | Fix Applied (v3.0) |
+| # | Category | Core Feature | Implementation |
 |---|----------|-------|--------------------|
-| 1 | 🔴 Mathematics | Approximate GEX proxy formula | Standardized to canonical **Black-76** GEX equations with $e^{-rT}$ discounting. |
-| 2 | 🔴 Mathematics | Static Theta and Vega proxies for Vanna/Charm | Replaced with exact mathematical partial derivatives ($\frac{\partial \Delta}{\partial \sigma}$ and $\frac{\partial \Delta}{\partial T}$). |
-| 3 | 🟠 Finance | Highly biased `min(IV)` ATM proxy | Implemented a **localized flanking strikes spline** to find true ATM IV. |
-| 4 | 🟠 Microstructure | Low Globex overnight liquidity noise | Built a microstructure **Data Quality Filter** (spread checks, volume/OI confluences). |
-| 5 | 🟠 Pricing | Missing contract multipliers | Fully integrated multipliers across all GEX, DEX, Vanna, and Charm dashboard calculators. |
-| 6 | 🟡 UX | Inaccurate Gamma Flip Price | Replaced simple binary search with **exact linear interpolation** of the flip price. |
-| 7 | 🟡 Optimization | Duplicate yfinance HTTP hits | Built a local memory **`YF_CACHE`** in `update_dashboard.py` to prevent API rate limits. |
+| 1 | 🔴 Mathematics | GEX Pricing | Built on canonical **Black-76** GEX equations with $e^{-rT}$ discounting. |
+| 2 | 🔴 Mathematics | Vanna & Charm | Utilizes exact mathematical partial derivatives ($\frac{\partial \Delta}{\partial \sigma}$ and $\frac{\partial \Delta}{\partial T}$). |
+| 3 | 🟠 Finance | ATM Volatility | Implemented a **localized flanking strikes spline** to find true ATM IV. |
+| 4 | 🟠 Microstructure | Liquidity Validation | Built a microstructure **Data Quality Filter** (spread checks, volume/OI confluences). |
+| 5 | 🟠 Pricing | Multipliers | Fully integrated contract multipliers across all GEX, DEX, Vanna, and Charm calculators. |
+| 6 | 🟡 UX | Gamma Flip | Uses **exact linear interpolation** to calculate the accurate zero-gamma flip price. |
+| 7 | 🟡 Optimization | Caching Engine | Built a local memory **`YF_CACHE`** in `update_dashboard.py` to prevent API rate limits. |
 
 ---
 
