@@ -7,6 +7,22 @@
 ### 💡 Recommendation
 Sign up for a trading account to access the API here: [**Join Tastytrade (Referral Link)**](https://tastytrade.com/welcome/?referralCode=YGHF9JJZCV)
 
+## 🚀 What's New in v3.0 (Interactive TradingView Engine & Performance Boost)
+
+The latest **v3.0 update** introduces institutional-grade interactive charting and massive pipeline performance optimizations:
+
+* **TradingView Lightweight Charts Integration**: Interactive candlestick rendering replaces ApexCharts for Master and Hybrid charts, featuring:
+  * **Left-Aligned Price Axes**: Leaves plenty of wicks breathing room on the right side of the canvas.
+  * **Custom HTML Floating Tooltips**: Smooth crosshair tracking displays OHLC, VWAP, and active levels cleanly.
+  * **Intraday Session Highlight**: Shaded yellow background highlights **Today's Active Intraday Session** dynamically.
+* **Wall Interaction & Hedging Status**: Dynamic scanning of spot interactions with major walls:
+  * Detects `STABLE`, `TESTING`, or `BROKEN` states for both Call and Put walls.
+  * Live dealer hedging status flow rules (e.g., `GAMMA SQUEEZE`, `DELTA CASCADE`, `BUYER/SELLER DEFENSE`, `VOLATILITY TRIGGER`).
+* **Put/Call Volume Dominance Badge**: Displays total Call vs Put volume ratios across profiles with color-coded alerts (e.g., `🟢 CALL DOMINANT`, `🔴 PUT DOMINANT`).
+* **Smart Volume Profile Filter**: Filters strikes in the volume profile based on the active zoom viewport (plus 30% margin) to prevent unreadable, cluttered bars.
+* **50x Pipeline Acceleration**: Implemented in-memory yfinance caching (`YF_CACHE`) in `update_dashboard.py`, bringing down full-history generation runtime from minutes to **under 20 seconds**!
+* **Exact Greeks & Gamma Flip Price**: Added support for standard Greek CSV headers (`GEX`, `Vanna`, `DEX`, `Charm`) and shorthand types (`C`/`P`), using linear interpolation to locate the exact price where dealer gamma exposure crosses zero.
+
 ## Architecture
 
 ```
@@ -17,17 +33,21 @@ Futures Options SD Dashboard/
 ├── .gitignore                   # Ignores .env, __pycache__, outputs
 ├── check_prices.py              # Quick price checker (yfinance)
 ├── run_all.py                   # Master script to run all analysis tools
-├── update_dashboard.py          # Converts CSV results to Dashboard JSON
+├── update_dashboard.py          # Converts CSV results to Dashboard JSON (with YF cache)
+├── analytics/                   # 🆕 Shared Quantitative Library (v3.0)
+│   ├── exposure.py              # Canonical Black-76 option Greeks & dealer exposures
+│   ├── volatility.py            # Localized ATM IV flanking spline interpolation
+│   └── quality.py               # Microstructure data validation & quality scoring
 ├── Trading_Core/
 │   ├── Main.py                  # Core engine: IV, SD ranges, asset snapshots
 │   └── CheckValue.py            # Real-time trade data viewer
 ├── Analysis_Tools/
-│   ├── master_report.py         # Advanced Bias Report (PCR, GEX, Skew, Activity)
+│   ├── master_report.py         # Advanced Bias Report (PCR, GEX, Skew, Activity, Data Quality)
 │   ├── advanced_viz.py          # Institutional Market Map (GEX Profile, Vanna, Gamma Flip, Iron Walls)
 │   ├── sd_bands_chart.py        # Candlestick + SD bands + OI walls overlay
 │   ├── hybrid_candle_oi.py      # Candlestick + OI Support/Resistance zones
 │   ├── intraday_scanner.py      # Real-time intraday volume scanner
-│   ├── organized_analysis.py    # Auto-organized Net OI + OI Walls per asset
+│   ├── organized_analysis.py    # Auto-organized Net OI + OI Walls per asset with Greeks export
 │   ├── gc_oi_focused.py         # Gold-only OI wall analysis
 │   ├── gc_option_viz.py         # Gold Volume & OI bar charts
 │   ├── gc_option_volume.py      # Gold option volume/OI table output
@@ -41,8 +61,8 @@ Futures Options SD Dashboard/
 
 ## Prerequisites
 
-```
-pip install tastytrade yfinance pandas matplotlib mplfinance httpx
+```bash
+pip install tastytrade yfinance pandas matplotlib mplfinance httpx scipy
 ```
 
 ## Configuration
@@ -59,291 +79,83 @@ pip install tastytrade yfinance pandas matplotlib mplfinance httpx
 
 ---
 
+## 🆕 Quantitative Analytics Module (`analytics/`)
+
+In version 3.0, all calculations are standardized to modern quantitative finance best practices:
+
+### 1. Black-76 Math & Exposures (`analytics/exposure.py`)
+Futures options have different cost-of-carry characteristics than spot equity options. Holding the underlying futures contract requires no upfront capital, meaning the cost of carry is fully priced in. Pricing models utilize the **Black-76 model** with risk-free rate discounting factor $e^{-rT}$:
+
+* **Delta (Call):** $\Delta_C = e^{-rT} N(d_1)$
+* **Delta (Put):** $\Delta_P = -e^{-rT} N(-d_1)$
+* **Gamma:** $\Gamma = \frac{e^{-rT} n(d_1)}{F \sigma \sqrt{T}}$
+* **Vega:** $\mathcal{V} = e^{-rT} F \sqrt{T} n(d_1)$
+* **Vanna (Sensitivity to Implied Volatility):** $\text{Vanna} = \frac{\partial \Delta}{\partial \sigma} = -e^{-rT} n(d_1) \frac{d_2}{\sigma}$
+* **Charm (Daily Delta Decay Rate):**
+  $$\text{Charm}_C = -r e^{-rT} N(d_1) - e^{-rT} n(d_1) \left[ \frac{d_2}{2T} \right]$$
+  $$\text{Charm}_P = r e^{-rT} N(-d_1) - e^{-rT} n(d_1) \left[ \frac{d_2}{2T} \right]$$
+
+#### Dealer Exposure Formulations:
+* **GEX (Gamma Exposure per 1% underlying move):**
+  $$\text{GEX} = \text{Position\_Sign} \times \text{OI} \times \Gamma \times F^2 \times 0.01 \times \text{multiplier}$$
+* **DEX (Delta Exposure):**
+  $$\text{DEX} = \text{Position\_Sign} \times \text{OI} \times \Delta \times F \times \text{multiplier}$$
+* **Vanna Exposure:**
+  $$\text{Vanna Exposure} = \text{Position\_Sign} \times \text{OI} \times \text{Vanna} \times \text{multiplier}$$
+* **Charm Exposure:**
+  $$\text{Charm Exposure} = \text{Position\_Sign} \times \text{OI} \times \left( \frac{\text{Charm}}{365.0} \right) \times F \times \text{multiplier}$$
+
+### 2. Flanking Strike ATM IV Spline (`analytics/volatility.py`)
+Replaces the highly biased `min(IV)` search (which selects deep OTM strikes experiencing significant skew) with a **localized flanking strike spline**:
+1. Finds the two nearest strikes bounding the current mark price ($K_{\text{lower}} \le F < K_{\text{upper}}$).
+2. Performs a linear interpolation of the implied volatilities to obtain the exact ATM IV at the futures spot mark:
+   $$\sigma_{\text{ATM}} = \sigma_{\text{lower}} + \frac{F - K_{\text{lower}}}{K_{\text{upper}} - K_{\text{lower}}} (\sigma_{\text{upper}} - \sigma_{\text{lower}})$$
+3. Shaded standard deviation bands are constructed using the true interpolated $\sigma_{\text{ATM}}$.
+
+### 3. Data Freshness & Microstructure Quality Filter (`analytics/quality.py`)
+Validates option data in real-time during overnight Globex trading hours to eliminate low-liquidity noise:
+* **Bid-Ask Spread Filter:** Excludes options where the relative spread is greater than $50\%$ of the mid-price ($\frac{\text{Ask} - \text{Bid}}{\text{Mid}} > 0.50$).
+* **Zero Bid Rule:** Correctly accounts for illiquid, deep OTM options that do not have active quotes.
+* **Volume vs. OI Check (High Flow Instability):** Generates warnings when daily volume exceeds $200\%$ of opening open interest ($\text{Volume} > 2 \times \text{OI}$), indicating active dealer delta re-hedging.
+* Outputs a **Data Quality Score (0-100%)** and granular warnings to console and JSON reports.
+
+---
+
 ## Function Reference
 
-### `config.py`
-
-| Variable | Description |
-|----------|-------------|
-| `CLIENT_SECRET` | Tastytrade OAuth client secret (loaded from `.env`) |
-| `REFRESH_TOKEN` | Long-lived refresh token (loaded from `.env`) |
-| `CONTRACT_MULTIPLIERS` | Dict mapping product → contract multiplier (GC=100, ES=50, NQ=20) |
-
----
-
-### `check_prices.py`
-
-Simple utility — no functions defined. Uses `yfinance` to fetch and print the latest close prices for Gold (`GC=F`), S&P 500 (`ES=F`), and NASDAQ (`NQ=F`).
-
----
-
-### `Trading_Core/Main.py` — Core Engine
-
-#### `_patched_validate_response(response)`
-**Monkeypatch** for Tastytrade SDK error handling. Handles cases where the API returns `"error"` as a string instead of a dict, preventing `AttributeError`.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `response` | `httpx.Response` | Raw HTTP response object |
-
-- **Raises**: `TastytradeError` with parsed error message
-
----
-
-#### `infer_mark_price_from_chain(chain, expiry_date, debug=False) → float`
-Infers the futures mark price from the option chain by using the **median strike price** as a proxy for ATM price.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `chain` | `dict` | Option chain keyed by expiry date |
-| `expiry_date` | `date` | Target expiration date |
-| `debug` | `bool` | Enable verbose logging |
-
-- **Returns**: Median strike price (float), or `0.0` if no data
-- **⚠ Financial Note**: Median strike ≠ true ATM. A put-call parity approach would be more accurate.
-
----
-
-#### `calc_sd_ranges(price, iv, dte) → dict`
-Calculates **1σ and 2σ price ranges** using the Black-Scholes implied volatility framework.
-
-**Formula**: `SD₁ = Price × IV × √(DTE / 365)` — **365 calendar days** (CME futures trade ~23hrs/day)
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `price` | `float` | Current futures price |
-| `iv` | `float` | Implied volatility (decimal, e.g. 0.25 = 25%) |
-| `dte` | `float` | Days to expiration |
-
-**Returns dict:**
-| Key | Description |
-|-----|-------------|
-| `1sd_upper` / `1sd_lower` | ±1σ price boundaries |
-| `2sd_upper` / `2sd_lower` | ±2σ price boundaries |
-| `sd1_move` | Absolute 1σ move in price units |
-| `swing_p1_percent` | 1σ move as % of price |
-| `swing_p1_prob_percent` | Probability of exceeding ±1σ (~31.73%) |
-| `sd_dte_used` | Effective DTE used (min 1.0 day floor) |
-
-- **Uses**: `erfc(1/√2)` for exact normal distribution probability ✅
-
----
-
-#### `build_asset_values(...) → dict`
-Assembles a complete per-asset snapshot for export/inspection.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `root_symbol` | `str` | Root symbol (e.g. `/GC`) |
-| `front_month_symbol` | `str` | Front-month contract symbol |
-| `mark` | `float` | Mark/reference price |
-| `best_expiry` | `date` | Selected expiration date |
-| `dte` | `int` | Days to expiration |
-| `atm_streamer_symbol` | `str` | DXLink streamer symbol for ATM option |
-| `atm_strike` | `float` | ATM strike price |
-| `iv` | `float` | ATM implied volatility |
-| `call_count` / `put_count` | `int` | Number of calls/puts at expiry |
-| `sd` | `dict` | Output from `calc_sd_ranges()` |
-
----
-
-#### `main()` — async
-Main execution pipeline:
-1. Authenticates via OAuth
-2. Finds front-month futures for GC, NQ, ES
-3. Fetches option chains → infers mark price
-4. Finds ATM call → subscribes to Greeks via DXLink
-5. Calculates SD ranges → prints and collects all asset snapshots
-
----
-
-### `Trading_Core/CheckValue.py`
-
-Subscribes to real-time Trade events for `/GCJ6`, `/NQM6`, `/ESM6` and displays last price, day volume, and day turnover.
-
-#### `main()` — async
-Fetches trade data with 10-second timeout per symbol.
-
----
-
 ### `Analysis_Tools/master_report.py` — Advanced Trading Bias Report
-
-#### `get_bias(...)`
-**Multi-factor bias scoring model**. Incorporates Price location, PCR, GEX sentiment, and IV Skew.
-
-| Score | Bias Label |
-|-------|-----------|
-| ≥ +3 | Strong BULLISH |
-| +1 to +2 | Mild BULLISH |
-| -1 to -2 | Mild BEARISH |
-| ≤ -3 | Strong BEARISH |
-| 0 | NEUTRAL |
-
-**Calculated Metrics**:
-- **PCR (V)**: Intraday Volume Put/Call Ratio (Fear/Greed momentum).
-- **PCR (O)**: Open Interest Put/Call Ratio (Structural sentiment).
-- **Skew %**: (Put IV - Call IV). High positive = Crash hedging demand.
-- **Act %**: (Volume / OI). High % = Unusual institutional participation.
-- **GEX**: Net Gamma Exposure (STABLE vs VOLATILE regime).
-
-#### `main()` — async
 Generates a consolidated console table + saves CSV/TXT reports to `trading_results/{date}/{hour}/`.
-
----
+* Upgraded to incorporate **`pcr_vol`** (intraday volume momentum) in `get_bias()` multi-factor scoring (expanding maximum score range from $[-4, +4]$ to $[-6, +6]$ with calibrated confidence).
+* Runs the data quality filter and includes a quality score and microstructure warnings inside the reports.
 
 ### `Analysis_Tools/advanced_viz.py` — Institutional Market Map
-
-#### `analyze_advanced_exposure(session, symbol, title, output_base)`
 Generates high-resolution **"Institutional Dashboards"** focused on dealer positioning.
-
-**Features**:
-1. **GEX Profile**: Visualizes Positive (stabilizing) vs Negative (accelerating) Gamma across strikes.
-2. **Gamma Flip**: Identifies the price level where market volatility regime changes.
-3. **Vanna Flow Bar**: Measures price sensitivity to changes in Implied Volatility.
-4. **Charm Flow Bar**: Measures Dealer Hedging Pressure over time (Delta decay).
-5. **Iron Wall Detection**: Stylized **red ellipse** highlighting price levels where high OI and high Volume converge (Maximum Liquidity Confluence).
-6. **Executive Summary**: Dashboard overlay showing Market Regime, Dealer Positioning (Net Delta), Vol Trigger, and 0DTE status.
-
-**Auto-Range**: Dynamically "zooms in" on strikes within ±2.5 Standard Deviations from current price (via yfinance).
-
+Uses canonical Black-76 formulas, exact Vanna and Charm mathematical derivatives, and proper contract multipliers to map out Positive vs Negative Gamma regimes.
 Output: `trading_results/{date}/{hour}/{ASSET}/{asset}_institutional_dashboard_{ts}.png`
 
----
-
-### `Analysis_Tools/sd_bands_chart.py` — SD Bands + OI Master Chart
-
-#### `get_price_and_iv(session, symbol_root) → (float, float)`
-Hybrid data fetch: price from **Yahoo Finance** (1m interval), IV from **Tastytrade Greeks** (ATM call).
-
-#### `get_oi_walls(session, symbol, current_price) → (list, list)`
-Fetches Open Interest data within ±10% of current price. Returns top 3 resistance strikes (Call OI walls) and top 3 support strikes (Put OI walls).
-
-#### `generate_sd_chart(session, asset, output_base)`
-Generates master candlestick charts with overlaid:
-- **SD Bands**: 1σ (blue), 2σ (orange), 3σ (dark red) shaded zones
-- **OI Walls**: Thick horizontal lines for support (green) / resistance (red)
-- **Current Price**: Dashed black line
-
-Timeframes: 4H (resampled from 1h) and 1D.
-
-**SD Formula**: `P × IV × √(1/365)` — standardized to **365 calendar days** (CME futures convention).
-
-**Output**: `trading_results/{ASSET}/{asset}_4h_master_chart.png`, `..._1d_master_chart.png`
-
----
-
-### `Analysis_Tools/hybrid_candle_oi.py` — Candlestick + OI Zones
-
-#### `get_oi_walls(session, asset) → (list, list, date)`
-Fetches OI data within configured strike range → returns top 3 resistances, supports, and expiry date.
-
-#### `generate_hybrid_chart(session, asset, output_base)`
-Generates candlestick charts with:
-- **VWAP line** (fuchsia) on intraday charts (15m, 1H)
-- **OI Support/Resistance zones** as shaded rectangles
-
-**VWAP Formula**: `Σ(Volume × TypicalPrice) / Σ(Volume)` where `TypicalPrice = (H+L+C)/3` ✅
-
-Timeframes: 15m, 1H, 1D. Output: `trading_results/{ASSET}/`.
-
----
-
-### `Analysis_Tools/intraday_scanner.py` — Real-time Intraday Scanner
-
-#### `get_auto_range(session, symbol_root) → (float, float, float)`
-Uses Yahoo Finance to find current price, then calculates strike range:
-- Gold: ±3% of current price
-- ES/NQ: ±5% of current price
-
-#### `scan_intraday(session, symbol_root, asset_title, output_base)`
-Subscribes to both **Trade** and **Summary** events for 20 seconds. Collects real-time intraday volume and open interest. Generates bar chart + CSV.
-
-Output: `intraday_results/{date}/{hour}/{ASSET}/`
-
----
-
 ### `Analysis_Tools/organized_analysis.py` — Auto-organized OI Analysis
+Subscribes to live `Summary` and `Greeks` channels, calculates exact Black-76 exposures (`GEX`, `Vanna`, `DEX`, `Charm`), and saves them in CSV formats, while logging data quality.
+Output: `trading_results/{date}/{hour}/{ASSET}/{asset}_data_{ts}.csv`
 
-#### `process_asset(session, asset, output_base)`
-Fetches OI data → generates two charts per asset:
-1. **Net OI chart** (Call OI - Put OI) — green = bullish, red = bearish
-2. **OI Walls chart** — side-by-side Call/Put OI bars
-
-Also saves raw data as CSV. All files organized by `{date}/{hour}/{ASSET}/`.
-
----
-
-### `Analysis_Tools/gc_oi_focused.py` — Gold OI Walls (Focused)
-
-Single-asset (Gold only) analysis with **auto-range** strike detection (±5% from current price via yfinance).
-Generates a focused bar chart highlighting the largest OI walls with annotations.
-Prints top 3 Call Walls (Resistance) and Put Walls (Support).
+### `update_dashboard.py` — CSV -> Dashboard JSON
+* Reads advanced Greeks and exposures directly from CSV datasets.
+* Integrates a **linear interpolation** formula to identify the exact **Gamma Flip Price** (the strike where GEX crosses zero).
+* Features **`YF_CACHE`** to avoid redundant API downloads and speed up dashboard exports.
+* Maintains backwards-compatible fallbacks to calculate proxy exposures for historical data without Greeks.
 
 ---
 
-### `Analysis_Tools/gc_option_viz.py` — Gold Volume & OI Visualization
+## ✅ Issues Resolved (v3.0 Quantitative Refactoring)
 
-Generates a 2-panel chart for Gold options with **auto-range** strike detection (±4% from current price):
-- **Panel 1**: Option Volume by strike (Call vs Put)
-- **Panel 2**: Open Interest by strike (Call vs Put)
-
-Also prints Pandas summary statistics grouped by option type.
-
----
-
-### `Analysis_Tools/gc_option_volume.py` — Gold Option Volume Table
-
-Console-only output displaying a formatted table of Gold option volume and open interest. Uses **auto-range** via yfinance (±5% of current price). No chart generated.
-
----
-
-### `Analysis_Tools/intraday_master_viz.py` — Intraday Master Zoom Charts
-
-#### `get_trading_data(session, symbol_root) → dict`
-Fetches 5-minute and 1-hour candles from Yahoo Finance, plus IV/OI/Volume from Tastytrade streamer.
-
-#### `generate_intraday_master(session, asset, output_base)`
-Generates **zoomed** intraday candlestick charts with:
-- **VWAP line** (fuchsia)
-- **SD Bands**: 1σ (blue), 2σ (orange), 3σ (red) — using 365 calendar days
-- **OI Walls**: Solid lines for support (green) / resistance (red)
-- **Volume Walls**: Dashed lines for intraday volume confluence
-
-Timeframes: 5m (last 48 candles), 1H (last 72 candles).
-Output: `intraday_results/{date}/{hour}/{ASSET}/`
-
----
-
-### `Analysis_Tools/multi_asset_net_oi.py` — Multi-asset Net OI Comparison
-
-#### `get_net_oi(session, symbol, strike_min, strike_max) → (DataFrame, date)`
-Fetches OI → pivots → calculates `Net OI = Call OI - Put OI` per strike.
-
-#### `main()`
-Generates a 3-panel chart comparing Net OI across Gold, S&P 500, and NASDAQ. Labels spikes exceeding 60% of maximum. Output: `multi_asset_net_oi.png`.
-
----
-
----
-
-## ✅ Issues Resolved (v2.0 Audit)
-
-| # | Category | Issue | Fix Applied |
-|---|----------|-------|-------------|
-| 1 | 🔴 Security | Hard-coded credentials in `config.py` | Migrated to `.env` + `python-dotenv` |
-| 2 | 🔴 Stability | `CheckValue.py` broken (module-level async) | Wrapped in proper `main()` function |
-| 3 | 🟠 Code Quality | Bare `except:` clauses swallowing all errors | Replaced with typed exception handling |
-| 4 | 🟠 Finance | SD annualization inconsistency (252 vs 365) | **Standardized to 365 calendar days** (CME futures) |
-| 5 | 🟠 Finance | GEX missing contract multiplier | Added per-product multiplier (GC=100, ES=50, NQ=20) |
-| 6 | 🟠 Stale Data | Hard-coded strike ranges in gc_oi_focused/viz/volume/multi | **Auto-range via yfinance** in all files |
-| 7 | 🟡 Imports | Duplicate imports (os, datetime) | Cleaned up |
-| 8 | 🟡 Testing | Hard-coded SPY option symbol with expiry date | Dynamic symbol generation |
-| 9 | 🟡 Pipeline | `run_all.py` referenced non-existent file | Corrected to actual filenames |
-
-### Remaining Known Limitations
-- **`sys.path.append`** pattern — fragile; consider proper packaging for production
-- **Median strike as ATM proxy** — put-call parity approach would be more accurate
-- **Equal-weight bias scoring** — could benefit from factor weighting calibration
+| # | Category | Issue | Fix Applied (v3.0) |
+|---|----------|-------|--------------------|
+| 1 | 🔴 Mathematics | Approximate GEX proxy formula | Standardized to canonical **Black-76** GEX equations with $e^{-rT}$ discounting. |
+| 2 | 🔴 Mathematics | Static Theta and Vega proxies for Vanna/Charm | Replaced with exact mathematical partial derivatives ($\frac{\partial \Delta}{\partial \sigma}$ and $\frac{\partial \Delta}{\partial T}$). |
+| 3 | 🟠 Finance | Highly biased `min(IV)` ATM proxy | Implemented a **localized flanking strikes spline** to find true ATM IV. |
+| 4 | 🟠 Microstructure | Low Globex overnight liquidity noise | Built a microstructure **Data Quality Filter** (spread checks, volume/OI confluences). |
+| 5 | 🟠 Pricing | Missing contract multipliers | Fully integrated multipliers across all GEX, DEX, Vanna, and Charm dashboard calculators. |
+| 6 | 🟡 UX | Inaccurate Gamma Flip Price | Replaced simple binary search with **exact linear interpolation** of the flip price. |
+| 7 | 🟡 Optimization | Duplicate yfinance HTTP hits | Built a local memory **`YF_CACHE`** in `update_dashboard.py` to prevent API rate limits. |
 
 ---
 
@@ -353,46 +165,15 @@ Generates a 3-panel chart comparing Net OI across Gold, S&P 500, and NASDAQ. Lab
 # Core engine — IV, SD ranges for GC/ES/NQ
 python Trading_Core/Main.py
 
-# Advanced institutional market map (Dashboard)
+# Advanced institutional market map (Dashboard charts)
 python Analysis_Tools/advanced_viz.py
 
-# Master bias report
+# Master bias report with data quality metrics
 python Analysis_Tools/master_report.py
 
-# SD bands + OI walls master chart
-python Analysis_Tools/sd_bands_chart.py
-
-# Hybrid candlestick + OI zones (15m, 1H, 1D)
-python Analysis_Tools/hybrid_candle_oi.py
-
-# Intraday volume scanner
-python Analysis_Tools/intraday_scanner.py
-
-# Organized OI analysis (auto-dated folders)
+# organized OI analysis (auto-dated folders with exact Greeks)
 python Analysis_Tools/organized_analysis.py
 
-# Multi-asset Net OI comparison
-python Analysis_Tools/multi_asset_net_oi.py
-
-# Quick price check
-python check_prices.py
+# Converts CSV results to Dashboard JSON for docs/
+python update_dashboard.py
 ```
-
----
-
-## Financial Concepts Used
-
-| Concept | Formula / Method | Files |
-|---------|-----------------|-------|
-| **Standard Deviation (σ)** | `P × IV × √(DTE/365)` | Main.py, master_report.py |
-| **VWAP** | `Σ(V × TP) / Σ(V)` | hybrid_candle_oi.py |
-| **Gamma Flip** | Price where Total GEX crosses Zero | advanced_viz.py |
-| **Vanna Flow** | `Σ(OI × Vega × dir)` sensitivity to IV | advanced_viz.py |
-| **Charm Flow** | `Σ(OI × Theta × dir)` time decay pressure | advanced_viz.py |
-| **Net Delta (DEX)**| `Σ(OI × Delta × P × dir)` dealer positioning | advanced_viz.py |
-| **Iron Walls** | Confluence of max OI and max Volume | advanced_viz.py |
-| **Put-Call Ratio (PCR)** | `Put OI ÷ Call OI` | master_report.py |
-| **Gamma Exposure (GEX)** | `Σ(OI × Γ × dir × multiplier)` | master_report.py, advanced_viz.py |
-| **IV Skew** | `IV(OTM Put) - IV(OTM Call)` | master_report.py |
-| **OI Walls (S/R)** | Top strikes by Call/Put OI | multiple files |
-| **Net OI** | `Call OI - Put OI` per strike | organized_analysis.py |
