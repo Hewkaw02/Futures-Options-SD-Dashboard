@@ -97,13 +97,13 @@ Futures options have different cost-of-carry characteristics than spot equity op
 
 #### Dealer Exposure Formulations:
 * **GEX (Gamma Exposure per 1% underlying move):**
-  $$\text{GEX} = \text{Position\_Sign} \times \text{OI} \times \Gamma \times F^2 \times 0.01 \times \text{multiplier}$$
+  $$\text{GEX} = \text{Position Sign} \times \text{OI} \times \Gamma \times F^2 \times 0.01 \times \text{multiplier}$$
 * **DEX (Delta Exposure):**
-  $$\text{DEX} = \text{Position\_Sign} \times \text{OI} \times \Delta \times F \times \text{multiplier}$$
+  $$\text{DEX} = \text{Position Sign} \times \text{OI} \times \Delta \times F \times \text{multiplier}$$
 * **Vanna Exposure:**
-  $$\text{Vanna Exposure} = \text{Position\_Sign} \times \text{OI} \times \text{Vanna} \times \text{multiplier}$$
+  $$\text{Vanna Exposure} = \text{Position Sign} \times \text{OI} \times \text{Vanna} \times \text{multiplier}$$
 * **Charm Exposure:**
-  $$\text{Charm Exposure} = \text{Position\_Sign} \times \text{OI} \times \left( \frac{\text{Charm}}{365.0} \right) \times F \times \text{multiplier}$$
+  $$\text{Charm Exposure} = \text{Position Sign} \times \text{OI} \times \left( \frac{\text{Charm}}{365.0} \right) \times F \times \text{multiplier}$$
 
 ### 2. Flanking Strike ATM IV Spline (`analytics/volatility.py`)
 Replaces the highly biased `min(IV)` search (which selects deep OTM strikes experiencing significant skew) with a **localized flanking strike spline**:
