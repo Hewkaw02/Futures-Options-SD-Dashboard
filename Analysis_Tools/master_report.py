@@ -210,8 +210,8 @@ async def analyze_asset(session, symbol, title):
             if s:
                 oi = float(s.open_interest or 0)
                 vol = float(t.day_volume or 0) if t else 0.0
-                bid = float(s.bid or 0.0)
-                ask = float(s.ask or 0.0)
+                bid = float(getattr(s, 'bid', 0.0) or 0.0)
+                ask = float(getattr(s, 'ask', 0.0) or 0.0)
                 quality_inputs.append({
                     'strike': float(o.strike_price),
                     'type': o.option_type.value,

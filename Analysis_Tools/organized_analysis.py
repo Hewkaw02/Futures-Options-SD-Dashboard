@@ -132,8 +132,8 @@ async def process_asset(session, asset, output_base):
         if s:
             oi = float(s.open_interest or 0)
             vol = float(s.prev_day_volume or 0)
-            bid = float(s.bid or 0.0)
-            ask = float(s.ask or 0.0)
+            bid = float(getattr(s, 'bid', 0.0) or 0.0)
+            ask = float(getattr(s, 'ask', 0.0) or 0.0)
             quality_inputs.append({
                 'strike': float(opt.strike_price),
                 'type': opt.option_type.value,
