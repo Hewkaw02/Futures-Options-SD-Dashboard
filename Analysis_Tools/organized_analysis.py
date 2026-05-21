@@ -15,6 +15,8 @@ from config import CLIENT_SECRET, REFRESH_TOKEN, CONTRACT_MULTIPLIERS
 
 from analytics.exposure import black76_greeks, calculate_dealer_exposures
 from tastytrade.dxfeed import Summary, Greeks
+from analytics.quality import score_data_quality
+
 
 def get_yf_price(symbol_root):
     mapping = {'/GC': 'GC=F', '/ES': 'ES=F', '/NQ': 'NQ=F'}
@@ -145,7 +147,8 @@ async def process_asset(session, asset, output_base):
     dq_results = score_data_quality(quality_inputs)
     print(f"  Data Quality Score: {dq_results['quality_score']}%")
     for w in dq_results['warnings']:
-        print(f"  ⚠ [WARN] {w}")
+        print(f"  [WARN] {w}")
+
 
     df = pd.DataFrame(data_list)
     if df.empty: return

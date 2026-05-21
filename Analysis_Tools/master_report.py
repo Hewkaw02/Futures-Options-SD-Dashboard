@@ -223,7 +223,8 @@ async def analyze_asset(session, symbol, title):
         dq_results = score_data_quality(quality_inputs)
         print(f"  Data Quality Score: {dq_results['quality_score']}%")
         for w in dq_results['warnings']:
-            print(f"  ⚠ [WARN] {w}")
+            print(f"  [WARN] {w}")
+
             
         bias_label, conf_str = get_bias(mark, call_wall, put_wall, pcr_oi, pcr_vol, gex_total, skew)
 
