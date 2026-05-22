@@ -170,6 +170,12 @@ body::after {
   text-transform: uppercase;
   position: relative;
   overflow: hidden;
+  outline: none;
+}
+
+.asset-btn:focus-visible {
+  outline: 2px solid var(--accent-neutral);
+  outline-offset: -2px;
 }
 
 .asset-btn:hover {
@@ -213,6 +219,12 @@ body::after {
   cursor: pointer;
   transition: all 0.12s ease;
   line-height: 1;
+  outline: none;
+}
+
+.time-btn:focus-visible {
+  outline: 2px solid var(--accent-neutral);
+  outline-offset: -2px;
 }
 
 .time-btn:hover:not(:disabled) {
@@ -516,6 +528,12 @@ body::after {
   cursor: pointer;
   transition: all 0.12s ease;
   text-transform: uppercase;
+  outline: none;
+}
+
+.chart-tab:focus-visible {
+  outline: 2px solid var(--accent-info);
+  outline-offset: -2px;
 }
 
 .chart-tab:hover {

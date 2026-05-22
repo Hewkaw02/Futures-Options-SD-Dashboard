@@ -45,12 +45,12 @@
 
         <!-- Time Navigator -->
         <div class="time-nav" id="time-nav">
-          <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)">◀</button>
+          <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)" aria-label="Previous Data">◀</button>
           <div class="time-display" id="time-display">
             <span id="time-label">Loading...</span>
             <span class="time-index" id="time-index"></span>
           </div>
-          <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)">▶</button>
+          <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)" aria-label="Next Data">▶</button>
         </div>
       </div>
     </header>
