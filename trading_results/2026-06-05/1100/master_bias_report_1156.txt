@@ -1,0 +1,14 @@
+==============================================================================================================
+                                  MASTER TRADING BIAS REPORT (ADVANCED v3.5)                                  
+                                        Date: 2026-06-05 | Time: 1156                                         
+==============================================================================================================
+  Asset   Price        Bias Conf%   IV%  PCR(V) Skew%   Act%   GEX       Wall(R/S)  QualityScore                                                                                                                                                                                                                                                         QualityWarnings
+   Gold  4492.0   Mild BEAR   33% 29.7%    0.45 +4.9%  58.0% VOLTL   4550.0/4500.0           0.0      Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [4465.0, 4470.0, 4490.0, 4505.0, 4520.0].
+S&P 500  7567.5   Mild BEAR   33% 16.4%    0.78 +4.1% 112.0% VOLTL   7600.0/7575.0           0.0      Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [7520.0, 7525.0, 7555.0, 7560.0, 7585.0].
+ NASDAQ 30174.0 Strong BEAR   67% 26.4%    0.89 +6.8% 296.2% VOLTL 30250.0/30250.0           0.0 Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [30080.0, 30090.0, 30210.0, 30220.0, 30225.0].
+==============================================================================================================
+Definitions:
+- Conf%: Signal alignment strength
+- Act%: Volume/OI Ratio (Participation)
+- GEX: Market Stability Regime
+==============================================================================================================
