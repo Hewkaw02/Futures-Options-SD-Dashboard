@@ -1170,6 +1170,10 @@ function renderIVSmileChart(ivData, bias) {
     }
   }
 
+  // Clean up any 0 values by mapping them to null so they don't plummet the line to 0%
+  const callIVData = ivData.call_iv.map(v => v === 0 ? null : v);
+  const putIVData = ivData.put_iv.map(v => v === 0 ? null : v);
+
   const options = {
     chart: {
       type: 'line',
@@ -1180,8 +1184,8 @@ function renderIVSmileChart(ivData, bias) {
       fontFamily: "'JetBrains Mono', monospace",
     },
     series: [
-      { name: 'Call IV %', data: ivData.call_iv },
-      { name: 'Put IV %', data: ivData.put_iv },
+      { name: 'Call IV %', data: callIVData },
+      { name: 'Put IV %', data: putIVData },
     ],
     xaxis: {
       categories: ivData.strikes.map(s => s.toString()),
@@ -1204,19 +1208,15 @@ function renderIVSmileChart(ivData, bias) {
       },
     },
     colors: ['#00E396', '#FF4560'],
-    stroke: { width: 2.5, curve: 'smooth' },
+    stroke: { width: 3, curve: 'smooth' },
     fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        type: 'vertical',
-        opacityFrom: 0.25,
-        opacityTo: 0.02,
-      },
+      type: 'solid',
+      opacity: 1.0
     },
     markers: {
-      size: 0,
-      hover: { size: 5 },
+      size: 4,
+      strokeWidth: 0,
+      hover: { size: 6 },
     },
     grid: {
       borderColor: '#1A1B20',
