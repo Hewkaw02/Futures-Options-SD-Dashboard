@@ -2365,6 +2365,8 @@ function renderIntradayVolChart(data) {
     }
   }
 
+  const sdAnnotations = getSDBandAnnotations(data, strikes);
+
   const options = {
     series: [
       { name: 'Put Vol', data: putVol },
@@ -2391,7 +2393,10 @@ function renderIntradayVolChart(data) {
     grid: { borderColor: 'var(--border-color)', strokeDashArray: 2 },
     theme: { mode: 'dark' },
     tooltip: { y: { formatter: val => formatNumber(val) } },
-    legend: { position: 'top', labels: { colors: 'var(--text-dim)' } }
+    legend: { position: 'top', labels: { colors: 'var(--text-dim)' } },
+    annotations: {
+      xaxis: sdAnnotations,
+    }
   };
 
   destroyChart('chart-intraday-vol');
