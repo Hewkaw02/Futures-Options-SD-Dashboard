@@ -943,13 +943,32 @@ function renderNetOIChart(netData, data) {
 }
 
 // ── Chart: GEX Profile ───────────────────────────────────────
-function renderGEXChart(gexData) {
+function renderGEXChart(gexData, data) {
   if (!gexData || !gexData.strikes) {
     clearChart('chart-gex');
     return;
   }
 
   destroyChart('chart-gex');
+
+  const sdAnnotations = getSDBandAnnotations(data, gexData.strikes);
+  const flipAnnotation = gexData.flip_price ? [{
+    x: gexData.flip_price.toString(),
+    borderColor: '#FFB800',
+    strokeDashArray: 4,
+    label: {
+      text: `FLIP: ${formatNumber(gexData.flip_price)}`,
+      position: 'top',
+      orientation: 'horizontal',
+      style: {
+        color: '#FFB800',
+        background: '#1C1C22',
+        fontSize: '10px',
+        fontFamily: "'JetBrains Mono', monospace",
+      },
+    },
+  }] : [];
+  const xAnnotations = [...sdAnnotations, ...flipAnnotation];
 
   const options = {
     chart: {
@@ -1021,22 +1040,7 @@ function renderGEXChart(gexData) {
           },
         },
       }],
-      xaxis: gexData.flip_price ? [{
-        x: gexData.flip_price.toString(),
-        borderColor: '#FFB800',
-        strokeDashArray: 4,
-        label: {
-          text: `FLIP: ${formatNumber(gexData.flip_price)}`,
-          position: 'top',
-          orientation: 'horizontal',
-          style: {
-            color: '#FFB800',
-            background: '#1C1C22',
-            fontSize: '10px',
-            fontFamily: "'JetBrains Mono', monospace",
-          },
-        },
-      }] : [],
+      xaxis: xAnnotations,
     },
   };
 
@@ -1046,13 +1050,15 @@ function renderGEXChart(gexData) {
 }
 
 // ── Chart: Vanna ─────────────────────────────────────────────
-function renderVannaChart(vannaData) {
+function renderVannaChart(vannaData, data) {
   if (!vannaData || !vannaData.strikes) {
     clearChart('chart-vanna');
     return;
   }
 
   destroyChart('chart-vanna');
+
+  const sdAnnotations = getSDBandAnnotations(data, vannaData.strikes);
 
   const options = {
     chart: {
@@ -1112,6 +1118,7 @@ function renderVannaChart(vannaData) {
         strokeDashArray: 0,
         borderWidth: 1,
       }],
+      xaxis: sdAnnotations,
     },
   };
 
@@ -1121,7 +1128,7 @@ function renderVannaChart(vannaData) {
 }
 
 // ── Chart: IV Smile / Skew Curve ───────────────────────────────────────
-function renderIVSmileChart(ivData, bias) {
+function renderIVSmileChart(ivData, bias, data) {
   if (!ivData || !ivData.strikes || ivData.strikes.length < 3) {
     clearChart('chart-iv-smile');
     return;
@@ -1129,36 +1136,8 @@ function renderIVSmileChart(ivData, bias) {
 
   destroyChart('chart-iv-smile');
 
-  // Find ATM price for annotation
-  const atmPrice = bias ? bias.price : null;
-  const xAnnotations = [];
-  if (atmPrice) {
-    // Find closest strike to ATM
-    let closestStrike = ivData.strikes[0];
-    let minDist = Math.abs(atmPrice - closestStrike);
-    for (const s of ivData.strikes) {
-      if (Math.abs(atmPrice - s) < minDist) {
-        minDist = Math.abs(atmPrice - s);
-        closestStrike = s;
-      }
-    }
-    xAnnotations.push({
-      x: closestStrike.toString(),
-      borderColor: '#FEB019',
-      strokeDashArray: 4,
-      label: {
-        text: `ATM: ${formatNumber(atmPrice)}`,
-        position: 'top',
-        orientation: 'horizontal',
-        style: {
-          color: '#FEB019',
-          background: '#1C1C22',
-          fontSize: '10px',
-          fontFamily: "'JetBrains Mono', monospace",
-        },
-      },
-    });
-  }
+  // Compute SD bands and ATM annotations
+  const xAnnotations = getSDBandAnnotations(data, ivData.strikes);
 
   // Detect skew direction for badge
   const badgeEl = document.getElementById('iv-smile-badge');
@@ -1517,6 +1496,8 @@ function getSDBandAnnotations(data, strikes) {
   const sd3_low = getClosestStrike(price - 3 * sd1);
   const sd3_high = getClosestStrike(price + 3 * sd1);
 
+  const atmStrike = getClosestStrike(price);
+
   return [
     {
       x: sd3_low.toString(),
@@ -1568,6 +1549,24 @@ function getSDBandAnnotations(data, strikes) {
         },
         offsetY: 30
       }
+    },
+    {
+      x: atmStrike.toString(),
+      borderColor: '#FEB019',
+      strokeDashArray: 4,
+      borderWidth: 2,
+      label: {
+        text: `ATM: ${formatNumber(price)}`,
+        position: 'top',
+        orientation: 'horizontal',
+        style: {
+          color: '#FEB019',
+          background: '#1C1C22',
+          fontSize: '10px',
+          fontFamily: "'JetBrains Mono', monospace",
+          fontWeight: 'bold',
+        },
+      },
     }
   ];
 }
