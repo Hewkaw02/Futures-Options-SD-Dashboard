@@ -94,6 +94,7 @@ async def process_asset(session, asset, output_base):
                 
                 # Exact Black-76 Greeks & Exposures
                 gex_val, vanna_val, dex_val, charm_val = 0.0, 0.0, 0.0, 0.0
+                opt_iv = 0.0
                 if g:
                     opt_iv = float(g.volatility or 0.2)
                     multiplier = CONTRACT_MULTIPLIERS.get(clean_name, 1)
@@ -124,7 +125,8 @@ async def process_asset(session, asset, output_base):
                     'GEX': gex_val,
                     'Vanna': vanna_val,
                     'DEX': dex_val,
-                    'Charm': charm_val
+                    'Charm': charm_val,
+                    'IV': opt_iv
                 })
 
     # Data Quality Scoring

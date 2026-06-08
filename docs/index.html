@@ -94,6 +94,10 @@
               <div class="metric-label">Call Wall / Put Wall</div>
               <div class="metric-value" id="metric-walls">—</div>
             </div>
+            <div class="metric-item">
+              <div class="metric-label">Max Pain</div>
+              <div class="metric-value" id="metric-max-pain">—</div>
+            </div>
           </div>
         </div>
       </div>
@@ -277,6 +281,33 @@
           <span class="card-badge">IV RISK</span>
         </div>
         <div class="chart-container" id="chart-vanna"></div>
+      </div>
+
+      <!-- ══════ IV SMILE / SKEW CURVE ══════ -->
+      <div class="card full-width" id="card-iv-smile">
+        <div class="card-header">
+          <span class="card-title">IV Smile / Skew Curve</span>
+          <span class="card-badge" id="iv-smile-badge">CALL vs PUT IV</span>
+        </div>
+        <div class="chart-container" id="chart-iv-smile"></div>
+      </div>
+
+      <!-- ══════ CHANGE IN OI (ΔOI) ══════ -->
+      <div class="card" id="card-oi-change">
+        <div class="card-header">
+          <span class="card-title">Change in OI (ΔOI)</span>
+          <span class="card-badge" id="oi-change-badge">vs PREVIOUS</span>
+        </div>
+        <div class="chart-container" id="chart-oi-change"></div>
+      </div>
+
+      <!-- ══════ MAX PAIN ══════ -->
+      <div class="card" id="card-max-pain">
+        <div class="card-header">
+          <span class="card-title">Max Pain Analysis</span>
+          <span class="card-badge" id="max-pain-badge">PAIN ZONE</span>
+        </div>
+        <div class="chart-container" id="chart-max-pain"></div>
       </div>
 
     </section>

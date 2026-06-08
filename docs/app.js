@@ -699,6 +699,9 @@ function renderAll(data) {
     clearChart('chart-net-oi');
     clearChart('chart-gex');
     clearChart('chart-vanna');
+    clearChart('chart-iv-smile');
+    clearChart('chart-oi-change');
+    clearChart('chart-max-pain');
     clearChart('chart-hybrid');
     clearChart('chart-intraday-master');
     clearChart('chart-intraday-vol');
@@ -713,6 +716,9 @@ function renderAll(data) {
   renderNetOIChart(data.net_oi);
   renderGEXChart(data.gex_profile);
   renderVannaChart(data.vanna);
+  renderIVSmileChart(data.iv_smile, data.bias);
+  renderOIChangeChart(data.oi_change);
+  renderMaxPainChart(data.oi_walls, data.max_pain, data.bias);
   
   updateMiniPanels(data);
 }
@@ -729,7 +735,7 @@ function renderBiasCard(bias) {
     confEl.textContent = 'Confidence: —';
     priceEl.textContent = '—';
     priceEl.style.fontSize = '';
-    ['metric-iv', 'metric-pcr', 'metric-skew', 'metric-activity', 'metric-gex', 'metric-walls']
+    ['metric-iv', 'metric-pcr', 'metric-skew', 'metric-activity', 'metric-gex', 'metric-walls', 'metric-max-pain']
       .forEach(id => {
         const el = document.getElementById(id);
         el.textContent = '—';
@@ -772,6 +778,13 @@ function renderBiasCard(bias) {
 
   // Walls
   setMetric('metric-walls', bias.walls || '—');
+
+  // Max Pain
+  const maxPainEl = document.getElementById('metric-max-pain');
+  if (maxPainEl) {
+    maxPainEl.textContent = '—';
+    maxPainEl.className = 'metric-value';
+  }
 }
 
 function setMetric(id, value, colorClass) {
@@ -1098,6 +1111,358 @@ function renderVannaChart(vannaData) {
   const chart = new ApexCharts(document.getElementById('chart-vanna'), options);
   chart.render();
   state.charts['chart-vanna'] = chart;
+}
+
+// ── Chart: IV Smile / Skew Curve ───────────────────────────────────────
+function renderIVSmileChart(ivData, bias) {
+  if (!ivData || !ivData.strikes || ivData.strikes.length < 3) {
+    clearChart('chart-iv-smile');
+    return;
+  }
+
+  destroyChart('chart-iv-smile');
+
+  // Find ATM price for annotation
+  const atmPrice = bias ? bias.price : null;
+  const xAnnotations = [];
+  if (atmPrice) {
+    // Find closest strike to ATM
+    let closestStrike = ivData.strikes[0];
+    let minDist = Math.abs(atmPrice - closestStrike);
+    for (const s of ivData.strikes) {
+      if (Math.abs(atmPrice - s) < minDist) {
+        minDist = Math.abs(atmPrice - s);
+        closestStrike = s;
+      }
+    }
+    xAnnotations.push({
+      x: closestStrike.toString(),
+      borderColor: '#FEB019',
+      strokeDashArray: 4,
+      label: {
+        text: `ATM: ${formatNumber(atmPrice)}`,
+        position: 'top',
+        orientation: 'horizontal',
+        style: {
+          color: '#FEB019',
+          background: '#1C1C22',
+          fontSize: '10px',
+          fontFamily: "'JetBrains Mono', monospace",
+        },
+      },
+    });
+  }
+
+  // Detect skew direction for badge
+  const badgeEl = document.getElementById('iv-smile-badge');
+  if (badgeEl) {
+    const callAvg = ivData.call_iv.filter(v => v > 0).reduce((a, b) => a + b, 0) / (ivData.call_iv.filter(v => v > 0).length || 1);
+    const putAvg = ivData.put_iv.filter(v => v > 0).reduce((a, b) => a + b, 0) / (ivData.put_iv.filter(v => v > 0).length || 1);
+    if (putAvg > callAvg * 1.05) {
+      badgeEl.textContent = '🟥 PUT SKEW (Fear)';
+      badgeEl.className = 'card-badge bear';
+    } else if (callAvg > putAvg * 1.05) {
+      badgeEl.textContent = '🟩 CALL SKEW (Greed)';
+      badgeEl.className = 'card-badge bull';
+    } else {
+      badgeEl.textContent = '🟡 BALANCED SMILE';
+      badgeEl.className = 'card-badge';
+    }
+  }
+
+  const options = {
+    chart: {
+      type: 'line',
+      height: '100%',
+      background: 'transparent',
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: "'JetBrains Mono', monospace",
+    },
+    series: [
+      { name: 'Call IV %', data: ivData.call_iv },
+      { name: 'Put IV %', data: ivData.put_iv },
+    ],
+    xaxis: {
+      categories: ivData.strikes.map(s => s.toString()),
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        rotate: -45,
+        rotateAlways: true,
+      },
+      axisBorder: { color: '#1A1B20' },
+      axisTicks: { color: '#1A1B20' },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        formatter: v => v.toFixed(1) + '%',
+      },
+      title: {
+        text: 'Implied Volatility %',
+        style: { color: '#6B6B75', fontSize: '10px' },
+      },
+    },
+    colors: ['#00E396', '#FF4560'],
+    stroke: { width: 2.5, curve: 'smooth' },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        type: 'vertical',
+        opacityFrom: 0.25,
+        opacityTo: 0.02,
+      },
+    },
+    markers: {
+      size: 0,
+      hover: { size: 5 },
+    },
+    grid: {
+      borderColor: '#1A1B20',
+      strokeDashArray: 3,
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'right',
+      labels: { colors: '#9A9AA5' },
+      markers: { radius: 0 },
+    },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: v => v.toFixed(2) + '%' },
+    },
+    dataLabels: { enabled: false },
+    annotations: {
+      xaxis: xAnnotations,
+    },
+  };
+
+  const chart = new ApexCharts(document.getElementById('chart-iv-smile'), options);
+  chart.render();
+  state.charts['chart-iv-smile'] = chart;
+}
+
+// ── Chart: Change in OI (ΔOI) ─────────────────────────────────────
+function renderOIChangeChart(oiChangeData) {
+  if (!oiChangeData || !oiChangeData.strikes || oiChangeData.strikes.length === 0) {
+    clearChart('chart-oi-change');
+    return;
+  }
+
+  destroyChart('chart-oi-change');
+
+  // Badge: net change direction
+  const badgeEl = document.getElementById('oi-change-badge');
+  if (badgeEl) {
+    const totalCallChange = oiChangeData.call_change.reduce((a, b) => a + b, 0);
+    const totalPutChange = oiChangeData.put_change.reduce((a, b) => a + b, 0);
+    if (totalCallChange > totalPutChange) {
+      badgeEl.textContent = `⬆ CALL OI +${formatCompact(totalCallChange)}`;
+      badgeEl.className = 'card-badge bull';
+    } else if (totalPutChange > totalCallChange) {
+      badgeEl.textContent = `⬆ PUT OI +${formatCompact(totalPutChange)}`;
+      badgeEl.className = 'card-badge bear';
+    } else {
+      badgeEl.textContent = 'vs PREVIOUS';
+      badgeEl.className = 'card-badge';
+    }
+  }
+
+  const options = {
+    chart: {
+      type: 'bar',
+      height: '100%',
+      stacked: false,
+      background: 'transparent',
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: "'JetBrains Mono', monospace",
+    },
+    series: [
+      { name: 'Δ Call OI', data: oiChangeData.call_change },
+      { name: 'Δ Put OI', data: oiChangeData.put_change },
+    ],
+    xaxis: {
+      categories: oiChangeData.strikes.map(s => s.toString()),
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        rotate: -45,
+        rotateAlways: true,
+      },
+      axisBorder: { color: '#1A1B20' },
+      axisTicks: { color: '#1A1B20' },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        formatter: v => formatCompact(v),
+      },
+    },
+    colors: ['#00CC52', '#CC0044'],
+    plotOptions: {
+      bar: { borderRadius: 0, columnWidth: '70%' },
+    },
+    grid: {
+      borderColor: '#1A1B20',
+      strokeDashArray: 3,
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'right',
+      labels: { colors: '#9A9AA5' },
+      markers: { radius: 0 },
+    },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: v => (v >= 0 ? '+' : '') + v.toLocaleString() },
+    },
+    dataLabels: { enabled: false },
+    annotations: {
+      yaxis: [{
+        y: 0,
+        borderColor: '#6B6B75',
+        strokeDashArray: 0,
+        borderWidth: 1,
+      }],
+    },
+  };
+
+  const chart = new ApexCharts(document.getElementById('chart-oi-change'), options);
+  chart.render();
+  state.charts['chart-oi-change'] = chart;
+}
+
+// ── Chart: Max Pain Analysis ─────────────────────────────────────
+function renderMaxPainChart(oiData, maxPainData, bias) {
+  if (!oiData || !oiData.strikes || !maxPainData) {
+    clearChart('chart-max-pain');
+    return;
+  }
+
+  destroyChart('chart-max-pain');
+
+  // Update Max Pain metric in Bias Card
+  const maxPainMetric = document.getElementById('metric-max-pain');
+  if (maxPainMetric && maxPainData.price) {
+    maxPainMetric.textContent = formatNumber(maxPainData.price);
+    if (bias && bias.price) {
+      const diff = maxPainData.price - bias.price;
+      const pct = ((diff / bias.price) * 100).toFixed(1);
+      const direction = diff >= 0 ? 'bull' : 'bear';
+      maxPainMetric.className = `metric-value ${direction}`;
+    }
+  }
+
+  // Update badge
+  const badgeEl = document.getElementById('max-pain-badge');
+  if (badgeEl && maxPainData.price && bias && bias.price) {
+    const dist = Math.abs(maxPainData.price - bias.price);
+    const distPct = ((dist / bias.price) * 100).toFixed(1);
+    badgeEl.textContent = `MAX PAIN: ${formatNumber(maxPainData.price)} (${distPct}% away)`;
+  }
+
+  // Calculate pain per strike for visualization
+  const strikes = oiData.strikes;
+  const callOI = oiData.call_oi;
+  const putOI = oiData.put_oi;
+  const painPerStrike = [];
+
+  for (let i = 0; i < strikes.length; i++) {
+    const settlePrice = strikes[i];
+    let totalPain = 0;
+    for (let j = 0; j < strikes.length; j++) {
+      if (settlePrice > strikes[j]) {
+        totalPain += (callOI[j] || 0) * (settlePrice - strikes[j]);
+      }
+      if (settlePrice < strikes[j]) {
+        totalPain += (putOI[j] || 0) * (strikes[j] - settlePrice);
+      }
+    }
+    painPerStrike.push(totalPain);
+  }
+
+  // Color each bar: min pain strike gets gold, others gradient
+  const minPain = Math.min(...painPerStrike);
+
+  const options = {
+    chart: {
+      type: 'bar',
+      height: '100%',
+      background: 'transparent',
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: "'JetBrains Mono', monospace",
+    },
+    series: [{
+      name: 'Total Pain ($)',
+      data: painPerStrike,
+    }],
+    xaxis: {
+      categories: strikes.map(s => s.toString()),
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        rotate: -45,
+        rotateAlways: true,
+      },
+      axisBorder: { color: '#1A1B20' },
+      axisTicks: { color: '#1A1B20' },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        formatter: v => formatCompact(v),
+      },
+    },
+    colors: ['#4D9EFF'],
+    plotOptions: {
+      bar: {
+        borderRadius: 0,
+        columnWidth: '70%',
+        distributed: true,
+        colors: {
+          ranges: painPerStrike.map((p, i) => {
+            if (p === minPain) return { from: p - 1, to: p + 1, color: '#FFB800' };
+            return null;
+          }).filter(Boolean),
+        },
+      },
+    },
+    grid: {
+      borderColor: '#1A1B20',
+      strokeDashArray: 3,
+    },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: v => '$' + formatCompact(v) },
+    },
+    dataLabels: { enabled: false },
+    legend: { show: false },
+    annotations: {
+      xaxis: maxPainData.price ? [{
+        x: maxPainData.price.toString(),
+        borderColor: '#FFB800',
+        strokeDashArray: 0,
+        borderWidth: 2,
+        label: {
+          text: `MAX PAIN: ${formatNumber(maxPainData.price)}`,
+          position: 'top',
+          orientation: 'horizontal',
+          style: {
+            color: '#FFB800',
+            background: '#1C1C22',
+            fontSize: '10px',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 'bold',
+          },
+        },
+      }] : [],
+    },
+  };
+
+  const chart = new ApexCharts(document.getElementById('chart-max-pain'), options);
+  chart.render();
+  state.charts['chart-max-pain'] = chart;
 }
 
 

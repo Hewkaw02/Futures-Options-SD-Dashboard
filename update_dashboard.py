@@ -133,6 +133,7 @@ def parse_option_data_csv(csv_path):
 
     headers = [h.strip() for h in lines[0].strip().split(',')]
     has_greeks = 'GEX' in headers and 'Vanna' in headers
+    has_iv = 'IV' in headers
     
     for line in lines[1:]:
         vals = line.strip().split(',')
@@ -154,6 +155,14 @@ def parse_option_data_csv(csv_path):
             row_dict['Vanna'] = 0.0
             row_dict['DEX'] = 0.0
             row_dict['Charm'] = 0.0
+        if has_iv:
+            iv_idx = headers.index('IV')
+            if len(vals) > iv_idx:
+                row_dict['IV'] = float(vals[iv_idx])
+            else:
+                row_dict['IV'] = 0.0
+        else:
+            row_dict['IV'] = 0.0
         rows.append(row_dict)
 
     if not rows:
@@ -254,6 +263,53 @@ def parse_option_data_csv(csv_path):
         "vanna_exp": vanna_values,
     }
 
+    # IV Smile / Skew Curve
+    iv_smile = None
+    if any(r.get('IV', 0) > 0 for r in rows):
+        call_iv_map = {}
+        put_iv_map = {}
+        for r in rows:
+            s = r['Strike']
+            iv_val = r.get('IV', 0)
+            if iv_val > 0:
+                if r['Type'] in ['Call', 'C']:
+                    call_iv_map[s] = iv_val
+                else:
+                    put_iv_map[s] = iv_val
+        
+        iv_strikes = sorted(set(list(call_iv_map.keys()) + list(put_iv_map.keys())))
+        if len(iv_strikes) >= 3:
+            iv_smile = {
+                "strikes": iv_strikes,
+                "call_iv": [round(call_iv_map.get(s, 0) * 100, 2) for s in iv_strikes],
+                "put_iv": [round(put_iv_map.get(s, 0) * 100, 2) for s in iv_strikes],
+            }
+
+    # Max Pain Calculation
+    max_pain_result = None
+    if active_strikes and (any(call_oi.get(s, 0) > 0 for s in active_strikes) or any(put_oi.get(s, 0) > 0 for s in active_strikes)):
+        min_pain = float('inf')
+        best_strike = active_strikes[len(active_strikes) // 2]
+        
+        for settle_price in active_strikes:
+            total_pain = 0
+            for s in active_strikes:
+                # Call pain: if settle > strike, calls are ITM
+                if settle_price > s:
+                    total_pain += call_oi.get(s, 0) * (settle_price - s)
+                # Put pain: if settle < strike, puts are ITM  
+                if settle_price < s:
+                    total_pain += put_oi.get(s, 0) * (s - settle_price)
+            
+            if total_pain < min_pain:
+                min_pain = total_pain
+                best_strike = settle_price
+        
+        max_pain_result = {
+            "price": best_strike,
+            "total_pain": round(min_pain, 0),
+        }
+
     # Find top Volume resistance (call) and support (put) walls
     vol_resistances = []
     vol_supports = []
@@ -286,7 +342,9 @@ def parse_option_data_csv(csv_path):
         "vanna": vanna,
         "vol_resistances": vol_resistances,
         "vol_supports": vol_supports,
-        "volume_profile": profile
+        "volume_profile": profile,
+        "iv_smile": iv_smile,
+        "max_pain": max_pain_result,
     }
 
 
@@ -464,6 +522,33 @@ def compute_sd_bands(price, iv, candle_data=None):
     }
 
 
+def find_previous_csv(date_str, hour_str, asset, asset_lower):
+    """Find the most recent previous CSV for the same asset."""
+    src_root = Path("trading_results")
+    
+    # Collect all available timestamp directories
+    all_timestamps = []
+    for d_dir in sorted(src_root.iterdir()):
+        if not d_dir.is_dir() or not re.match(r'\d{4}-\d{2}-\d{2}', d_dir.name):
+            continue
+        for h_dir in sorted(d_dir.iterdir()):
+            if not h_dir.is_dir():
+                continue
+            all_timestamps.append((d_dir.name, h_dir.name))
+    
+    # Find current position and look backwards
+    current = (date_str, hour_str)
+    for i, ts in enumerate(all_timestamps):
+        if ts == current and i > 0:
+            prev_date, prev_hour = all_timestamps[i - 1]
+            prev_dir = src_root / prev_date / prev_hour / asset
+            pattern = f"{asset_lower}_data_*.csv"
+            matches = sorted(glob.glob(str(prev_dir / pattern)))
+            return matches[-1] if matches else None
+    
+    return None
+
+
 def process_timestamp(date_str, hour_str):
     """Process a single timestamp directory into JSON."""
     src_dir = SOURCE_ROOT / date_str / hour_str
@@ -502,6 +587,8 @@ def process_timestamp(date_str, hour_str):
                 data["supports"] = opt_data["supports"]
                 data["gex_profile"] = opt_data["gex_profile"]
                 data["vanna"] = opt_data["vanna"]
+                data["iv_smile"] = opt_data.get("iv_smile")
+                data["max_pain"] = opt_data.get("max_pain")
             else:
                 data["oi_walls"] = None
                 data["net_oi"] = None
@@ -509,6 +596,8 @@ def process_timestamp(date_str, hour_str):
                 data["supports"] = []
                 data["gex_profile"] = None
                 data["vanna"] = None
+                data["iv_smile"] = None
+                data["max_pain"] = None
         else:
             data["oi_walls"] = None
             data["net_oi"] = None
@@ -516,6 +605,35 @@ def process_timestamp(date_str, hour_str):
             data["supports"] = []
             data["gex_profile"] = None
             data["vanna"] = None
+            data["iv_smile"] = None
+            data["max_pain"] = None
+
+        # 2b. ΔOI — Compare current OI with previous snapshot
+        data["oi_change"] = None
+        if opt_csv and opt_data:
+            # Find previous hour's CSV for the same asset
+            prev_csv = find_previous_csv(date_str, hour_str, asset, asset_lower)
+            if prev_csv:
+                prev_data = parse_option_data_csv(prev_csv)
+                if prev_data and prev_data["oi_walls"]:
+                    prev_call_oi = dict(zip(prev_data["oi_walls"]["strikes"], prev_data["oi_walls"]["call_oi"]))
+                    prev_put_oi = dict(zip(prev_data["oi_walls"]["strikes"], prev_data["oi_walls"]["put_oi"]))
+                    
+                    curr_strikes = opt_data["oi_walls"]["strikes"]
+                    curr_call = dict(zip(curr_strikes, opt_data["oi_walls"]["call_oi"]))
+                    curr_put = dict(zip(curr_strikes, opt_data["oi_walls"]["put_oi"]))
+                    
+                    all_strikes = sorted(set(list(curr_call.keys()) + list(prev_call_oi.keys())))
+                    call_change = [curr_call.get(s, 0) - prev_call_oi.get(s, 0) for s in all_strikes]
+                    put_change = [curr_put.get(s, 0) - prev_put_oi.get(s, 0) for s in all_strikes]
+                    
+                    # Only export if there are actual changes
+                    if any(c != 0 for c in call_change) or any(c != 0 for c in put_change):
+                        data["oi_change"] = {
+                            "strikes": all_strikes,
+                            "call_change": call_change,
+                            "put_change": put_change,
+                        }
 
         # 3. Candlestick & VWAP Data from yfinance
         multi_candles = get_multi_timeframe_candles(asset)
