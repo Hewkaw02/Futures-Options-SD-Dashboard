@@ -516,10 +516,68 @@ def compute_sd_bands(price, iv, candle_data=None):
         "levels": {
             "+1SD": round(price + sd1, 2),
             "+2SD": round(price + 2 * sd1, 2),
+            "+3SD": round(price + 3 * sd1, 2),
             "-1SD": round(price - sd1, 2),
             "-2SD": round(price - 2 * sd1, 2),
+            "-3SD": round(price - 3 * sd1, 2),
         },
     }
+
+
+def get_atm_iv_from_csv(csv_path, price):
+    """Compute the average IV of options at the strike closest to the underlying price."""
+    if not csv_path or price <= 0:
+        return 0.0
+    try:
+        df = pd.read_csv(csv_path) if HAS_PD else None
+        if df is not None:
+            if 'IV' not in df.columns:
+                return 0.0
+            # Find closest strike
+            df['dist'] = (df['Strike'] - price).abs()
+            closest_strike = df.loc[df['dist'].idxmin()]['Strike']
+            closest_rows = df[df['Strike'] == closest_strike]
+            valid_ivs = closest_rows[closest_rows['IV'] > 0]['IV']
+            if not valid_ivs.empty:
+                return float(valid_ivs.mean())
+        else:
+            # Manual fallback
+            with open(csv_path, 'r') as f:
+                lines = f.readlines()
+            if len(lines) < 2: return 0.0
+            headers = lines[0].strip().split(',')
+            if 'Strike' not in headers or 'IV' not in headers:
+                return 0.0
+            strike_idx = headers.index('Strike')
+            iv_idx = headers.index('IV')
+            
+            closest_strike = None
+            min_dist = float('inf')
+            strike_ivs = {} # strike -> list of IVs
+            
+            for line in lines[1:]:
+                vals = line.strip().split(',')
+                if len(vals) <= max(strike_idx, iv_idx): continue
+                s = float(vals[strike_idx])
+                try:
+                    iv_val = float(vals[iv_idx])
+                except ValueError:
+                    continue
+                if iv_val > 0:
+                    dist = abs(s - price)
+                    if dist < min_dist:
+                        min_dist = dist
+                        closest_strike = s
+                    if s not in strike_ivs:
+                        strike_ivs[s] = []
+                    strike_ivs[s].append(iv_val)
+            
+            if closest_strike is not None and closest_strike in strike_ivs:
+                vals = strike_ivs[closest_strike]
+                return sum(vals) / len(vals)
+    except Exception as e:
+        print(f"      [WARN] Failed to get ATM IV from {csv_path}: {e}")
+    return 0.0
 
 
 def find_previous_csv(date_str, hour_str, asset, asset_lower):
@@ -654,8 +712,19 @@ def process_timestamp(date_str, hour_str):
 
         # 4. SD bands (Primary: IV-based)
         price = data.get("bias", {}).get("price", 0)
+        if price <= 0 and "candlesticks" in data and "1d" in data["candlesticks"]:
+            ohlcv = data["candlesticks"]["1d"]["ohlcv"]
+            if ohlcv:
+                price = ohlcv[-1][4]  # Daily close price of underlying
+                if "price" not in data["bias"] or data["bias"]["price"] <= 0:
+                    data["bias"]["price"] = price
+
         iv_str = data.get("bias", {}).get("iv", "0%")
         iv = float(iv_str.replace('%', '')) / 100 if iv_str and '%' in iv_str else 0
+        if iv <= 0 and opt_csv and price > 0:
+            iv = get_atm_iv_from_csv(opt_csv, price)
+            if "iv" not in data["bias"] or data["bias"]["iv"] in ["0%", "—", ""]:
+                data["bias"]["iv"] = f"{round(iv * 100, 2)}%"
         
         data["sd_bands"] = compute_sd_bands(price, iv, data.get("candlestick"))
             

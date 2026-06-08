@@ -712,13 +712,13 @@ function renderAll(data) {
   renderHybridChart(data);
   renderIntradayMasterChart(data);
   renderIntradayVolChart(data);
-  renderOIWallsChart(data.oi_walls);
-  renderNetOIChart(data.net_oi);
-  renderGEXChart(data.gex_profile);
-  renderVannaChart(data.vanna);
-  renderIVSmileChart(data.iv_smile, data.bias);
-  renderOIChangeChart(data.oi_change);
-  renderMaxPainChart(data.oi_walls, data.max_pain, data.bias);
+  renderOIWallsChart(data.oi_walls, data);
+  renderNetOIChart(data.net_oi, data);
+  renderGEXChart(data.gex_profile, data);
+  renderVannaChart(data.vanna, data);
+  renderIVSmileChart(data.iv_smile, data.bias, data);
+  renderOIChangeChart(data.oi_change, data);
+  renderMaxPainChart(data.oi_walls, data.max_pain, data.bias, data);
   
   updateMiniPanels(data);
 }
@@ -801,13 +801,15 @@ function parseSkewClass(skew) {
 }
 
 // ── Chart: OI Walls ──────────────────────────────────────────
-function renderOIWallsChart(oiData) {
+function renderOIWallsChart(oiData, data) {
   if (!oiData || !oiData.strikes) {
     clearChart('chart-oi-walls');
     return;
   }
 
   destroyChart('chart-oi-walls');
+
+  const sdAnnotations = getSDBandAnnotations(data, oiData.strikes);
 
   const options = {
     chart: {
@@ -854,6 +856,9 @@ function renderOIWallsChart(oiData) {
       y: { formatter: v => v.toLocaleString() },
     },
     dataLabels: { enabled: false },
+    annotations: {
+      xaxis: sdAnnotations,
+    },
   };
 
   const chart = new ApexCharts(document.getElementById('chart-oi-walls'), options);
@@ -862,7 +867,7 @@ function renderOIWallsChart(oiData) {
 }
 
 // ── Chart: Net OI ────────────────────────────────────────────
-function renderNetOIChart(netData) {
+function renderNetOIChart(netData, data) {
   if (!netData || !netData.strikes) {
     clearChart('chart-net-oi');
     return;
@@ -871,6 +876,7 @@ function renderNetOIChart(netData) {
   destroyChart('chart-net-oi');
 
   const colors = (netData.net || []).map(v => v >= 0 ? '#00FF66' : '#FF0055');
+  const sdAnnotations = getSDBandAnnotations(data, netData.strikes);
 
   const options = {
     chart: {
@@ -927,6 +933,7 @@ function renderNetOIChart(netData) {
         strokeDashArray: 0,
         borderWidth: 1,
       }],
+      xaxis: sdAnnotations,
     },
   };
 
@@ -1253,13 +1260,15 @@ function renderIVSmileChart(ivData, bias) {
 }
 
 // ── Chart: Change in OI (ΔOI) ─────────────────────────────────────
-function renderOIChangeChart(oiChangeData) {
+function renderOIChangeChart(oiChangeData, data) {
   if (!oiChangeData || !oiChangeData.strikes || oiChangeData.strikes.length === 0) {
     clearChart('chart-oi-change');
     return;
   }
 
   destroyChart('chart-oi-change');
+
+  const sdAnnotations = getSDBandAnnotations(data, oiChangeData.strikes);
 
   // Badge: net change direction
   const badgeEl = document.getElementById('oi-change-badge');
@@ -1334,6 +1343,7 @@ function renderOIChangeChart(oiChangeData) {
         strokeDashArray: 0,
         borderWidth: 1,
       }],
+      xaxis: sdAnnotations,
     },
   };
 
@@ -1343,7 +1353,7 @@ function renderOIChangeChart(oiChangeData) {
 }
 
 // ── Chart: Max Pain Analysis ─────────────────────────────────────
-function renderMaxPainChart(oiData, maxPainData, bias) {
+function renderMaxPainChart(oiData, maxPainData, bias, data) {
   if (!oiData || !oiData.strikes || !maxPainData) {
     clearChart('chart-max-pain');
     return;
@@ -1393,6 +1403,27 @@ function renderMaxPainChart(oiData, maxPainData, bias) {
 
   // Color each bar: min pain strike gets gold, others gradient
   const minPain = Math.min(...painPerStrike);
+  const sdAnnotations = getSDBandAnnotations(data, strikes);
+
+  const maxPainAnnotation = maxPainData.price ? [{
+    x: maxPainData.price.toString(),
+    borderColor: '#FFB800',
+    strokeDashArray: 0,
+    borderWidth: 2,
+    label: {
+      text: `MAX PAIN: ${formatNumber(maxPainData.price)}`,
+      position: 'top',
+      orientation: 'horizontal',
+      style: {
+        color: '#FFB800',
+        background: '#1C1C22',
+        fontSize: '10px',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 'bold',
+      },
+    },
+  }] : [];
+  const xaxisAnnotations = [...sdAnnotations, ...maxPainAnnotation];
 
   const options = {
     chart: {
@@ -1448,30 +1479,97 @@ function renderMaxPainChart(oiData, maxPainData, bias) {
     dataLabels: { enabled: false },
     legend: { show: false },
     annotations: {
-      xaxis: maxPainData.price ? [{
-        x: maxPainData.price.toString(),
-        borderColor: '#FFB800',
-        strokeDashArray: 0,
-        borderWidth: 2,
-        label: {
-          text: `MAX PAIN: ${formatNumber(maxPainData.price)}`,
-          position: 'top',
-          orientation: 'horizontal',
-          style: {
-            color: '#FFB800',
-            background: '#1C1C22',
-            fontSize: '10px',
-            fontFamily: "'JetBrains Mono', monospace",
-            fontWeight: 'bold',
-          },
-        },
-      }] : [],
+      xaxis: xaxisAnnotations,
     },
   };
 
   const chart = new ApexCharts(document.getElementById('chart-max-pain'), options);
   chart.render();
   state.charts['chart-max-pain'] = chart;
+}
+
+
+// Helper to calculate standard deviation bands annotations
+function getSDBandAnnotations(data, strikes) {
+  if (!data || !strikes || strikes.length === 0) return [];
+  const price = data.sd_bands?.price || data.bias?.price;
+  const sd1 = data.sd_bands?.sd1 || data.sd_step;
+  if (!price || !sd1 || sd1 <= 0) return [];
+
+  // Find closest strike in the list
+  const getClosestStrike = (target) => {
+    let closest = strikes[0];
+    let minDist = Math.abs(target - closest);
+    for (const s of strikes) {
+      const dist = Math.abs(target - s);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = s;
+      }
+    }
+    return closest;
+  };
+
+  const sd1_low = getClosestStrike(price - sd1);
+  const sd1_high = getClosestStrike(price + sd1);
+  const sd2_low = getClosestStrike(price - 2 * sd1);
+  const sd2_high = getClosestStrike(price + 2 * sd1);
+  const sd3_low = getClosestStrike(price - 3 * sd1);
+  const sd3_high = getClosestStrike(price + 3 * sd1);
+
+  return [
+    {
+      x: sd3_low.toString(),
+      x2: sd3_high.toString(),
+      fillColor: '#FF4560',
+      opacity: 0.02,
+      label: {
+        text: '3 SD',
+        borderColor: 'transparent',
+        style: {
+          color: '#9A9AA5',
+          background: 'transparent',
+          fontSize: '9px',
+          fontFamily: "'JetBrains Mono', monospace"
+        },
+        offsetY: 10
+      }
+    },
+    {
+      x: sd2_low.toString(),
+      x2: sd2_high.toString(),
+      fillColor: '#008FFB',
+      opacity: 0.04,
+      label: {
+        text: '2 SD',
+        borderColor: 'transparent',
+        style: {
+          color: '#9A9AA5',
+          background: 'transparent',
+          fontSize: '9px',
+          fontFamily: "'JetBrains Mono', monospace"
+        },
+        offsetY: 20
+      }
+    },
+    {
+      x: sd1_low.toString(),
+      x2: sd1_high.toString(),
+      fillColor: '#00E396',
+      opacity: 0.07,
+      label: {
+        text: '1 SD',
+        borderColor: 'transparent',
+        style: {
+          color: '#9A9AA5',
+          background: 'transparent',
+          fontSize: '9px',
+          fontFamily: "'JetBrains Mono', monospace"
+        },
+        offsetY: 30
+      }
+    }
+  ];
 }
 
 
