@@ -1208,11 +1208,7 @@ function renderIVSmileChart(ivData, bias) {
       },
     },
     colors: ['#00E396', '#FF4560'],
-    stroke: { width: 3, curve: 'smooth' },
-    fill: {
-      type: 'solid',
-      opacity: 1.0
-    },
+    stroke: { show: true, width: 3, curve: 'smooth' },
     markers: {
       size: 4,
       strokeWidth: 0,
