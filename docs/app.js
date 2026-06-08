@@ -1170,9 +1170,14 @@ function renderIVSmileChart(ivData, bias) {
     }
   }
 
-  // Clean up any 0 values by mapping them to null so they don't plummet the line to 0%
-  const callIVData = ivData.call_iv.map(v => v === 0 ? null : v);
-  const putIVData = ivData.put_iv.map(v => v === 0 ? null : v);
+  // Clean up any 0 values by mapping them to {x, y} objects and filtering them out
+  const callIVData = ivData.call_iv
+    .map((v, idx) => ({ x: ivData.strikes[idx].toString(), y: v === 0 ? null : v }))
+    .filter(pt => pt.y !== null);
+
+  const putIVData = ivData.put_iv
+    .map((v, idx) => ({ x: ivData.strikes[idx].toString(), y: v === 0 ? null : v }))
+    .filter(pt => pt.y !== null);
 
   const options = {
     chart: {
@@ -1184,10 +1189,11 @@ function renderIVSmileChart(ivData, bias) {
       fontFamily: "'JetBrains Mono', monospace",
     },
     series: [
-      { name: 'Call IV %', data: callIVData },
-      { name: 'Put IV %', data: putIVData },
+      { name: 'Call IV %', type: 'line', data: callIVData },
+      { name: 'Put IV %', type: 'line', data: putIVData },
     ],
     xaxis: {
+      type: 'category',
       categories: ivData.strikes.map(s => s.toString()),
       labels: {
         style: { colors: '#6B6B75', fontSize: '10px' },
@@ -1200,7 +1206,7 @@ function renderIVSmileChart(ivData, bias) {
     yaxis: {
       labels: {
         style: { colors: '#6B6B75', fontSize: '10px' },
-        formatter: v => v.toFixed(1) + '%',
+        formatter: v => v ? v.toFixed(1) + '%' : '',
       },
       title: {
         text: 'Implied Volatility %',
@@ -1208,7 +1214,14 @@ function renderIVSmileChart(ivData, bias) {
       },
     },
     colors: ['#00E396', '#FF4560'],
-    stroke: { show: true, width: 3, curve: 'smooth' },
+    stroke: {
+      width: 3,
+      curve: 'straight'
+    },
+    fill: {
+      type: 'solid',
+      opacity: 1.0
+    },
     markers: {
       size: 4,
       strokeWidth: 0,
@@ -1226,7 +1239,7 @@ function renderIVSmileChart(ivData, bias) {
     },
     tooltip: {
       theme: 'dark',
-      y: { formatter: v => v.toFixed(2) + '%' },
+      y: { formatter: v => v ? v.toFixed(2) + '%' : '' },
     },
     dataLabels: { enabled: false },
     annotations: {
