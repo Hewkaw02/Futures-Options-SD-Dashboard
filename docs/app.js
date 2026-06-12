@@ -9,6 +9,7 @@ const state = {
   currentIndex: -1,        // index into manifest timestamps
   manifest: [],            // sorted array of "YYYY-MM-DD/HH00"
   cache: {},               // "GC:2026-05-08/1100" -> data
+  fetchPromises: {},       // coalesce concurrent fetch requests
   charts: {},              // chart instance refs for cleanup
   resizeObservers: {},     // resize observer refs for cleanup
   activeTabs: {            // active tab per image chart group
@@ -28,6 +29,7 @@ const state = {
     }
   }
 };
+
 
 // ── Decision Terminal Toggles & Helper Functions ─────────────
 function toggleLayer(chartType, layerKey) {
@@ -346,18 +348,9 @@ async function renderBiasTimeline() {
   }
   
   const promises = snapshots.map(async (ts) => {
-    const cacheKey = `${state.currentAsset}:${ts}`;
-    if (state.cache[cacheKey]) {
-      return { ts, bias: state.cache[cacheKey].bias };
-    }
     try {
-      const url = `data/${ts}/${state.currentAsset}_data.json`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const d = await res.json();
-        state.cache[cacheKey] = d;
-        return { ts, bias: d.bias };
-      }
+      const d = await fetchDataWithCache(state.currentAsset, ts);
+      return { ts, bias: d ? d.bias : null };
     } catch (e) {
       console.warn("Failed to prefetch for timeline:", e);
     }
@@ -515,6 +508,41 @@ async function loadManifest() {
   }
 }
 
+// Global fetch promise cache to prevent redundant concurrent fetches
+async function fetchDataWithCache(asset, ts) {
+  const cacheKey = `${asset}:${ts}`;
+  
+  // 1. Check if we already have the data in cache
+  if (state.cache[cacheKey]) {
+    return state.cache[cacheKey];
+  }
+  
+  // 2. Check if there is already an active fetch promise for this key
+  if (state.fetchPromises[cacheKey]) {
+    return state.fetchPromises[cacheKey];
+  }
+  
+  // 3. Create a new fetch promise
+  const promise = (async () => {
+    const url = `data/${ts}/${asset}_data.json`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    state.cache[cacheKey] = data;
+    return data;
+  })();
+  
+  // Store it in the promise cache
+  state.fetchPromises[cacheKey] = promise;
+  
+  // Clean up promise cache once resolved or rejected
+  promise.finally(() => {
+    delete state.fetchPromises[cacheKey];
+  });
+  
+  return promise;
+}
+
 // ── Data Loading ─────────────────────────────────────────────
 async function loadCurrentData() {
   const ts = state.manifest[state.currentIndex];
@@ -525,20 +553,11 @@ async function loadCurrentData() {
 
   const cacheKey = `${state.currentAsset}:${ts}`;
 
-  if (state.cache[cacheKey]) {
-    renderAll(state.cache[cacheKey]);
-    return;
-  }
-
   // Show loading state
   showLoading(true);
 
   try {
-    const url = `data/${ts}/${state.currentAsset}_data.json`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    state.cache[cacheKey] = data;
+    const data = await fetchDataWithCache(state.currentAsset, ts);
     renderAll(data);
   } catch (err) {
     console.warn(`No data for ${cacheKey}:`, err);
@@ -547,6 +566,7 @@ async function loadCurrentData() {
     showLoading(false);
   }
 }
+
 
 // ── Navigation ───────────────────────────────────────────────
 function switchAsset(asset) {
@@ -807,8 +827,6 @@ function renderOIWallsChart(oiData, data) {
     return;
   }
 
-  destroyChart('chart-oi-walls');
-
   const sdAnnotations = getSDBandAnnotations(data, oiData.strikes);
 
   const options = {
@@ -861,9 +879,7 @@ function renderOIWallsChart(oiData, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-oi-walls'), options);
-  chart.render();
-  state.charts['chart-oi-walls'] = chart;
+  renderApexChart('chart-oi-walls', options);
 }
 
 // ── Chart: Net OI ────────────────────────────────────────────
@@ -872,8 +888,6 @@ function renderNetOIChart(netData, data) {
     clearChart('chart-net-oi');
     return;
   }
-
-  destroyChart('chart-net-oi');
 
   const colors = (netData.net || []).map(v => v >= 0 ? '#00FF66' : '#FF0055');
   const sdAnnotations = getSDBandAnnotations(data, netData.strikes);
@@ -937,9 +951,7 @@ function renderNetOIChart(netData, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-net-oi'), options);
-  chart.render();
-  state.charts['chart-net-oi'] = chart;
+  renderApexChart('chart-net-oi', options);
 }
 
 // ── Chart: GEX Profile ───────────────────────────────────────
@@ -948,8 +960,6 @@ function renderGEXChart(gexData, data) {
     clearChart('chart-gex');
     return;
   }
-
-  destroyChart('chart-gex');
 
   const sdAnnotations = getSDBandAnnotations(data, gexData.strikes);
   const flipAnnotation = gexData.flip_price ? [{
@@ -965,6 +975,7 @@ function renderGEXChart(gexData, data) {
         background: '#1C1C22',
         fontSize: '10px',
         fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 'bold',
       },
     },
   }] : [];
@@ -1044,9 +1055,7 @@ function renderGEXChart(gexData, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-gex'), options);
-  chart.render();
-  state.charts['chart-gex'] = chart;
+  renderApexChart('chart-gex', options);
 }
 
 // ── Chart: Vanna ─────────────────────────────────────────────
@@ -1055,8 +1064,6 @@ function renderVannaChart(vannaData, data) {
     clearChart('chart-vanna');
     return;
   }
-
-  destroyChart('chart-vanna');
 
   const sdAnnotations = getSDBandAnnotations(data, vannaData.strikes);
 
@@ -1122,9 +1129,7 @@ function renderVannaChart(vannaData, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-vanna'), options);
-  chart.render();
-  state.charts['chart-vanna'] = chart;
+  renderApexChart('chart-vanna', options);
 }
 
 // ── Chart: IV Smile / Skew Curve ───────────────────────────────────────
@@ -1133,8 +1138,6 @@ function renderIVSmileChart(ivData, bias, data) {
     clearChart('chart-iv-smile');
     return;
   }
-
-  destroyChart('chart-iv-smile');
 
   // Compute SD bands and ATM annotations
   const xAnnotations = getSDBandAnnotations(data, ivData.strikes);
@@ -1151,20 +1154,37 @@ function renderIVSmileChart(ivData, bias, data) {
       badgeEl.textContent = '🟩 CALL SKEW (Greed)';
       badgeEl.className = 'card-badge bull';
     } else {
-      badgeEl.textContent = '🟡 BALANCED SMILE';
-      badgeEl.className = 'card-badge';
+      badgeEl.textContent = '⬜ ATM BALANCED';
+      badgeEl.className = 'card-badge neutral';
     }
   }
 
-  // Clean up any 0 values by mapping them to {x, y} objects and filtering them out
-  const callIVData = ivData.call_iv
-    .map((v, idx) => ({ x: ivData.strikes[idx].toString(), y: v === 0 ? null : v }))
-    .filter(pt => pt.y !== null);
+  // Parse prices for ATM line
+  const price = data && data.bias ? parseFloat(data.bias.price) || 0 : 0;
+  if (price > 0) {
+    // Add ATM line annotation
+    const atmAnnotation = {
+      x: price.toString(),
+      borderColor: '#FEB019',
+      strokeDashArray: 4,
+      borderWidth: 2,
+      label: {
+        text: `ATM: ${formatNumber(price)}`,
+        position: 'top',
+        orientation: 'horizontal',
+        style: {
+          color: '#FEB019',
+          background: '#1C1C22',
+          fontSize: '10px',
+          fontFamily: "'JetBrains Mono', monospace",
+          fontWeight: 'bold',
+        },
+      },
+    };
+    xAnnotations.push(atmAnnotation);
+  }
 
-  const putIVData = ivData.put_iv
-    .map((v, idx) => ({ x: ivData.strikes[idx].toString(), y: v === 0 ? null : v }))
-    .filter(pt => pt.y !== null);
-
+  // Setup options
   const options = {
     chart: {
       type: 'line',
@@ -1175,12 +1195,18 @@ function renderIVSmileChart(ivData, bias, data) {
       fontFamily: "'JetBrains Mono', monospace",
     },
     series: [
-      { name: 'Call IV %', type: 'line', data: callIVData },
-      { name: 'Put IV %', type: 'line', data: putIVData },
+      {
+        name: 'Call IV',
+        data: ivData.strikes.map((s, i) => ({ x: s.toString(), y: ivData.call_iv[i] ? ivData.call_iv[i] * 100 : null })).filter(pt => pt.y !== null)
+      },
+      {
+        name: 'Put IV',
+        data: ivData.strikes.map((s, i) => ({ x: s.toString(), y: ivData.put_iv[i] ? ivData.put_iv[i] * 100 : null })).filter(pt => pt.y !== null)
+      }
     ],
     xaxis: {
       type: 'category',
-      categories: ivData.strikes.map(s => s.toString()),
+      categories: (ivData.strikes || []).map(s => s.toString()),
       labels: {
         style: { colors: '#6B6B75', fontSize: '10px' },
         rotate: -45,
@@ -1193,10 +1219,6 @@ function renderIVSmileChart(ivData, bias, data) {
       labels: {
         style: { colors: '#6B6B75', fontSize: '10px' },
         formatter: v => v ? v.toFixed(1) + '%' : '',
-      },
-      title: {
-        text: 'Implied Volatility %',
-        style: { color: '#6B6B75', fontSize: '10px' },
       },
     },
     colors: ['#00E396', '#FF4560'],
@@ -1233,9 +1255,7 @@ function renderIVSmileChart(ivData, bias, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-iv-smile'), options);
-  chart.render();
-  state.charts['chart-iv-smile'] = chart;
+  renderApexChart('chart-iv-smile', options);
 }
 
 // ── Chart: Change in OI (ΔOI) ─────────────────────────────────────
@@ -1245,43 +1265,23 @@ function renderOIChangeChart(oiChangeData, data) {
     return;
   }
 
-  destroyChart('chart-oi-change');
-
   const sdAnnotations = getSDBandAnnotations(data, oiChangeData.strikes);
-
-  // Badge: net change direction
-  const badgeEl = document.getElementById('oi-change-badge');
-  if (badgeEl) {
-    const totalCallChange = oiChangeData.call_change.reduce((a, b) => a + b, 0);
-    const totalPutChange = oiChangeData.put_change.reduce((a, b) => a + b, 0);
-    if (totalCallChange > totalPutChange) {
-      badgeEl.textContent = `⬆ CALL OI +${formatCompact(totalCallChange)}`;
-      badgeEl.className = 'card-badge bull';
-    } else if (totalPutChange > totalCallChange) {
-      badgeEl.textContent = `⬆ PUT OI +${formatCompact(totalPutChange)}`;
-      badgeEl.className = 'card-badge bear';
-    } else {
-      badgeEl.textContent = 'vs PREVIOUS';
-      badgeEl.className = 'card-badge';
-    }
-  }
 
   const options = {
     chart: {
       type: 'bar',
       height: '100%',
-      stacked: false,
       background: 'transparent',
       toolbar: { show: false },
       zoom: { enabled: false },
       fontFamily: "'JetBrains Mono', monospace",
     },
     series: [
-      { name: 'Δ Call OI', data: oiChangeData.call_change },
-      { name: 'Δ Put OI', data: oiChangeData.put_change },
+      { name: 'Call ΔOI', data: oiChangeData.call_chg || [] },
+      { name: 'Put ΔOI', data: oiChangeData.put_chg || [] },
     ],
     xaxis: {
-      categories: oiChangeData.strikes.map(s => s.toString()),
+      categories: (oiChangeData.strikes || []).map(s => s.toString()),
       labels: {
         style: { colors: '#6B6B75', fontSize: '10px' },
         rotate: -45,
@@ -1326,9 +1326,7 @@ function renderOIChangeChart(oiChangeData, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-oi-change'), options);
-  chart.render();
-  state.charts['chart-oi-change'] = chart;
+  renderApexChart('chart-oi-change', options);
 }
 
 // ── Chart: Max Pain Analysis ─────────────────────────────────────
@@ -1338,71 +1336,22 @@ function renderMaxPainChart(oiData, maxPainData, bias, data) {
     return;
   }
 
-  destroyChart('chart-max-pain');
-
   // Update Max Pain metric in Bias Card
   const maxPainMetric = document.getElementById('metric-max-pain');
   if (maxPainMetric && maxPainData.price) {
-    maxPainMetric.textContent = formatNumber(maxPainData.price);
-    if (bias && bias.price) {
-      const diff = maxPainData.price - bias.price;
-      const pct = ((diff / bias.price) * 100).toFixed(1);
-      const direction = diff >= 0 ? 'bull' : 'bear';
-      maxPainMetric.className = `metric-value ${direction}`;
+    maxPainMetric.textContent = maxPainData.price.toLocaleString();
+    const underlying = bias && bias.price ? parseFloat(bias.price) || 0 : 0;
+    if (underlying > 0) {
+      const diff = underlying - maxPainData.price;
+      const isBull = diff > 0;
+      maxPainMetric.className = 'metric-value ' + (isBull ? 'bull' : diff < 0 ? 'bear' : 'neutral');
     }
   }
 
-  // Update badge
-  const badgeEl = document.getElementById('max-pain-badge');
-  if (badgeEl && maxPainData.price && bias && bias.price) {
-    const dist = Math.abs(maxPainData.price - bias.price);
-    const distPct = ((dist / bias.price) * 100).toFixed(1);
-    badgeEl.textContent = `MAX PAIN: ${formatNumber(maxPainData.price)} (${distPct}% away)`;
-  }
-
-  // Calculate pain per strike for visualization
-  const strikes = oiData.strikes;
-  const callOI = oiData.call_oi;
-  const putOI = oiData.put_oi;
-  const painPerStrike = [];
-
-  for (let i = 0; i < strikes.length; i++) {
-    const settlePrice = strikes[i];
-    let totalPain = 0;
-    for (let j = 0; j < strikes.length; j++) {
-      if (settlePrice > strikes[j]) {
-        totalPain += (callOI[j] || 0) * (settlePrice - strikes[j]);
-      }
-      if (settlePrice < strikes[j]) {
-        totalPain += (putOI[j] || 0) * (strikes[j] - settlePrice);
-      }
-    }
-    painPerStrike.push(totalPain);
-  }
-
-  // Color each bar: min pain strike gets gold, others gradient
+  // Draw chart
+  const strikes = maxPainData.strikes || [];
+  const painPerStrike = maxPainData.pain || [];
   const minPain = Math.min(...painPerStrike);
-  const sdAnnotations = getSDBandAnnotations(data, strikes);
-
-  const maxPainAnnotation = maxPainData.price ? [{
-    x: maxPainData.price.toString(),
-    borderColor: '#FFB800',
-    strokeDashArray: 0,
-    borderWidth: 2,
-    label: {
-      text: `MAX PAIN: ${formatNumber(maxPainData.price)}`,
-      position: 'top',
-      orientation: 'horizontal',
-      style: {
-        color: '#FFB800',
-        background: '#1C1C22',
-        fontSize: '10px',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontWeight: 'bold',
-      },
-    },
-  }] : [];
-  const xaxisAnnotations = [...sdAnnotations, ...maxPainAnnotation];
 
   const options = {
     chart: {
@@ -1462,9 +1411,7 @@ function renderMaxPainChart(oiData, maxPainData, bias, data) {
     },
   };
 
-  const chart = new ApexCharts(document.getElementById('chart-max-pain'), options);
-  chart.render();
-  state.charts['chart-max-pain'] = chart;
+  renderApexChart('chart-max-pain', options);
 }
 
 
@@ -1599,6 +1546,29 @@ function clearChart(id) {
   const el = document.getElementById(id);
   if (el) {
     el.innerHTML = '<div class="no-data">NO DATA AVAILABLE</div>';
+  }
+}
+
+function renderApexChart(id, options) {
+  let chart = state.charts[id];
+  const el = document.getElementById(id);
+  if (!el) return;
+  
+  if (chart && typeof chart.updateOptions === 'function') {
+    try {
+      chart.updateOptions(options, true, true);
+    } catch (e) {
+      console.warn(`Error updating ApexChart ${id}, recreating:`, e);
+      destroyChart(id);
+      chart = new ApexCharts(el, options);
+      chart.render();
+      state.charts[id] = chart;
+    }
+  } else {
+    destroyChart(id);
+    chart = new ApexCharts(el, options);
+    chart.render();
+    state.charts[id] = chart;
   }
 }
 
@@ -1838,11 +1808,17 @@ function createTradingViewChart(containerId, ohlcv, vwap, options = {}) {
     tooltip.style.top = `${top}px`;
   });
 
-  // 8. Handle responsiveness
+  // 8. Handle responsiveness with requestAnimationFrame and positive size checks
   const resizeObserver = new ResizeObserver(entries => {
     if (entries.length === 0 || !entries[0].contentRect) return;
     const { width, height } = entries[0].contentRect;
-    chart.resize(width, height);
+    if (width > 0 && height > 0) {
+      requestAnimationFrame(() => {
+        try {
+          chart.resize(width, height);
+        } catch (e) { /* ignore */ }
+      });
+    }
   });
   resizeObserver.observe(container);
 
@@ -2399,9 +2375,7 @@ function renderIntradayVolChart(data) {
     }
   };
 
-  destroyChart('chart-intraday-vol');
-  state.charts['chart-intraday-vol'] = new ApexCharts(document.querySelector('#chart-intraday-vol'), options);
-  state.charts['chart-intraday-vol'].render();
+  renderApexChart('chart-intraday-vol', options);
 }
 
 function switchChartTab(group, tabKey) {
