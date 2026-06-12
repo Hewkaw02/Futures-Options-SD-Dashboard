@@ -149,6 +149,102 @@ Validates option data in real-time during overnight Globex trading hours to elim
 
 ---
 
+## 📘 How to Read the Metrics & Use Cases
+
+> [!NOTE]
+> **Real-Time Data Notice:** If you want this dashboard to update in real-time, you can connect the Tastytrade API credentials in your own environment (see the configuration steps below). Although there might be minor connection delays or streaming lag, the processed options structures remain highly valuable for structural and positional analysis.
+
+This dashboard is designed to translate complex options microstructure data into actionable trading levels. Here is a guide on how to interpret each value and apply them to your trading strategies.
+
+---
+
+### 1. Master Trading Bias
+
+Located at the top **Hero Card** of the terminal, this card provides a multi-factor directional score based on option walls, PCR (Put/Call Ratio), GEX, Skew, and Price momentum.
+
+*   **Bias Direction:**
+    *   `Strong BULL` / `Mild BULL`: The options market structure is positioning for an upward move. Call walls, Positive GEX, low Put-to-Call ratio, or bullish skew confirm high probability of upward movement.
+    *   `NEUTRAL`: Range-bound environment. No clear directional dominance.
+    *   `Strong BEAR` / `Mild BEAR`: The options market structure is positioning for a downward move. Put walls broken, Negative GEX, high Put-to-Call ratio, or bearish skew confirm high probability of downward movement.
+*   **Confidence %:** Ranging from `0%` to `100%`. It reflects the alignment of all 6 scoring factors (Price vs. Walls, PCR OI, PCR Vol, GEX sum, and Skew). Higher confidence means a stronger consensus among options metrics.
+*   **ATM IV (Implied Volatility):** The true implied volatility interpolated exactly at-the-money. A rising IV indicates expected larger swings (implied volatility expansion), while a falling IV suggests range-bound consolidation.
+*   **PCR Vol (Put/Call Volume Ratio):** The ratio of traded put options to call options volume. A ratio `< 0.8` signifies bullish volume momentum; a ratio `> 1.2` suggests bearish volume momentum.
+*   **Skew:** Measures the premium of OTM Puts relative to OTM Calls. High positive skew indicates traders are paying more for downside protection (bearish sentiment), while negative skew suggests call-buying demand (bullish sentiment).
+*   **GEX (Net Gamma Exposure):** The aggregate Gamma Exposure. Positive values indicate a stabilizing environment (mean reversion), whereas negative values indicate a volatile environment (momentum).
+
+---
+
+### 2. Price Levels & Chart Overlays
+
+Both the **Hybrid Chart** and **Intraday Master Chart** display key support/resistance zones derived from option positioning:
+
+*   **Standard Deviation (SD) Bands:**
+    *   `±1SD (Standard Deviation)`: Statistically contains ~68% of price outcomes.
+    *   `±2SD (Standard Deviation)`: Statistically contains ~95% of price outcomes.
+    *   *How to trade:* When the price tests `±2SD` under positive GEX, it is highly likely to reject and revert. If the price breaks out of `±2SD` under negative GEX, a massive breakout trend is likely starting.
+*   **Option Walls:**
+    *   `Call Wall (Resistance)`: The strike price with the largest concentration of Call Open Interest. Serves as a major overhead ceiling.
+    *   `Put Wall (Support)`: The strike price with the largest concentration of Put Open Interest. Serves as a major floor.
+*   **VWAP (Volume Weighted Average Price):** The average price weighted by volume. Used as an intraday anchor. Trading above VWAP favors long setups; trading below VWAP favors short setups.
+*   **Gamma Flip Price:** The boundary where GEX transitions between positive and negative.
+    *   **Above Flip Price (Positive Gamma Regime):** High liquidity, tight ranges, mean-reversion behavior. Fades and range plays are favored.
+    *   **Below Flip Price (Negative Gamma Regime):** Low liquidity, rapid trend acceleration, heavy volatility. Breakout and momentum plays are favored.
+
+---
+
+### 3. Tactical Widgets & Hedging Flows
+
+*   **Tactical Trade Setup Card:**
+    *   Dynamically calculates entry zones, stop losses, and target milestones based on option walls and SD bands.
+    *   `Status: ACTIVE`: The trade plan is valid.
+    *   `Status: SETUP FAILED`: The price has breached the stop-loss level, invalidating the current bias setup.
+*   **Distance to Key Walls:** Displays how many points/percentages the current spot price is away from the Call Wall and Put Wall, helping you gauge remaining upside/downside room.
+*   **Wall Interaction & Hedging Status:**
+    *   `🔴 GAMMA SQUEEZE` (Negative GEX regime): Spot breaches the Call Wall. Market makers are forced to buy underlying futures to maintain delta-neutrality, creating a rapid buying loop.
+    *   `🔴 DELTA CASCADE` (Negative GEX regime): Spot breaches the Put Wall. Market makers are forced to sell underlying futures to hedge, triggering a rapid selling cascade.
+    *   `🟢 BUYER / SELLER DEFENSE` (Positive GEX regime): Price tests Put/Call walls and gets rejected. Market makers buy/sell futures to stabilize the boundaries, resulting in a bounce.
+    *   `🟡 VOLATILITY TRIGGER`: Price is currently testing key walls; expect volatile whipsaws as dealer hedges adjust.
+    *   `⚪ Stable Neutral Flow`: Normal range-bound conditions with balanced dealer flows.
+
+---
+
+### 4. Practical Trading Use Cases
+
+#### 📉 Case 1: Mean Reversion / Range Trading
+*   **Condition:** Price is **above** the Gamma Flip Price (Positive Gamma) + Master Bias is `NEUTRAL` or `Mild BULL/BEAR`.
+*   **Strategy:**
+    1.  Wait for the price to drop to the **Put Wall** or the **-1SD / -2SD** band.
+    2.  Check if the **Put Wall Interaction** displays `🟢 BUYER DEFENSE` or `REJECTED (UP)`.
+    3.  Enter a **LONG** position targeting the **VWAP** or **+1SD**.
+    4.  Place a stop loss just below the **Put Wall** (or use the Tactical Trade Setup stop-loss level).
+    5.  *(Inverse for Short setups at the Call Wall / +2SD)*
+
+#### 🚀 Case 2: Breakout / Momentum Trading
+*   **Condition:** Price crosses **below** the Gamma Flip Price (entering Negative Gamma) + Master Bias is `Strong BEAR` (or crosses above with `Strong BULL` bias).
+*   **Strategy:**
+    1.  Wait for the price to breach a major Option Wall.
+    2.  Confirm that the **Hedging Status** changes to `🔴 DELTA CASCADE` (for shorts) or `🔴 GAMMA SQUEEZE` (for longs).
+    3.  Enter in the direction of the breakout (e.g., Short when Put Wall breaks).
+    4.  Hold the position for a fast momentum run toward the **-2SD / -3SD** bands.
+    5.  Set your stop loss at the breached Wall level (now acting as new resistance/support).
+
+#### 🛡️ Case 3: Risk Avoidance / Volatility Hedging
+*   **Condition:** Price is trading very close to the **Gamma Flip Price** or **Hedging Status** is `🟡 VOLATILITY TRIGGER`.
+*   **Strategy:**
+    1.  Expect high intraday noise and whipsaws.
+    2.  Avoid placing tight stop losses in this zone as they are highly likely to get swept.
+    3.  Reduce position size or stay on the sidelines until the price establishes a direction away from the Flip level.
+
+#### 📊 Case 4: Smart Strike Range Selection
+*   **Condition:** Selling Options (Credit Spreads, Iron Condors) to collect premium.
+*   **Strategy:**
+    1.  Use the **±2SD Bands** and the **Call/Put Walls** to identify low-probability boundary zones.
+    2.  Sell Call Spreads above the **Call Wall** / **+2SD** and Put Spreads below the **Put Wall** / **-2SD**.
+    3.  Monitor the **Data Quality Score**; only write options when the score is `> 80%` to ensure tight bid-ask spreads and fair pricing.
+
+---
+
+
 ## ⚙️ Function Reference
 
 ### `Analysis_Tools/master_report.py` — Advanced Trading Bias Report
