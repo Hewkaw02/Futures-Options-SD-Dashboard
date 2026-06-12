@@ -1184,6 +1184,17 @@ function renderIVSmileChart(ivData, bias, data) {
     xAnnotations.push(atmAnnotation);
   }
 
+  // Filter out 0/null/undefined values to keep the line curve continuous
+  const callIVData = ivData.strikes.map((s, i) => {
+    const v = ivData.call_iv[i];
+    return { x: s.toString(), y: (v === 0 || v == null) ? null : v };
+  }).filter(pt => pt.y !== null);
+
+  const putIVData = ivData.strikes.map((s, i) => {
+    const v = ivData.put_iv[i];
+    return { x: s.toString(), y: (v === 0 || v == null) ? null : v };
+  }).filter(pt => pt.y !== null);
+
   // Setup options
   const options = {
     chart: {
@@ -1197,11 +1208,11 @@ function renderIVSmileChart(ivData, bias, data) {
     series: [
       {
         name: 'Call IV',
-        data: ivData.strikes.map((s, i) => ({ x: s.toString(), y: ivData.call_iv[i] ? ivData.call_iv[i] * 100 : null })).filter(pt => pt.y !== null)
+        data: callIVData
       },
       {
         name: 'Put IV',
-        data: ivData.strikes.map((s, i) => ({ x: s.toString(), y: ivData.put_iv[i] ? ivData.put_iv[i] * 100 : null })).filter(pt => pt.y !== null)
+        data: putIVData
       }
     ],
     xaxis: {
@@ -1267,6 +1278,23 @@ function renderOIChangeChart(oiChangeData, data) {
 
   const sdAnnotations = getSDBandAnnotations(data, oiChangeData.strikes);
 
+  // Badge: net change direction
+  const badgeEl = document.getElementById('oi-change-badge');
+  if (badgeEl) {
+    const totalCallChange = (oiChangeData.call_change || []).reduce((a, b) => a + b, 0);
+    const totalPutChange = (oiChangeData.put_change || []).reduce((a, b) => a + b, 0);
+    if (totalCallChange > totalPutChange) {
+      badgeEl.textContent = `⬆ CALL OI +${formatCompact(totalCallChange)}`;
+      badgeEl.className = 'card-badge bull';
+    } else if (totalPutChange > totalCallChange) {
+      badgeEl.textContent = `⬆ PUT OI +${formatCompact(totalPutChange)}`;
+      badgeEl.className = 'card-badge bear';
+    } else {
+      badgeEl.textContent = 'vs PREVIOUS';
+      badgeEl.className = 'card-badge neutral';
+    }
+  }
+
   const options = {
     chart: {
       type: 'bar',
@@ -1277,8 +1305,8 @@ function renderOIChangeChart(oiChangeData, data) {
       fontFamily: "'JetBrains Mono', monospace",
     },
     series: [
-      { name: 'Call ΔOI', data: oiChangeData.call_chg || [] },
-      { name: 'Put ΔOI', data: oiChangeData.put_chg || [] },
+      { name: 'Δ Call OI', data: oiChangeData.call_change || [] },
+      { name: 'Δ Put OI', data: oiChangeData.put_change || [] },
     ],
     xaxis: {
       categories: (oiChangeData.strikes || []).map(s => s.toString()),
@@ -1339,19 +1367,66 @@ function renderMaxPainChart(oiData, maxPainData, bias, data) {
   // Update Max Pain metric in Bias Card
   const maxPainMetric = document.getElementById('metric-max-pain');
   if (maxPainMetric && maxPainData.price) {
-    maxPainMetric.textContent = maxPainData.price.toLocaleString();
+    maxPainMetric.textContent = formatNumber(maxPainData.price);
     const underlying = bias && bias.price ? parseFloat(bias.price) || 0 : 0;
     if (underlying > 0) {
-      const diff = underlying - maxPainData.price;
-      const isBull = diff > 0;
-      maxPainMetric.className = 'metric-value ' + (isBull ? 'bull' : diff < 0 ? 'bear' : 'neutral');
+      const diff = maxPainData.price - underlying;
+      const direction = diff >= 0 ? 'bull' : 'bear';
+      maxPainMetric.className = `metric-value ${direction}`;
     }
   }
 
-  // Draw chart
-  const strikes = maxPainData.strikes || [];
-  const painPerStrike = maxPainData.pain || [];
+  // Update badge
+  const badgeEl = document.getElementById('max-pain-badge');
+  if (badgeEl && maxPainData.price && bias && bias.price) {
+    const dist = Math.abs(maxPainData.price - bias.price);
+    const distPct = ((dist / bias.price) * 100).toFixed(1);
+    badgeEl.textContent = `MAX PAIN: ${formatNumber(maxPainData.price)} (${distPct}% away)`;
+  }
+
+  // Calculate pain per strike for visualization
+  const strikes = oiData.strikes || [];
+  const callOI = oiData.call_oi || [];
+  const putOI = oiData.put_oi || [];
+  const painPerStrike = [];
+
+  for (let i = 0; i < strikes.length; i++) {
+    const settlePrice = strikes[i];
+    let totalPain = 0;
+    for (let j = 0; j < strikes.length; j++) {
+      if (settlePrice > strikes[j]) {
+        totalPain += (callOI[j] || 0) * (settlePrice - strikes[j]);
+      }
+      if (settlePrice < strikes[j]) {
+        totalPain += (putOI[j] || 0) * (strikes[j] - settlePrice);
+      }
+    }
+    painPerStrike.push(totalPain);
+  }
+
+  // Color each bar: min pain strike gets gold, others gradient
   const minPain = Math.min(...painPerStrike);
+  const sdAnnotations = getSDBandAnnotations(data, strikes);
+
+  const maxPainAnnotation = maxPainData.price ? [{
+    x: maxPainData.price.toString(),
+    borderColor: '#FFB800',
+    strokeDashArray: 0,
+    borderWidth: 2,
+    label: {
+      text: `MAX PAIN: ${formatNumber(maxPainData.price)}`,
+      position: 'top',
+      orientation: 'horizontal',
+      style: {
+        color: '#FFB800',
+        background: '#1C1C22',
+        fontSize: '10px',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 'bold',
+      },
+    },
+  }] : [];
+  const xaxisAnnotations = [...sdAnnotations, ...maxPainAnnotation];
 
   const options = {
     chart: {
