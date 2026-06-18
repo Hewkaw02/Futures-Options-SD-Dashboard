@@ -1,0 +1,14 @@
+==============================================================================================================
+                                  MASTER TRADING BIAS REPORT (ADVANCED v3.5)                                  
+                                        Date: 2026-06-18 | Time: 0234                                         
+==============================================================================================================
+  Asset   Price      Bias Conf%   IV%  PCR(V) Skew%  Act%   GEX       Wall(R/S)  QualityScore                                                                                                                                                                                                                                            QualityWarnings
+   Gold  4344.8   NEUTRAL    0% 31.0%    0.35 +3.1% 10.0% VOLTL   4400.0/4300.0           0.0                         Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [4315.0].
+S&P 500  7556.0 Mild BULL   33% 18.6%    0.40 +4.3% 16.3% VOLTL   7550.0/7550.0           0.0 Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [7535.0, 7555.0, 7565.0, 7570.0].
+ NASDAQ 30406.5 Mild BULL   17% 27.9%    0.73 +7.1% 23.5% VOLTL 30400.0/30400.0           0.0               Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [30390.0, 30400.0].
+==============================================================================================================
+Definitions:
+- Conf%: Signal alignment strength
+- Act%: Volume/OI Ratio (Participation)
+- GEX: Market Stability Regime
+==============================================================================================================
