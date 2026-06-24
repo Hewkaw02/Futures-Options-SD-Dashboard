@@ -2027,10 +2027,12 @@ function renderHybridChart(data) {
 
   // 3. Add OI Walls (if toggled)
   if (state.toggles.hybrid.oiWalls && data.intraday_levels) {
-    const allOI = [...data.intraday_levels.oi_resistances, ...data.intraday_levels.oi_supports].map(x => x[1]);
+    const oiResistances = data.intraday_levels.oi_resistances || [];
+    const oiSupports = data.intraday_levels.oi_supports || [];
+    const allOI = [...oiResistances, ...oiSupports].map(x => x[1]);
     const maxOI = allOI.length > 0 ? Math.max(...allOI) : 1;
 
-    data.intraday_levels.oi_resistances.forEach(r => {
+    oiResistances.forEach(r => {
       const isHigh = r[1] >= maxOI * 0.7;
       const isLow = r[1] <= maxOI * 0.3;
       levels.push({
@@ -2042,7 +2044,7 @@ function renderHybridChart(data) {
       });
     });
 
-    data.intraday_levels.oi_supports.forEach(s => {
+    oiSupports.forEach(s => {
       const isHigh = s[1] >= maxOI * 0.7;
       const isLow = s[1] <= maxOI * 0.3;
       levels.push({
