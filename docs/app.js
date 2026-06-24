@@ -527,7 +527,13 @@ async function fetchDataWithCache(asset, ts) {
     const url = `data/${ts}/${asset}_data.json`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const text = await res.text();
+    // Clean raw/unquoted NaN values that pandas/python might export, which are invalid in JS JSON.parse.
+    const cleanedText = text.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")|(\bNaN\b)/g, (match, p1) => {
+      if (p1) return match;
+      return 'null';
+    });
+    const data = JSON.parse(cleanedText);
     state.cache[cacheKey] = data;
     return data;
   })();
