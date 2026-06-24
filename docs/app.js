@@ -1636,17 +1636,28 @@ function renderApexChart(id, options) {
   if (!el) return;
   
   if (chart && typeof chart.updateOptions === 'function') {
+    // If the DOM was cleared by clearChart (showing no-data), we must recreate
+    if (el.querySelector('.no-data')) {
+      destroyChart(id);
+      el.innerHTML = '';
+      chart = new ApexCharts(el, options);
+      chart.render();
+      state.charts[id] = chart;
+      return;
+    }
     try {
       chart.updateOptions(options, true, true);
     } catch (e) {
       console.warn(`Error updating ApexChart ${id}, recreating:`, e);
       destroyChart(id);
+      el.innerHTML = '';
       chart = new ApexCharts(el, options);
       chart.render();
       state.charts[id] = chart;
     }
   } else {
     destroyChart(id);
+    el.innerHTML = '';
     chart = new ApexCharts(el, options);
     chart.render();
     state.charts[id] = chart;
