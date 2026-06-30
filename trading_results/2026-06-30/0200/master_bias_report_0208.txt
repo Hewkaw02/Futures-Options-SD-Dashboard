@@ -1,0 +1,14 @@
+==============================================================================================================
+                                  MASTER TRADING BIAS REPORT (ADVANCED v3.5)                                  
+                                        Date: 2026-06-30 | Time: 0208                                         
+==============================================================================================================
+  Asset   Price        Bias Conf%   IV%  PCR(V)  Skew%  Act%   GEX       Wall(R/S)  QualityScore                                                                                                                                                                                                                                                    QualityWarnings
+   Gold  3981.0 Strong BEAR   84% 32.3%    3.15  +8.5% 49.7% VOLTL   4025.0/4000.0           0.0 Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [3960.0, 4000.0, 4020.0, 4035.0, 4040.0].
+S&P 500  7498.0     NEUTRAL    0% 16.0%    0.77  +7.5% 17.2% VOLTL   7500.0/7450.0           0.0                                                                                                                                  Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).
+ NASDAQ 30050.5   Mild BULL   17% 27.9%    0.49 +11.9% 25.4% VOLTL 30000.0/30000.0           0.0     Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [29960.0, 29990.0, 30040.0, 30130.0].
+==============================================================================================================
+Definitions:
+- Conf%: Signal alignment strength
+- Act%: Volume/OI Ratio (Participation)
+- GEX: Market Stability Regime
+==============================================================================================================
