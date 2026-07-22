@@ -581,7 +581,10 @@ function switchAsset(asset) {
 
   // Update button states
   document.querySelectorAll('.asset-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.asset === asset);
+    const isActive = btn.dataset.asset === asset;
+    btn.classList.toggle('active', isActive);
+    // Keep the programmatic pressed state synchronized with the visible active tab.
+    btn.setAttribute('aria-pressed', String(isActive));
   });
 
   // Update asset label
