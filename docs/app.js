@@ -2480,7 +2480,10 @@ function switchChartTab(group, tabKey) {
   const tabGroup = document.getElementById(`${group}-tabs`);
   if (tabGroup) {
     tabGroup.querySelectorAll('.chart-tab').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === tabKey);
+      const isActive = btn.dataset.tab === tabKey;
+      btn.classList.toggle('active', isActive);
+      // Keep the programmatic pressed state synchronized with the visible active tab.
+      btn.setAttribute('aria-pressed', String(isActive));
     });
   }
 
