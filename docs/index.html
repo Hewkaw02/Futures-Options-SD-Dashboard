@@ -113,11 +113,11 @@
               <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-session" checked onchange="toggleLayer('hybrid', 'sessionLevels')"> Session Levels</label>
               <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-oiwalls" checked onchange="toggleLayer('hybrid', 'oiWalls')"> OI Walls</label>
             </div>
-            <div class="chart-tab-group" id="hybrid-tabs">
-              <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')">1D</button>
-              <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')">1H</button>
+            <div class="chart-tab-group" id="hybrid-tabs" role="group" aria-label="Hybrid Chart Timeframe Selection">
+              <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')" aria-pressed="false">1D</button>
+              <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')" aria-pressed="false">1H</button>
               <button class="chart-tab active" data-tab="hybrid_15m"
-                onclick="switchChartTab('hybrid', 'hybrid_15m')">15M</button>
+                onclick="switchChartTab('hybrid', 'hybrid_15m')" aria-pressed="true">15M</button>
             </div>
           </div>
         </div>
@@ -135,11 +135,11 @@
               <label class="layer-toggle"><input type="checkbox" id="toggle-master-setup" checked onchange="toggleLayer('master', 'tradeSetup')"> Trade Setup</label>
               <label class="layer-toggle"><input type="checkbox" id="toggle-master-walls" checked onchange="toggleLayer('master', 'oiWalls')"> Option Walls</label>
             </div>
-            <div class="chart-tab-group" id="intraday-master-tabs">
+            <div class="chart-tab-group" id="intraday-master-tabs" role="group" aria-label="Intraday Master Chart Timeframe Selection">
               <button class="chart-tab active" data-tab="intraday_master_5m"
-                onclick="switchChartTab('intraday-master', 'intraday_master_5m')">5M</button>
+                onclick="switchChartTab('intraday-master', 'intraday_master_5m')" aria-pressed="true">5M</button>
               <button class="chart-tab" data-tab="intraday_master_1h"
-                onclick="switchChartTab('intraday-master', 'intraday_master_1h')">1H</button>
+                onclick="switchChartTab('intraday-master', 'intraday_master_1h')" aria-pressed="false">1H</button>
             </div>
           </div>
         </div>
