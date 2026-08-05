@@ -1165,3 +1165,21 @@ body::after {
 }
 
 
+
+/* ── Accessibility ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .logo-dot,
+  .status-dot,
+  .pulse-dot,
+  .loading-spinner,
+  .asset-btn,
+  .time-btn,
+  .card,
+  .chart-tab,
+  .layer-toggle,
+  .gauge-bar,
+  .distance-widget.live-today {
+    animation: none !important;
+    transition: none !important;
+  }
+}
