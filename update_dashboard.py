@@ -326,10 +326,22 @@ def parse_option_data_csv(csv_path):
 
     # Build Volume Profile
     profile = []
-    all_strikes = sorted(set(r['Strike'] for r in rows))
+    call_vol = {}
+    put_vol = {}
+
+    # Aggregate volume once per strike to avoid rescanning every option row
+    # for each output strike.
+    for r in rows:
+        s = r['Strike']
+        if r['Type'] in ['Call', 'C']:
+            call_vol[s] = call_vol.get(s, 0) + r['Volume']
+        elif r['Type'] in ['Put', 'P']:
+            put_vol[s] = put_vol.get(s, 0) + r['Volume']
+
+    all_strikes = sorted(set(list(call_vol.keys()) + list(put_vol.keys())))
     for s in all_strikes:
-        c_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] in ['Call', 'C'])
-        p_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] in ['Put', 'P'])
+        c_v = call_vol.get(s, 0)
+        p_v = put_vol.get(s, 0)
         if c_v > 0 or p_v > 0:
             profile.append({"strike": float(s), "call_vol": float(c_v), "put_vol": float(p_v)})
 
