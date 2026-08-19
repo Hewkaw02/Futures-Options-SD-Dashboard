@@ -32,25 +32,25 @@
       <div class="controls-bar">
         <!-- Asset Selector -->
         <div class="asset-selector" id="asset-selector" role="group" aria-label="Asset Selection">
-          <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')" aria-pressed="true">
-            GC <span class="kbd-hint">1</span>
+          <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')" aria-pressed="true" aria-keyshortcuts="1">
+            GC <span class="kbd-hint" aria-hidden="true">1</span>
           </button>
-          <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')" aria-pressed="false">
-            ES <span class="kbd-hint">2</span>
+          <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')" aria-pressed="false" aria-keyshortcuts="2">
+            ES <span class="kbd-hint" aria-hidden="true">2</span>
           </button>
-          <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')" aria-pressed="false">
-            NQ <span class="kbd-hint">3</span>
+          <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')" aria-pressed="false" aria-keyshortcuts="3">
+            NQ <span class="kbd-hint" aria-hidden="true">3</span>
           </button>
         </div>
 
         <!-- Time Navigator -->
         <div class="time-nav" id="time-nav">
-          <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)" aria-label="Previous Data">◀</button>
+          <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)" aria-label="Previous Data" aria-keyshortcuts="ArrowLeft">◀</button>
           <div class="time-display" id="time-display">
             <span id="time-label">Loading...</span>
             <span class="time-index" id="time-index"></span>
           </div>
-          <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)" aria-label="Next Data">▶</button>
+          <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)" aria-label="Next Data" aria-keyshortcuts="ArrowRight">▶</button>
         </div>
       </div>
     </header>
