@@ -288,22 +288,32 @@ def parse_option_data_csv(csv_path):
     # Max Pain Calculation
     max_pain_result = None
     if active_strikes and (any(call_oi.get(s, 0) > 0 for s in active_strikes) or any(put_oi.get(s, 0) > 0 for s in active_strikes)):
-        min_pain = float('inf')
-        best_strike = active_strikes[len(active_strikes) // 2]
+        # Calculate O(N) Max Pain using cumulative sums instead of nested O(N^2) loops
+        s0 = active_strikes[0]
+        call_pain = 0
+        put_pain = sum(put_oi.get(s, 0) * (s - s0) for s in active_strikes if s > s0)
         
-        for settle_price in active_strikes:
-            total_pain = 0
-            for s in active_strikes:
-                # Call pain: if settle > strike, calls are ITM
-                if settle_price > s:
-                    total_pain += call_oi.get(s, 0) * (settle_price - s)
-                # Put pain: if settle < strike, puts are ITM  
-                if settle_price < s:
-                    total_pain += put_oi.get(s, 0) * (s - settle_price)
+        min_pain = call_pain + put_pain
+        best_strike = s0
+
+        cum_call_oi = call_oi.get(s0, 0)
+        cum_put_oi = sum(put_oi.get(s, 0) for s in active_strikes if s > s0)
+
+        for i in range(1, len(active_strikes)):
+            prev_s = active_strikes[i - 1]
+            curr_s = active_strikes[i]
+            delta_s = curr_s - prev_s
             
+            call_pain += cum_call_oi * delta_s
+            put_pain -= cum_put_oi * delta_s
+
+            total_pain = call_pain + put_pain
             if total_pain < min_pain:
                 min_pain = total_pain
-                best_strike = settle_price
+                best_strike = curr_s
+
+            cum_call_oi += call_oi.get(curr_s, 0)
+            cum_put_oi -= put_oi.get(curr_s, 0)
         
         max_pain_result = {
             "price": best_strike,
