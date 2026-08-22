@@ -288,23 +288,28 @@ def parse_option_data_csv(csv_path):
     # Max Pain Calculation
     max_pain_result = None
     if active_strikes and (any(call_oi.get(s, 0) > 0 for s in active_strikes) or any(put_oi.get(s, 0) > 0 for s in active_strikes)):
-        min_pain = float('inf')
-        best_strike = active_strikes[len(active_strikes) // 2]
+        # Calculate initial pain at the lowest strike
+        # At the lowest strike, no calls are ITM, and all puts for strikes > lowest strike are ITM.
+        current_pain = sum(put_oi.get(s, 0) * (s - active_strikes[0]) for s in active_strikes)
+        min_pain = current_pain
+        best_strike = active_strikes[0]
         
-        for settle_price in active_strikes:
-            total_pain = 0
-            for s in active_strikes:
-                # Call pain: if settle > strike, calls are ITM
-                if settle_price > s:
-                    total_pain += call_oi.get(s, 0) * (settle_price - s)
-                # Put pain: if settle < strike, puts are ITM  
-                if settle_price < s:
-                    total_pain += put_oi.get(s, 0) * (s - settle_price)
-            
-            if total_pain < min_pain:
-                min_pain = total_pain
-                best_strike = settle_price
+        cum_call_oi = call_oi.get(active_strikes[0], 0)
+        current_put_oi = sum(put_oi.get(s, 0) for s in active_strikes) - put_oi.get(active_strikes[0], 0)
         
+        # Iterate through remaining strikes to calculate total pain using an O(N) single pass
+        for i in range(1, len(active_strikes)):
+            diff = active_strikes[i] - active_strikes[i-1]
+            slope = cum_call_oi - current_put_oi
+            current_pain += slope * diff
+
+            if current_pain < min_pain:
+                min_pain = current_pain
+                best_strike = active_strikes[i]
+
+            cum_call_oi += call_oi.get(active_strikes[i], 0)
+            current_put_oi -= put_oi.get(active_strikes[i], 0)
+
         max_pain_result = {
             "price": best_strike,
             "total_pain": round(min_pain, 0),
