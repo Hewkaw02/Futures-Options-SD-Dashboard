@@ -288,14 +288,32 @@ def parse_option_data_csv(csv_path):
     # Max Pain Calculation
     max_pain_result = None
     if active_strikes and (any(call_oi.get(s, 0) > 0 for s in active_strikes) or any(put_oi.get(s, 0) > 0 for s in active_strikes)):
-        # Calculate initial pain at the lowest strike
-        # At the lowest strike, no calls are ITM, and all puts for strikes > lowest strike are ITM.
-        current_pain = sum(put_oi.get(s, 0) * (s - active_strikes[0]) for s in active_strikes)
-        min_pain = current_pain
-        best_strike = active_strikes[0]
+        # Calculate O(N) Max Pain using cumulative sums instead of nested O(N^2) loops
+        s0 = active_strikes[0]
+        call_pain = 0
+        put_pain = sum(put_oi.get(s, 0) * (s - s0) for s in active_strikes if s > s0)
         
-        cum_call_oi = call_oi.get(active_strikes[0], 0)
-        current_put_oi = sum(put_oi.get(s, 0) for s in active_strikes) - put_oi.get(active_strikes[0], 0)
+        min_pain = call_pain + put_pain
+        best_strike = s0
+
+        cum_call_oi = call_oi.get(s0, 0)
+        cum_put_oi = sum(put_oi.get(s, 0) for s in active_strikes if s > s0)
+
+        for i in range(1, len(active_strikes)):
+            prev_s = active_strikes[i - 1]
+            curr_s = active_strikes[i]
+            delta_s = curr_s - prev_s
+            
+            call_pain += cum_call_oi * delta_s
+            put_pain -= cum_put_oi * delta_s
+
+            total_pain = call_pain + put_pain
+            if total_pain < min_pain:
+                min_pain = total_pain
+                best_strike = curr_s
+
+            cum_call_oi += call_oi.get(curr_s, 0)
+            cum_put_oi -= put_oi.get(curr_s, 0)
         
         # Iterate through remaining strikes to calculate total pain using an O(N) single pass
         for i in range(1, len(active_strikes)):
