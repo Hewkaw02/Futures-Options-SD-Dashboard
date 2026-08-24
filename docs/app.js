@@ -634,6 +634,7 @@ function showLoading(visible) {
   cards.forEach(c => {
     c.style.opacity = visible ? '0.5' : '1';
     c.style.transition = 'opacity 0.15s ease';
+    c.setAttribute('aria-busy', String(visible));
   });
 }
 
