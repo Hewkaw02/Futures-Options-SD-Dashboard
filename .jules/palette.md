@@ -16,3 +16,9 @@
 **Learning:** When interactive controls contain visible keyboard shortcuts (like `GC <span class="kbd-hint">1</span>`), screen readers will read the shortcut text as part of the element's accessible name (e.g. "GC 1"), causing confusion.
 
 **Action:** Add `aria-hidden="true"` to the element containing the visible shortcut to hide it from assistive technology. Expose the shortcut programmatically by adding the `aria-keyshortcuts` attribute (e.g., `aria-keyshortcuts="1"`) to the parent interactive element (like the `<button>`).
+
+## 2025-02-18 - Connecting Controls to Charts
+
+**Learning:** When checkboxes or controls toggle visual layers on a specific chart, the relationship is not inherently obvious to screen reader users, especially when multiple charts exist.
+
+**Action:** Wrap layer control panels in a `role="group"` with an appropriate `aria-label` (e.g., `aria-label="Hybrid Chart Layers"`). Add the `aria-controls` attribute to each checkbox `input` referencing the `id` of the chart container it modifies (e.g., `aria-controls="chart-hybrid"`).
