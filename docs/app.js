@@ -486,6 +486,8 @@ const ASSET_LABELS = {
 document.addEventListener('DOMContentLoaded', () => {
   loadManifest();
   setupKeyboardNav();
+  // Auto-poll for new data every 60 seconds
+  setInterval(() => { loadManifest(false); }, 60000);
 });
 
 // ── Manifest Loading ─────────────────────────────────────────
@@ -550,7 +552,7 @@ async function fetchDataWithCache(asset, ts) {
 }
 
 // ── Data Loading ─────────────────────────────────────────────
-async function loadCurrentData() {
+async function loadCurrentData(force = false) {
   const ts = state.manifest[state.currentIndex];
   if (!ts) return;
 
@@ -563,7 +565,7 @@ async function loadCurrentData() {
   showLoading(true);
 
   try {
-    const data = await fetchDataWithCache(state.currentAsset, ts);
+    const data = await fetchDataWithCache(state.currentAsset, ts, force);
     renderAll(data);
   } catch (err) {
     console.warn(`No data for ${cacheKey}:`, err);
@@ -621,6 +623,7 @@ function setupKeyboardNav() {
     if (e.key === '1') switchAsset('GC');
     if (e.key === '2') switchAsset('ES');
     if (e.key === '3') switchAsset('NQ');
+    if (e.key === 'r' || e.key === 'R') forceRefreshData();
   });
 }
 
