@@ -1479,3 +1479,27 @@ body::after {
 .text-bull { color: var(--accent-bull); }
 .text-bear { color: var(--accent-bear); }
 .text-center { text-align: center !important; }
+
+
+/* Refresh Button Animation */
+.refresh-control {
+  display: flex;
+  align-items: center;
+}
+
+#btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+#btn-refresh.rotating .refresh-icon {
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
