@@ -2606,4 +2606,195 @@ function renderQuantIntelligence(data) {
       `).join('');
     }
   }
+
+  // 5. AI/ML Quant Regime Classifier
+  const ml = data.ml_regime || {};
+  const mlValEl = document.getElementById('ml-regime-val');
+  const mlConfEl = document.getElementById('ml-confidence-badge');
+  const mlBarBull = document.getElementById('ml-bar-bull');
+  const mlBarRange = document.getElementById('ml-bar-range');
+  const mlBarBear = document.getElementById('ml-bar-bear');
+  const mlActionEl = document.getElementById('ml-action-desc');
+
+  if (mlValEl && ml.regime) {
+    mlValEl.textContent = ml.regime.replace(/_/g, ' ');
+    mlValEl.className = 'quant-value-lg ' + (ml.regime.includes('BULL') ? 'bull' : (ml.regime.includes('BEAR') ? 'bear' : 'neutral'));
+    if (mlConfEl) mlConfEl.textContent = `ML CONF: ${ml.confidence_pct || 0}%`;
+
+    const pBull = Math.round((ml.prob_bull || 0) * 100);
+    const pRange = Math.round((ml.prob_range || 0) * 100);
+    const pBear = Math.round((ml.prob_bear || 0) * 100);
+
+    if (mlBarBull) { mlBarBull.style.width = `${pBull}%`; mlBarBull.textContent = `BULL ${pBull}%`; }
+    if (mlBarRange) { mlBarRange.style.width = `${pRange}%`; mlBarRange.textContent = `RANGE ${pRange}%`; }
+    if (mlBarBear) { mlBarBear.style.width = `${pBear}%`; mlBarBear.textContent = `BEAR ${pBear}%`; }
+
+    if (mlActionEl) mlActionEl.textContent = `Action Signal: ${ml.action_signal ? ml.action_signal.replace(/_/g, ' ') : '—'}`;
+  }
+
+  // 6. Cross-Asset Correlation
+  const corr = data.correlation || {};
+  const corrMacroEl = document.getElementById('corr-macro-val');
+  const corrDivBadge = document.getElementById('corr-divergence-badge');
+  const corrGcesEl = document.getElementById('corr-gces-val');
+  const corrEsnqEl = document.getElementById('corr-esnq-val');
+  const corrGcnqEl = document.getElementById('corr-gcnq-val');
+  const corrDescEl = document.getElementById('corr-desc');
+
+  if (corrMacroEl && corr.macro_regime) {
+    corrMacroEl.textContent = corr.macro_regime.split(' ')[0].replace(/_/g, ' ');
+    corrMacroEl.className = 'quant-value-lg ' + (corr.macro_regime.includes('RISK_ON') ? 'bull' : (corr.macro_regime.includes('RISK_OFF') ? 'bear' : 'neutral'));
+
+    if (corrDivBadge) {
+      corrDivBadge.textContent = corr.divergence_detected ? '⚡ DIVERGENCE' : '● BALANCED';
+      corrDivBadge.className = 'quant-badge ' + (corr.divergence_detected ? 'badge-cheap' : 'badge-neutral');
+    }
+    if (corrGcesEl) corrGcesEl.textContent = `${corr.gc_es_corr || 0}`;
+    if (corrEsnqEl) corrEsnqEl.textContent = `${corr.es_nq_corr || 0}`;
+    if (corrGcnqEl) corrGcnqEl.textContent = `${corr.gc_nq_corr || 0}`;
+    if (corrDescEl) corrDescEl.textContent = corr.description || '—';
+  }
+
+  // 7. Pin Risk
+  const pin = data.pin_risk || {};
+  const pinScoreEl = document.getElementById('pin-score-val');
+  const pinMagnetBadge = document.getElementById('pin-magnet-badge');
+  const pinGammaConcEl = document.getElementById('pin-gamma-conc');
+  const pinZoneEl = document.getElementById('pin-zone-val');
+  const pinDescEl = document.getElementById('pin-desc');
+
+  if (pinScoreEl && pin.pin_score !== undefined) {
+    pinScoreEl.textContent = `${pin.pin_score.toFixed(1)} / 100`;
+    pinScoreEl.className = 'quant-value-lg ' + (pin.pin_score > 60 ? 'bull' : 'neutral');
+
+    if (pinMagnetBadge) {
+      pinMagnetBadge.textContent = pin.pin_magnet_active ? '🧲 ACTIVE MAGNET' : 'FREE-FLOATING';
+      pinMagnetBadge.className = 'quant-badge ' + (pin.pin_magnet_active ? 'badge-magnet-active' : 'badge-neutral');
+    }
+    if (pinGammaConcEl) pinGammaConcEl.textContent = `${pin.gamma_concentration_pct || 0}%`;
+    if (pinZoneEl && pin.pinning_zone) pinZoneEl.textContent = `${pin.pinning_zone[0]} - ${pin.pinning_zone[1]}`;
+    if (pinDescEl) pinDescEl.textContent = pin.description || '—';
+  }
+
+  // 8. Monte Carlo Odds
+  const mc = data.monte_carlo || {};
+  const mcSpotEl = document.getElementById('mc-spot-val');
+  const mcCallOdds = document.getElementById('mc-call-odds');
+  const mcPutOdds = document.getElementById('mc-put-odds');
+  const mcEnvDesc = document.getElementById('mc-envelope-desc');
+
+  if (mcSpotEl && mc.spot) {
+    mcSpotEl.textContent = formatNumber(mc.spot);
+    const odds = mc.barrier_odds || {};
+    if (mcCallOdds) mcCallOdds.textContent = `${odds.prob_touch_call_wall_pct || 0}%`;
+    if (mcPutOdds) mcPutOdds.textContent = `${odds.prob_touch_put_wall_pct || 0}%`;
+
+    const cones = mc.cones || [];
+    if (cones.length > 0 && mcEnvDesc) {
+      const c30 = cones[cones.length - 1];
+      mcEnvDesc.textContent = `30D Cone: P10=${formatNumber(c30.p10)}, P50=${formatNumber(c30.p50)}, P90=${formatNumber(c30.p90)}`;
+    }
+  }
+
+  // 9. Stress Scenarios Table
+  const scen = data.scenarios || {};
+  const tableBody = document.getElementById('scenario-table-body');
+  if (tableBody && scen.scenarios) {
+    tableBody.innerHTML = scen.scenarios.map(s => {
+      const shiftSign = s.shift_pct > 0 ? '+' : '';
+      const isBase = s.shift_pct === 0;
+      const isPositiveGamma = s.total_gex >= 0;
+      const rowStyle = isBase ? 'style="background: rgba(255,255,255,0.04); font-weight: bold;"' : '';
+      return `
+        <tr ${rowStyle}>
+          <td>${shiftSign}${s.shift_pct.toFixed(1)}% ${isBase ? '(Spot)' : ''}</td>
+          <td>${formatNumber(s.hypo_price)}</td>
+          <td><span class="${isPositiveGamma ? 'text-bull' : 'text-bear'}">● ${isPositiveGamma ? 'STABLE' : 'VOLATILE'}</span></td>
+          <td class="${s.total_gex >= 0 ? 'text-bull' : 'text-bear'}">${formatNumber(s.total_gex)}</td>
+          <td>${formatNumber(s.total_dex)}</td>
+          <td class="${s.dealer_delta_hedge_demand >= 0 ? 'text-bull' : 'text-bear'}">${s.dealer_delta_hedge_demand > 0 ? '+' : ''}${formatNumber(s.dealer_delta_hedge_demand)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+  // 2. Skew Dynamics
+  const skew = data.skew_dynamics || {};
+  const skewRrEl = document.getElementById('skew-rr-val');
+  const skewBadgeEl = document.getElementById('skew-surface-badge');
+  const skewRrSubEl = document.getElementById('skew-rr25-sub');
+  const skewBfSubEl = document.getElementById('skew-bf25-sub');
+  const skewDescEl = document.getElementById('skew-surface-desc');
+
+  if (skewRrEl && skew.risk_reversal_25d !== undefined) {
+    const rrSign = skew.risk_reversal_25d > 0 ? '+' : '';
+    skewRrEl.textContent = `${rrSign}${Number(skew.risk_reversal_25d).toFixed(2)}%`;
+    skewRrEl.className = 'quant-value-lg ' + (skew.risk_reversal_25d > 1.0 ? 'bull' : (skew.risk_reversal_25d < -1.0 ? 'bear' : 'neutral'));
+
+    if (skewBadgeEl) {
+      skewBadgeEl.textContent = skew.skew_regime ? skew.skew_regime.split(' ')[0] : 'NEUTRAL';
+      skewBadgeEl.className = 'quant-badge ' + (skew.risk_reversal_25d > 1.0 ? 'badge-callskew' : (skew.risk_reversal_25d < -1.0 ? 'badge-putskew' : 'badge-neutral'));
+    }
+    if (skewRrSubEl) skewRrSubEl.textContent = `${skew.risk_reversal_25d || 0}%`;
+    if (skewBfSubEl) skewBfSubEl.textContent = `${skew.butterfly_25d || 0}%`;
+    if (skewDescEl) skewDescEl.textContent = skew.skew_regime || '—';
+  }
+
+  // 3. Order Flow
+  const flow = data.order_flow || {};
+  const imb = flow.imbalance || {};
+  const flowImbEl = document.getElementById('flow-imbalance-val');
+  const flowBadgeEl = document.getElementById('flow-bias-badge');
+  const flowCallBar = document.getElementById('flow-bar-call');
+  const flowPutBar = document.getElementById('flow-bar-put');
+  const flowAnomDesc = document.getElementById('flow-anomalies-desc');
+
+  if (flowImbEl && imb.imbalance !== undefined) {
+    const imbSign = imb.imbalance > 0 ? '+' : '';
+    flowImbEl.textContent = `${imbSign}${Number(imb.imbalance).toFixed(3)}`;
+    flowImbEl.className = 'quant-value-lg ' + (imb.imbalance > 0.2 ? 'bull' : (imb.imbalance < -0.2 ? 'bear' : 'neutral'));
+
+    if (flowBadgeEl) {
+      flowBadgeEl.textContent = imb.bias ? imb.bias.replace(/_/g, ' ') : 'BALANCED';
+      flowBadgeEl.className = 'quant-badge ' + (imb.imbalance > 0.2 ? 'badge-expensive' : (imb.imbalance < -0.2 ? 'badge-cheap' : 'badge-neutral'));
+    }
+    if (flowCallBar && flowPutBar) {
+      const callShare = imb.call_share_pct || 50;
+      const putShare = imb.put_share_pct || 50;
+      flowCallBar.style.width = `${callShare}%`;
+      flowCallBar.textContent = `${callShare}% C`;
+      flowPutBar.style.width = `${putShare}%`;
+      flowPutBar.textContent = `${putShare}% P`;
+    }
+
+    if (flowAnomDesc) {
+      const anoms = flow.anomalies || [];
+      if (anoms.length > 0) {
+        const a0 = anoms[0];
+        flowAnomDesc.textContent = `⚠️ Spike: ${a0.type} ${a0.strike} (${a0.vol_oi_ratio}x OI, ${Math.round(a0.volume)} contracts)`;
+      } else {
+        flowAnomDesc.textContent = 'No extreme flow anomalies detected.';
+      }
+    }
+  }
+
+  // 4. Alerts Feed
+  const alerts = data.alerts || [];
+  const alertsContainer = document.getElementById('alerts-feed-container');
+  if (alertsContainer) {
+    if (alerts.length === 0) {
+      alertsContainer.innerHTML = '<div class="alert-empty">● All microstructure parameters within normal bounds.</div>';
+    } else {
+      alertsContainer.innerHTML = alerts.map(a => `
+        <div class="alert-item ${(a.severity || '').toLowerCase()}">
+          <div class="alert-item-header">
+            <span class="alert-title">${a.title}</span>
+            <span class="alert-sev-badge ${(a.severity || '').toLowerCase()}">${a.severity}</span>
+          </div>
+          <div class="alert-detail">${a.detail}</div>
+        </div>
+      `).join('');
+    }
+  }
 }
