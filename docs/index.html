@@ -238,11 +238,11 @@
       </div>
 
 
-      <!-- ══════ QUANTITATIVE INTELLIGENCE & MICROSTRUCTURE ══════ -->
+            <!-- ══════ QUANTITATIVE INTELLIGENCE & MICROSTRUCTURE ══════ -->
       <div class="card full-width" id="card-quant-intelligence">
         <div class="card-header">
           <span class="card-title">Quantitative Edge &amp; Microstructure Intelligence</span>
-          <span class="card-badge" id="quant-status-badge">INSTITUTIONAL QUANT</span>
+          <span class="card-badge" id="quant-status-badge">INSTITUTIONAL QUANT (PHASE 1-3)</span>
         </div>
         <div class="quant-grid">
           <!-- 1. VRP Card -->
@@ -294,10 +294,89 @@
               <div class="alert-empty">No active critical alerts.</div>
             </div>
           </div>
+
+          <!-- 5. AI/ML Quant Regime Classifier -->
+          <div class="quant-card">
+            <div class="quant-card-title">AI/ML REGIME CLASSIFIER</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="ml-regime-val">—</span>
+              <span class="quant-badge" id="ml-confidence-badge">ML CONF: —</span>
+            </div>
+            <div class="tri-prob-container">
+              <div class="tri-bar-bull" id="ml-bar-bull" style="width: 33%">BULL —%</div>
+              <div class="tri-bar-range" id="ml-bar-range" style="width: 34%">RANGE —%</div>
+              <div class="tri-bar-bear" id="ml-bar-bear" style="width: 33%">BEAR —%</div>
+            </div>
+            <div class="quant-desc" id="ml-action-desc">Action Signal: —</div>
+          </div>
+
+          <!-- 6. Cross-Asset Correlation -->
+          <div class="quant-card">
+            <div class="quant-card-title">CROSS-ASSET MACRO CORRELATION</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="corr-macro-val">—</span>
+              <span class="quant-badge" id="corr-divergence-badge">NORMAL</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>GC vs ES: <span id="corr-gces-val" class="text-mono">—</span> | ES vs NQ: <span id="corr-esnq-val" class="text-mono">—</span></div>
+              <div>GC vs NQ: <span id="corr-gcnq-val" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="corr-desc">—</div>
+          </div>
+
+          <!-- 7. Pin Risk & Expiry Dynamics -->
+          <div class="quant-card">
+            <div class="quant-card-title">PIN RISK &amp; EXPIRY DYNAMICS</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="pin-score-val">—</span>
+              <span class="quant-badge" id="pin-magnet-badge">MAGNET: OFF</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Gamma Concentration: <span id="pin-gamma-conc" class="text-mono">—</span></div>
+              <div>Expected Pin Zone: <span id="pin-zone-val" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="pin-desc">—</div>
+          </div>
+
+          <!-- 8. Monte Carlo Probability Odds -->
+          <div class="quant-card">
+            <div class="quant-card-title">MONTE CARLO PROBABILITY ODDS</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="mc-spot-val">—</span>
+              <span class="quant-badge" id="mc-sim-badge">3,000 PATHS</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Touch Call Wall Odds: <span id="mc-call-odds" class="text-mono text-bull">—</span></div>
+              <div>Touch Put Wall Odds: <span id="mc-put-odds" class="text-mono text-bear">—</span></div>
+            </div>
+            <div class="quant-desc" id="mc-envelope-desc">30D Envelope: —</div>
+          </div>
+        </div>
+
+        <!-- Stress Testing Scenarios Table -->
+        <div class="scenario-table-container">
+          <div class="scenario-title">DEALER HEDGING STRESS TEST (HYPOTHETICAL SPOT SHOCKS)</div>
+          <div class="scenario-table-scroll">
+            <table class="scenario-table" id="scenario-stress-table">
+              <thead>
+                <tr>
+                  <th>Shift</th>
+                  <th>Price</th>
+                  <th>GEX Regime</th>
+                  <th>Net GEX ($)</th>
+                  <th>Net DEX ($)</th>
+                  <th>Dealer Rebalancing (ΔDEX)</th>
+                </tr>
+              </thead>
+              <tbody id="scenario-table-body">
+                <tr><td colspan="6" class="text-center">Loading stress test grid...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- ══════ INTRADAY VOLUME ══════ -->
+<!-- ══════ INTRADAY VOLUME ══════ -->
       <div class="card full-width" id="card-intraday-vol">
         <div class="card-header">
           <span class="card-title">Intraday Volume Profile</span>
