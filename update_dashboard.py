@@ -30,6 +30,13 @@ from analytics.vrp import calc_yang_zhang_rv, calc_vrp, calc_iv_percentile_rank
 from analytics.term_structure import calc_term_structure_slope, calc_25delta_skew
 from analytics.order_flow import calc_volume_imbalance, detect_unusual_flow_spikes
 from alerts.engine import evaluate_market_alerts
+from analytics.correlation import calc_asset_correlations
+from analytics.scenarios import run_stress_scenarios
+from analytics.pin_risk import calc_pin_risk
+from analytics.monte_carlo import simulate_price_cones
+from ml.features import extract_quant_feature_vector
+from ml.regime_classifier import predict_market_regime
+
 
 
 # Try yfinance for candle data (optional)
@@ -836,6 +843,38 @@ def process_timestamp(date_str, hour_str):
         bias_lbl = data.get("bias", {}).get("label", "")
         flow_anom = data.get("order_flow", {}).get("anomalies", []) if data.get("order_flow") else []
         data["alerts"] = evaluate_market_alerts(asset, price, bias_lbl, cw, pw, gex_reg, data["vrp"], flow_anom)
+
+        # 6e. Cross-Asset Correlation & Macro Regime
+        all_candles = {}
+        for a_sym in ASSETS:
+            mc_a = get_multi_timeframe_candles(a_sym)
+            if "1d" in mc_a and mc_a["1d"].get("ohlcv"):
+                df_a = pd.DataFrame(mc_a["1d"]["ohlcv"], columns=["ts", "Open", "High", "Low", "Close", "Volume"])
+                all_candles[a_sym] = df_a
+        data["correlation"] = calc_asset_correlations(all_candles)
+
+        # 6f. Stress Scenarios & Dealer Hedging Shock Grid
+        mult = 50.0 if asset == "ES" else (20.0 if asset == "NQ" else 100.0)
+        dte_val = 5.0
+        data["scenarios"] = run_stress_scenarios(raw_rows, price, dte_val, multiplier=mult) if opt_csv and raw_rows else None
+
+        # 6g. Pin Risk & Expiry Magnet Dynamics
+        max_pain_val = data.get("max_pain", {}).get("max_pain_strike") if data.get("max_pain") else None
+        data["pin_risk"] = calc_pin_risk(raw_rows, price, dte_val, max_pain_strike=max_pain_val) if opt_csv and raw_rows else None
+
+        # 6h. Monte Carlo Probability Cones (3,000 paths)
+        data["monte_carlo"] = simulate_price_cones(price, iv, days_horizon=30, num_paths=3000, call_wall=cw, put_wall=pw) if price > 0 and iv > 0 else None
+
+        # 6i. Machine Learning Quantitative Regime Classifier
+        feats = extract_quant_feature_vector(
+            bias=data.get("bias", {}),
+            vrp=data.get("vrp", {}),
+            skew=data.get("skew_dynamics", {}),
+            flow=data.get("order_flow", {}),
+            corr=data.get("correlation", {}),
+            pin=data.get("pin_risk", {})
+        )
+        data["ml_regime"] = predict_market_regime(feats)
 
         # Write JSON
         out_file = out_dir / f"{asset}_data.json" 
