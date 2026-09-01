@@ -31,26 +31,26 @@
 
       <div class="controls-bar">
         <!-- Asset Selector -->
-        <div class="asset-selector" id="asset-selector" role="group" aria-label="Asset Selection">
-          <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')" aria-pressed="true" aria-keyshortcuts="1">
-            GC <span class="kbd-hint" aria-hidden="true">1</span>
+        <div class="asset-selector" id="asset-selector">
+          <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')">
+            GC <span class="kbd-hint">1</span>
           </button>
-          <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')" aria-pressed="false" aria-keyshortcuts="2">
-            ES <span class="kbd-hint" aria-hidden="true">2</span>
+          <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')">
+            ES <span class="kbd-hint">2</span>
           </button>
-          <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')" aria-pressed="false" aria-keyshortcuts="3">
-            NQ <span class="kbd-hint" aria-hidden="true">3</span>
+          <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')">
+            NQ <span class="kbd-hint">3</span>
           </button>
         </div>
 
         <!-- Time Navigator -->
         <div class="time-nav" id="time-nav">
-          <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)" aria-label="Previous Data" aria-keyshortcuts="ArrowLeft">◀</button>
+          <button class="time-btn" id="btn-prev" onclick="navigateTime(-1)" title="Older (← Arrow)" aria-label="Previous Data">◀</button>
           <div class="time-display" id="time-display">
             <span id="time-label">Loading...</span>
             <span class="time-index" id="time-index"></span>
           </div>
-          <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)" aria-label="Next Data" aria-keyshortcuts="ArrowRight">▶</button>
+          <button class="time-btn" id="btn-next" onclick="navigateTime(1)" title="Newer (→ Arrow)" aria-label="Next Data">▶</button>
         </div>
       </div>
     </header>
@@ -108,16 +108,16 @@
         <div class="card-header">
           <span class="card-title">Hybrid Candle &amp; OI S/R Zones</span>
           <div class="header-controls-group">
-            <div class="layer-control-panel" role="group" aria-label="Hybrid Chart Layers">
-              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-sdbands" checked onchange="toggleLayer('hybrid', 'sdBands')" aria-controls="chart-hybrid"> SD Bands</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-session" checked onchange="toggleLayer('hybrid', 'sessionLevels')" aria-controls="chart-hybrid"> Session Levels</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-oiwalls" checked onchange="toggleLayer('hybrid', 'oiWalls')" aria-controls="chart-hybrid"> OI Walls</label>
+            <div class="layer-control-panel">
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-sdbands" checked onchange="toggleLayer('hybrid', 'sdBands')"> SD Bands</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-session" checked onchange="toggleLayer('hybrid', 'sessionLevels')"> Session Levels</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-oiwalls" checked onchange="toggleLayer('hybrid', 'oiWalls')"> OI Walls</label>
             </div>
-            <div class="chart-tab-group" id="hybrid-tabs" role="group" aria-label="Hybrid Chart Timeframe Selection">
-              <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')" aria-pressed="false">1D</button>
-              <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')" aria-pressed="false">1H</button>
+            <div class="chart-tab-group" id="hybrid-tabs">
+              <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')">1D</button>
+              <button class="chart-tab" data-tab="hybrid_1h" onclick="switchChartTab('hybrid', 'hybrid_1h')">1H</button>
               <button class="chart-tab active" data-tab="hybrid_15m"
-                onclick="switchChartTab('hybrid', 'hybrid_15m')" aria-pressed="true">15M</button>
+                onclick="switchChartTab('hybrid', 'hybrid_15m')">15M</button>
             </div>
           </div>
         </div>
@@ -130,16 +130,16 @@
         <div class="card-header">
           <span class="card-title">Intraday Master Chart (Decision Terminal)</span>
           <div class="header-controls-group">
-            <div class="layer-control-panel" role="group" aria-label="Intraday Master Chart Layers">
-              <label class="layer-toggle"><input type="checkbox" id="toggle-master-vwap" checked onchange="toggleLayer('master', 'vwap')" aria-controls="chart-intraday-master"> VWAP</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-master-setup" checked onchange="toggleLayer('master', 'tradeSetup')" aria-controls="chart-intraday-master"> Trade Setup</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-master-walls" checked onchange="toggleLayer('master', 'oiWalls')" aria-controls="chart-intraday-master"> Option Walls</label>
+            <div class="layer-control-panel">
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-vwap" checked onchange="toggleLayer('master', 'vwap')"> VWAP</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-setup" checked onchange="toggleLayer('master', 'tradeSetup')"> Trade Setup</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-walls" checked onchange="toggleLayer('master', 'oiWalls')"> Option Walls</label>
             </div>
-            <div class="chart-tab-group" id="intraday-master-tabs" role="group" aria-label="Intraday Master Chart Timeframe Selection">
+            <div class="chart-tab-group" id="intraday-master-tabs">
               <button class="chart-tab active" data-tab="intraday_master_5m"
-                onclick="switchChartTab('intraday-master', 'intraday_master_5m')" aria-pressed="true">5M</button>
+                onclick="switchChartTab('intraday-master', 'intraday_master_5m')">5M</button>
               <button class="chart-tab" data-tab="intraday_master_1h"
-                onclick="switchChartTab('intraday-master', 'intraday_master_1h')" aria-pressed="false">1H</button>
+                onclick="switchChartTab('intraday-master', 'intraday_master_1h')">1H</button>
             </div>
           </div>
         </div>
@@ -232,6 +232,66 @@
             <div class="panel-body">
               <div class="gauge-label">Option Skew: <span id="mini-skew-val">—</span></div>
               <div class="gauge-container"><div class="gauge-bar" id="mini-skew-bar" style="width: 0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ══════ QUANTITATIVE INTELLIGENCE & MICROSTRUCTURE ══════ -->
+      <div class="card full-width" id="card-quant-intelligence">
+        <div class="card-header">
+          <span class="card-title">Quantitative Edge &amp; Microstructure Intelligence</span>
+          <span class="card-badge" id="quant-status-badge">INSTITUTIONAL QUANT</span>
+        </div>
+        <div class="quant-grid">
+          <!-- 1. VRP Card -->
+          <div class="quant-card">
+            <div class="quant-card-title">VOLATILITY RISK PREMIUM (VRP)</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="vrp-spread-val">—</span>
+              <span class="quant-badge" id="vrp-regime-badge">CALCULATING</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Implied Vol (IV): <span id="vrp-iv-val" class="text-mono">—</span></div>
+              <div>Yang-Zhang RV (20D): <span id="vrp-rv-val" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="vrp-desc">—</div>
+          </div>
+
+          <!-- 2. Skew Dynamics & Surface -->
+          <div class="quant-card">
+            <div class="quant-card-title">25-DELTA SKEW &amp; SURFACE</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="skew-rr-val">—</span>
+              <span class="quant-badge" id="skew-surface-badge">SKEW STATE</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Risk Reversal (RR25): <span id="skew-rr25-sub" class="text-mono">—</span></div>
+              <div>Butterfly Tail Risk (BF25): <span id="skew-bf25-sub" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="skew-surface-desc">—</div>
+          </div>
+
+          <!-- 3. Order Flow Imbalance -->
+          <div class="quant-card">
+            <div class="quant-card-title">ORDER FLOW IMBALANCE</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="flow-imbalance-val">—</span>
+              <span class="quant-badge" id="flow-bias-badge">FLOW BIAS</span>
+            </div>
+            <div class="flow-bar-container">
+              <div class="flow-bar-call" id="flow-bar-call" style="width: 50%">50% C</div>
+              <div class="flow-bar-put" id="flow-bar-put" style="width: 50%">50% P</div>
+            </div>
+            <div class="quant-desc" id="flow-anomalies-desc">Monitoring flow anomalies...</div>
+          </div>
+
+          <!-- 4. Institutional Alert Feed -->
+          <div class="quant-card">
+            <div class="quant-card-title">LIVE MARKET ALERTS</div>
+            <div class="alerts-feed-container" id="alerts-feed-container">
+              <div class="alert-empty">No active critical alerts.</div>
             </div>
           </div>
         </div>
