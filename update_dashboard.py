@@ -315,18 +315,6 @@ def parse_option_data_csv(csv_path):
             cum_call_oi += call_oi.get(curr_s, 0)
             cum_put_oi -= put_oi.get(curr_s, 0)
         
-        # Iterate through remaining strikes to calculate total pain using an O(N) single pass
-        for i in range(1, len(active_strikes)):
-            diff = active_strikes[i] - active_strikes[i-1]
-            slope = cum_call_oi - current_put_oi
-            current_pain += slope * diff
-
-            if current_pain < min_pain:
-                min_pain = current_pain
-                best_strike = active_strikes[i]
-
-            cum_call_oi += call_oi.get(active_strikes[i], 0)
-            current_put_oi -= put_oi.get(active_strikes[i], 0)
 
         max_pain_result = {
             "price": best_strike,
