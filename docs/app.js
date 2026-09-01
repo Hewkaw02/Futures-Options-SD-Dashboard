@@ -581,10 +581,7 @@ function switchAsset(asset) {
 
   // Update button states
   document.querySelectorAll('.asset-btn').forEach(btn => {
-    const isActive = btn.dataset.asset === asset;
-    btn.classList.toggle('active', isActive);
-    // Keep the programmatic pressed state synchronized with the visible active tab.
-    btn.setAttribute('aria-pressed', String(isActive));
+    btn.classList.toggle('active', btn.dataset.asset === asset);
   });
 
   // Update asset label
@@ -634,7 +631,6 @@ function showLoading(visible) {
   cards.forEach(c => {
     c.style.opacity = visible ? '0.5' : '1';
     c.style.transition = 'opacity 0.15s ease';
-    c.setAttribute('aria-busy', String(visible));
   });
 }
 
@@ -751,6 +747,7 @@ function renderAll(data) {
   renderMaxPainChart(data.oi_walls, data.max_pain, data.bias, data);
   
   updateMiniPanels(data);
+  renderQuantIntelligence(data);
 }
 
 // ── Bias Card ────────────────────────────────────────────────
@@ -2481,10 +2478,7 @@ function switchChartTab(group, tabKey) {
   const tabGroup = document.getElementById(`${group}-tabs`);
   if (tabGroup) {
     tabGroup.querySelectorAll('.chart-tab').forEach(btn => {
-      const isActive = btn.dataset.tab === tabKey;
-      btn.classList.toggle('active', isActive);
-      // Keep the programmatic pressed state synchronized with the visible active tab.
-      btn.setAttribute('aria-pressed', String(isActive));
+      btn.classList.toggle('active', btn.dataset.tab === tabKey);
     });
   }
 
@@ -2506,3 +2500,110 @@ function switchChartTab(group, tabKey) {
   }
 }
 
+
+
+// ── Quantitative Intelligence & Microstructure Renderer ──────
+function renderQuantIntelligence(data) {
+  if (!data) return;
+
+  // 1. VRP
+  const vrp = data.vrp || {};
+  const vrpSpreadEl = document.getElementById('vrp-spread-val');
+  const vrpBadgeEl = document.getElementById('vrp-regime-badge');
+  const vrpIvEl = document.getElementById('vrp-iv-val');
+  const vrpRvEl = document.getElementById('vrp-rv-val');
+  const vrpDescEl = document.getElementById('vrp-desc');
+
+  if (vrpSpreadEl && vrp.vrp_pct !== undefined) {
+    const vrpSign = vrp.vrp_pct > 0 ? '+' : '';
+    vrpSpreadEl.textContent = `${vrpSign}${Number(vrp.vrp_pct).toFixed(2)}%`;
+    vrpSpreadEl.className = 'quant-value-lg ' + (vrp.vrp_pct > 3.0 ? 'bull' : (vrp.vrp_pct < -3.0 ? 'bear' : 'neutral'));
+    
+    if (vrpBadgeEl) {
+      vrpBadgeEl.textContent = vrp.regime || 'FAIR';
+      vrpBadgeEl.className = 'quant-badge ' + (vrp.regime === 'EXPENSIVE' ? 'badge-expensive' : (vrp.regime === 'CHEAP' ? 'badge-cheap' : 'badge-neutral'));
+    }
+    if (vrpIvEl) vrpIvEl.textContent = `${vrp.iv_pct || 0}%`;
+    if (vrpRvEl) vrpRvEl.textContent = `${vrp.rv_pct || 0}%`;
+    if (vrpDescEl) vrpDescEl.textContent = vrp.description || '—';
+  }
+
+  // 2. Skew Dynamics
+  const skew = data.skew_dynamics || {};
+  const skewRrEl = document.getElementById('skew-rr-val');
+  const skewBadgeEl = document.getElementById('skew-surface-badge');
+  const skewRrSubEl = document.getElementById('skew-rr25-sub');
+  const skewBfSubEl = document.getElementById('skew-bf25-sub');
+  const skewDescEl = document.getElementById('skew-surface-desc');
+
+  if (skewRrEl && skew.risk_reversal_25d !== undefined) {
+    const rrSign = skew.risk_reversal_25d > 0 ? '+' : '';
+    skewRrEl.textContent = `${rrSign}${Number(skew.risk_reversal_25d).toFixed(2)}%`;
+    skewRrEl.className = 'quant-value-lg ' + (skew.risk_reversal_25d > 1.0 ? 'bull' : (skew.risk_reversal_25d < -1.0 ? 'bear' : 'neutral'));
+
+    if (skewBadgeEl) {
+      skewBadgeEl.textContent = skew.skew_regime ? skew.skew_regime.split(' ')[0] : 'NEUTRAL';
+      skewBadgeEl.className = 'quant-badge ' + (skew.risk_reversal_25d > 1.0 ? 'badge-callskew' : (skew.risk_reversal_25d < -1.0 ? 'badge-putskew' : 'badge-neutral'));
+    }
+    if (skewRrSubEl) skewRrSubEl.textContent = `${skew.risk_reversal_25d || 0}%`;
+    if (skewBfSubEl) skewBfSubEl.textContent = `${skew.butterfly_25d || 0}%`;
+    if (skewDescEl) skewDescEl.textContent = skew.skew_regime || '—';
+  }
+
+  // 3. Order Flow
+  const flow = data.order_flow || {};
+  const imb = flow.imbalance || {};
+  const flowImbEl = document.getElementById('flow-imbalance-val');
+  const flowBadgeEl = document.getElementById('flow-bias-badge');
+  const flowCallBar = document.getElementById('flow-bar-call');
+  const flowPutBar = document.getElementById('flow-bar-put');
+  const flowAnomDesc = document.getElementById('flow-anomalies-desc');
+
+  if (flowImbEl && imb.imbalance !== undefined) {
+    const imbSign = imb.imbalance > 0 ? '+' : '';
+    flowImbEl.textContent = `${imbSign}${Number(imb.imbalance).toFixed(3)}`;
+    flowImbEl.className = 'quant-value-lg ' + (imb.imbalance > 0.2 ? 'bull' : (imb.imbalance < -0.2 ? 'bear' : 'neutral'));
+
+    if (flowBadgeEl) {
+      flowBadgeEl.textContent = imb.bias ? imb.bias.replace(/_/g, ' ') : 'BALANCED';
+      flowBadgeEl.className = 'quant-badge ' + (imb.imbalance > 0.2 ? 'badge-expensive' : (imb.imbalance < -0.2 ? 'badge-cheap' : 'badge-neutral'));
+    }
+    if (flowCallBar && flowPutBar) {
+      const callShare = imb.call_share_pct || 50;
+      const putShare = imb.put_share_pct || 50;
+      flowCallBar.style.width = `${callShare}%`;
+      flowCallBar.textContent = `${callShare}% C`;
+      flowPutBar.style.width = `${putShare}%`;
+      flowPutBar.textContent = `${putShare}% P`;
+    }
+
+    if (flowAnomDesc) {
+      const anoms = flow.anomalies || [];
+      if (anoms.length > 0) {
+        const a0 = anoms[0];
+        flowAnomDesc.textContent = `⚠️ Spike: ${a0.type} ${a0.strike} (${a0.vol_oi_ratio}x OI, ${Math.round(a0.volume)} contracts)`;
+      } else {
+        flowAnomDesc.textContent = 'No extreme flow anomalies detected.';
+      }
+    }
+  }
+
+  // 4. Alerts Feed
+  const alerts = data.alerts || [];
+  const alertsContainer = document.getElementById('alerts-feed-container');
+  if (alertsContainer) {
+    if (alerts.length === 0) {
+      alertsContainer.innerHTML = '<div class="alert-empty">● All microstructure parameters within normal bounds.</div>';
+    } else {
+      alertsContainer.innerHTML = alerts.map(a => `
+        <div class="alert-item ${(a.severity || '').toLowerCase()}">
+          <div class="alert-item-header">
+            <span class="alert-title">${a.title}</span>
+            <span class="alert-sev-badge ${(a.severity || '').toLowerCase()}">${a.severity}</span>
+          </div>
+          <div class="alert-detail">${a.detail}</div>
+        </div>
+      `).join('');
+    }
+  }
+}
