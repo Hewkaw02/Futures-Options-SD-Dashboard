@@ -108,10 +108,10 @@
         <div class="card-header">
           <span class="card-title">Hybrid Candle &amp; OI S/R Zones</span>
           <div class="header-controls-group">
-            <div class="layer-control-panel">
-              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-sdbands" checked onchange="toggleLayer('hybrid', 'sdBands')"> SD Bands</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-session" checked onchange="toggleLayer('hybrid', 'sessionLevels')"> Session Levels</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-oiwalls" checked onchange="toggleLayer('hybrid', 'oiWalls')"> OI Walls</label>
+            <div class="layer-control-panel" role="group" aria-label="Hybrid Chart Layers">
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-sdbands" checked onchange="toggleLayer('hybrid', 'sdBands')" aria-controls="chart-hybrid"> SD Bands</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-session" checked onchange="toggleLayer('hybrid', 'sessionLevels')" aria-controls="chart-hybrid"> Session Levels</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-hybrid-oiwalls" checked onchange="toggleLayer('hybrid', 'oiWalls')" aria-controls="chart-hybrid"> OI Walls</label>
             </div>
             <div class="chart-tab-group" id="hybrid-tabs" role="group" aria-label="Hybrid Chart Timeframe Selection">
               <button class="chart-tab" data-tab="hybrid_1d" onclick="switchChartTab('hybrid', 'hybrid_1d')" aria-pressed="false">1D</button>
@@ -130,10 +130,10 @@
         <div class="card-header">
           <span class="card-title">Intraday Master Chart (Decision Terminal)</span>
           <div class="header-controls-group">
-            <div class="layer-control-panel">
-              <label class="layer-toggle"><input type="checkbox" id="toggle-master-vwap" checked onchange="toggleLayer('master', 'vwap')"> VWAP</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-master-setup" checked onchange="toggleLayer('master', 'tradeSetup')"> Trade Setup</label>
-              <label class="layer-toggle"><input type="checkbox" id="toggle-master-walls" checked onchange="toggleLayer('master', 'oiWalls')"> Option Walls</label>
+            <div class="layer-control-panel" role="group" aria-label="Intraday Master Chart Layers">
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-vwap" checked onchange="toggleLayer('master', 'vwap')" aria-controls="chart-intraday-master"> VWAP</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-setup" checked onchange="toggleLayer('master', 'tradeSetup')" aria-controls="chart-intraday-master"> Trade Setup</label>
+              <label class="layer-toggle"><input type="checkbox" id="toggle-master-walls" checked onchange="toggleLayer('master', 'oiWalls')" aria-controls="chart-intraday-master"> Option Walls</label>
             </div>
             <div class="chart-tab-group" id="intraday-master-tabs" role="group" aria-label="Intraday Master Chart Timeframe Selection">
               <button class="chart-tab active" data-tab="intraday_master_5m"
