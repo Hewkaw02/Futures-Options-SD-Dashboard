@@ -1383,3 +1383,99 @@ body::after {
   margin-top: 2px;
   line-height: 1.3;
 }
+
+
+/* Tri-Probability Split Bar */
+.tri-prob-container {
+  display: flex;
+  height: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 6px 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+
+.tri-bar-bull {
+  background: var(--accent-bull);
+  color: #000;
+  transition: width 0.3s ease;
+}
+
+.tri-bar-range {
+  background: var(--accent-neutral);
+  color: #000;
+  transition: width 0.3s ease;
+}
+
+.tri-bar-bear {
+  background: var(--accent-bear);
+  color: #fff;
+  transition: width 0.3s ease;
+}
+
+.badge-magnet-active {
+  background: rgba(255, 184, 0, 0.2);
+  border-color: var(--accent-neutral);
+  color: var(--accent-neutral);
+  animation: pulse-glow 2s infinite;
+}
+
+/* Stress Scenario Table */
+.scenario-table-container {
+  padding: 0 var(--space-md) var(--space-md) var(--space-md);
+}
+
+.scenario-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.scenario-table-scroll {
+  overflow-x: auto;
+}
+
+.scenario-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.scenario-table th, .scenario-table td {
+  padding: 6px 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.scenario-table th {
+  color: var(--text-dim);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.scenario-table td:first-child, .scenario-table th:first-child {
+  text-align: left;
+}
+
+.scenario-table td:nth-child(3), .scenario-table th:nth-child(3) {
+  text-align: center;
+}
+
+.scenario-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.text-bull { color: var(--accent-bull); }
+.text-bear { color: var(--accent-bear); }
+.text-center { text-align: center !important; }
