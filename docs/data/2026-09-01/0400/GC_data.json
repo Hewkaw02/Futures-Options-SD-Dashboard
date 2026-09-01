@@ -1950,9 +1950,9 @@
           1788220800000,
           4498.7,
           4510.5,
-          4475.2,
-          4476.7,
-          21311.0
+          4473.9,
+          4475.7,
+          22853.0
         ]
       ],
       "vwap": null
@@ -5875,9 +5875,9 @@
           1788235200000,
           4485.7,
           4486.7,
-          4475.2,
-          4476.7,
-          2231.0
+          4473.9,
+          4475.7,
+          3829.0
         ]
       ],
       "vwap": [
@@ -7839,7 +7839,7 @@
         ],
         [
           1788235200000,
-          4479.53
+          4478.77
         ]
       ]
     },
@@ -10042,8 +10042,16 @@
           4478.2,
           4479.4,
           4475.2,
-          4476.7,
-          838.0
+          4476.5,
+          932.0
+        ],
+        [
+          1788237900000,
+          4475.9,
+          4478.2,
+          4473.9,
+          4475.7,
+          1504.0
         ]
       ],
       "vwap": [
@@ -11145,7 +11153,11 @@
         ],
         [
           1788237000000,
-          4479.56
+          4479.43
+        ],
+        [
+          1788237900000,
+          4478.06
         ]
       ]
     },
@@ -17716,8 +17728,32 @@
           4478.2,
           4478.6,
           4475.2,
-          4476.7,
-          408.0
+          4476.5,
+          502.0
+        ],
+        [
+          1788237900000,
+          4475.9,
+          4478.1,
+          4474.1,
+          4475.6,
+          739.0
+        ],
+        [
+          1788238200000,
+          4475.4,
+          4478.2,
+          4473.9,
+          4477.6,
+          561.0
+        ],
+        [
+          1788238500000,
+          4477.6,
+          4478.0,
+          4474.1,
+          4475.7,
+          204.0
         ]
       ],
       "vwap": [
@@ -21003,7 +21039,19 @@
         ],
         [
           1788237600000,
-          4479.69
+          4479.56
+        ],
+        [
+          1788237900000,
+          4478.68
+        ],
+        [
+          1788238200000,
+          4478.36
+        ],
+        [
+          1788238500000,
+          4478.23
         ]
       ]
     }
@@ -21658,8 +21706,8 @@
         "y": [
           4498.7,
           4510.5,
-          4475.2,
-          4476.7
+          4473.9,
+          4475.7
         ]
       }
     ]
@@ -21682,339 +21730,489 @@
     "oi_resistances": [
       [
         4450.0,
-        193.0
+        193
       ],
       [
         4500.0,
-        183.0
+        183
       ],
       [
-        4600.0,
-        149.0
+        4625.0,
+        168
       ]
     ],
     "oi_supports": [
       [
+        4325.0,
+        300
+      ],
+      [
         4350.0,
-        207.0
+        207
       ],
       [
         4400.0,
-        188.0
-      ],
-      [
-        4475.0,
-        160.0
+        188
       ]
     ],
     "vol_resistances": [
       [
-        4480.0,
-        44.0
+        4500.0,
+        279.0
       ],
       [
-        4505.0,
-        27.0
+        4450.0,
+        186.0
       ],
       [
-        4460.0,
-        26.0
+        4475.0,
+        157.0
       ]
     ],
     "vol_supports": [
       [
-        4420.0,
-        55.0
-      ],
-      [
-        4460.0,
-        47.0
+        4400.0,
+        378.0
       ],
       [
         4450.0,
-        25.0
+        290.0
+      ],
+      [
+        4325.0,
+        203.0
       ]
     ]
   },
   "intraday_volume_profile": [
     {
-      "strike": 4345.0,
+      "strike": 4255.0,
       "call_vol": 0.0,
-      "put_vol": 0.0
+      "put_vol": 2.0
     },
     {
-      "strike": 4350.0,
+      "strike": 4260.0,
       "call_vol": 0.0,
-      "put_vol": 0.0
+      "put_vol": 2.0
     },
     {
-      "strike": 4355.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4360.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4365.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4370.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4375.0,
-      "call_vol": 0.0,
-      "put_vol": 1.0
-    },
-    {
-      "strike": 4380.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4385.0,
-      "call_vol": 0.0,
-      "put_vol": 3.0
-    },
-    {
-      "strike": 4390.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4395.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4400.0,
-      "call_vol": 0.0,
-      "put_vol": 19.0
-    },
-    {
-      "strike": 4405.0,
-      "call_vol": 0.0,
-      "put_vol": 14.0
-    },
-    {
-      "strike": 4410.0,
-      "call_vol": 0.0,
-      "put_vol": 3.0
-    },
-    {
-      "strike": 4415.0,
-      "call_vol": 0.0,
-      "put_vol": 5.0
-    },
-    {
-      "strike": 4420.0,
-      "call_vol": 0.0,
-      "put_vol": 55.0
-    },
-    {
-      "strike": 4425.0,
+      "strike": 4265.0,
       "call_vol": 0.0,
       "put_vol": 6.0
     },
     {
-      "strike": 4430.0,
-      "call_vol": 0.0,
-      "put_vol": 3.0
-    },
-    {
-      "strike": 4435.0,
-      "call_vol": 0.0,
-      "put_vol": 3.0
-    },
-    {
-      "strike": 4440.0,
-      "call_vol": 1.0,
-      "put_vol": 7.0
-    },
-    {
-      "strike": 4445.0,
+      "strike": 4270.0,
       "call_vol": 0.0,
       "put_vol": 1.0
     },
     {
-      "strike": 4450.0,
-      "call_vol": 3.0,
+      "strike": 4275.0,
+      "call_vol": 0.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4280.0,
+      "call_vol": 0.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4285.0,
+      "call_vol": 0.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4290.0,
+      "call_vol": 0.0,
+      "put_vol": 4.0
+    },
+    {
+      "strike": 4295.0,
+      "call_vol": 0.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4300.0,
+      "call_vol": 0.0,
+      "put_vol": 8.0
+    },
+    {
+      "strike": 4305.0,
+      "call_vol": 0.0,
+      "put_vol": 5.0
+    },
+    {
+      "strike": 4310.0,
+      "call_vol": 0.0,
+      "put_vol": 3.0
+    },
+    {
+      "strike": 4315.0,
+      "call_vol": 0.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4320.0,
+      "call_vol": 0.0,
+      "put_vol": 4.0
+    },
+    {
+      "strike": 4325.0,
+      "call_vol": 0.0,
+      "put_vol": 203.0
+    },
+    {
+      "strike": 4330.0,
+      "call_vol": 0.0,
+      "put_vol": 5.0
+    },
+    {
+      "strike": 4340.0,
+      "call_vol": 0.0,
+      "put_vol": 4.0
+    },
+    {
+      "strike": 4345.0,
+      "call_vol": 0.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4350.0,
+      "call_vol": 10.0,
+      "put_vol": 184.0
+    },
+    {
+      "strike": 4355.0,
+      "call_vol": 0.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4360.0,
+      "call_vol": 0.0,
+      "put_vol": 9.0
+    },
+    {
+      "strike": 4365.0,
+      "call_vol": 0.0,
+      "put_vol": 9.0
+    },
+    {
+      "strike": 4370.0,
+      "call_vol": 1.0,
+      "put_vol": 17.0
+    },
+    {
+      "strike": 4375.0,
+      "call_vol": 0.0,
+      "put_vol": 118.0
+    },
+    {
+      "strike": 4380.0,
+      "call_vol": 0.0,
+      "put_vol": 19.0
+    },
+    {
+      "strike": 4385.0,
+      "call_vol": 1.0,
+      "put_vol": 17.0
+    },
+    {
+      "strike": 4390.0,
+      "call_vol": 0.0,
+      "put_vol": 20.0
+    },
+    {
+      "strike": 4395.0,
+      "call_vol": 2.0,
+      "put_vol": 110.0
+    },
+    {
+      "strike": 4400.0,
+      "call_vol": 11.0,
+      "put_vol": 378.0
+    },
+    {
+      "strike": 4405.0,
+      "call_vol": 0.0,
+      "put_vol": 10.0
+    },
+    {
+      "strike": 4410.0,
+      "call_vol": 0.0,
+      "put_vol": 36.0
+    },
+    {
+      "strike": 4415.0,
+      "call_vol": 0.0,
+      "put_vol": 14.0
+    },
+    {
+      "strike": 4420.0,
+      "call_vol": 9.0,
+      "put_vol": 60.0
+    },
+    {
+      "strike": 4425.0,
+      "call_vol": 5.0,
+      "put_vol": 55.0
+    },
+    {
+      "strike": 4430.0,
+      "call_vol": 13.0,
+      "put_vol": 20.0
+    },
+    {
+      "strike": 4435.0,
+      "call_vol": 4.0,
       "put_vol": 25.0
+    },
+    {
+      "strike": 4440.0,
+      "call_vol": 3.0,
+      "put_vol": 37.0
+    },
+    {
+      "strike": 4445.0,
+      "call_vol": 16.0,
+      "put_vol": 84.0
+    },
+    {
+      "strike": 4450.0,
+      "call_vol": 186.0,
+      "put_vol": 290.0
     },
     {
       "strike": 4455.0,
       "call_vol": 6.0,
-      "put_vol": 10.0
+      "put_vol": 24.0
     },
     {
       "strike": 4460.0,
-      "call_vol": 26.0,
-      "put_vol": 47.0
+      "call_vol": 127.0,
+      "put_vol": 8.0
     },
     {
       "strike": 4465.0,
       "call_vol": 3.0,
-      "put_vol": 4.0
+      "put_vol": 9.0
     },
     {
       "strike": 4470.0,
-      "call_vol": 13.0,
+      "call_vol": 24.0,
       "put_vol": 5.0
     },
     {
       "strike": 4475.0,
-      "call_vol": 2.0,
-      "put_vol": 0.0
+      "call_vol": 157.0,
+      "put_vol": 7.0
     },
     {
       "strike": 4480.0,
-      "call_vol": 44.0,
-      "put_vol": 0.0
+      "call_vol": 49.0,
+      "put_vol": 8.0
     },
     {
       "strike": 4485.0,
-      "call_vol": 7.0,
-      "put_vol": 0.0
+      "call_vol": 40.0,
+      "put_vol": 2.0
     },
     {
       "strike": 4490.0,
-      "call_vol": 4.0,
-      "put_vol": 0.0
+      "call_vol": 27.0,
+      "put_vol": 2.0
     },
     {
       "strike": 4495.0,
-      "call_vol": 3.0,
-      "put_vol": 0.0
+      "call_vol": 27.0,
+      "put_vol": 1.0
     },
     {
       "strike": 4500.0,
-      "call_vol": 14.0,
-      "put_vol": 0.0
+      "call_vol": 279.0,
+      "put_vol": 23.0
     },
     {
       "strike": 4505.0,
-      "call_vol": 27.0,
-      "put_vol": 0.0
+      "call_vol": 66.0,
+      "put_vol": 1.0
     },
     {
       "strike": 4510.0,
-      "call_vol": 4.0,
+      "call_vol": 63.0,
       "put_vol": 0.0
     },
     {
       "strike": 4515.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
+      "call_vol": 71.0,
+      "put_vol": 6.0
     },
     {
       "strike": 4520.0,
-      "call_vol": 4.0,
+      "call_vol": 10.0,
       "put_vol": 0.0
     },
     {
       "strike": 4525.0,
-      "call_vol": 2.0,
-      "put_vol": 1.0
+      "call_vol": 49.0,
+      "put_vol": 14.0
     },
     {
       "strike": 4530.0,
-      "call_vol": 4.0,
-      "put_vol": 1.0
+      "call_vol": 34.0,
+      "put_vol": 13.0
     },
     {
       "strike": 4535.0,
-      "call_vol": 0.0,
+      "call_vol": 14.0,
       "put_vol": 0.0
     },
     {
       "strike": 4540.0,
-      "call_vol": 1.0,
+      "call_vol": 11.0,
       "put_vol": 0.0
     },
     {
       "strike": 4545.0,
-      "call_vol": 0.0,
+      "call_vol": 10.0,
       "put_vol": 0.0
     },
     {
       "strike": 4550.0,
-      "call_vol": 3.0,
-      "put_vol": 0.0
+      "call_vol": 37.0,
+      "put_vol": 8.0
     },
     {
       "strike": 4555.0,
-      "call_vol": 0.0,
+      "call_vol": 2.0,
       "put_vol": 0.0
     },
     {
       "strike": 4560.0,
-      "call_vol": 1.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 4565.0,
-      "call_vol": 0.0,
+      "call_vol": 8.0,
       "put_vol": 1.0
     },
     {
+      "strike": 4565.0,
+      "call_vol": 13.0,
+      "put_vol": 2.0
+    },
+    {
       "strike": 4570.0,
-      "call_vol": 3.0,
-      "put_vol": 0.0
+      "call_vol": 2.0,
+      "put_vol": 10.0
     },
     {
       "strike": 4575.0,
-      "call_vol": 1.0,
-      "put_vol": 3.0
+      "call_vol": 8.0,
+      "put_vol": 16.0
     },
     {
       "strike": 4580.0,
-      "call_vol": 1.0,
-      "put_vol": 0.0
+      "call_vol": 5.0,
+      "put_vol": 2.0
     },
     {
       "strike": 4585.0,
-      "call_vol": 0.0,
+      "call_vol": 1.0,
       "put_vol": 0.0
     },
     {
       "strike": 4590.0,
-      "call_vol": 0.0,
+      "call_vol": 11.0,
       "put_vol": 0.0
     },
     {
       "strike": 4595.0,
-      "call_vol": 0.0,
+      "call_vol": 1.0,
       "put_vol": 0.0
     },
     {
       "strike": 4600.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
+      "call_vol": 152.0,
+      "put_vol": 2.0
     },
     {
       "strike": 4605.0,
-      "call_vol": 0.0,
+      "call_vol": 1.0,
       "put_vol": 0.0
     },
     {
       "strike": 4610.0,
+      "call_vol": 2.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4615.0,
+      "call_vol": 1.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4620.0,
+      "call_vol": 1.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4625.0,
+      "call_vol": 31.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4630.0,
       "call_vol": 0.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4635.0,
+      "call_vol": 2.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4640.0,
+      "call_vol": 7.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4650.0,
+      "call_vol": 8.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4660.0,
+      "call_vol": 1.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4670.0,
+      "call_vol": 1.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4675.0,
+      "call_vol": 24.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4685.0,
+      "call_vol": 17.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4690.0,
+      "call_vol": 2.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4695.0,
+      "call_vol": 3.0,
       "put_vol": 0.0
     }
   ],
   "vrp": {
     "iv_pct": 23.4,
-    "rv_pct": 24.34,
-    "vrp_pct": -0.94,
+    "rv_pct": 24.35,
+    "vrp_pct": -0.95,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (23.4%) and RV (24.34%) are balanced (VRP: -0.9%)."
+    "description": "IV (23.4%) and RV (24.35%) are balanced (VRP: -0.9%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 12.64,
@@ -22082,7 +22280,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-01 04:55 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -22090,7 +22288,7 @@
       "detail": "GC trading at 4478.10 >= Call Wall 4450.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-01 04:55 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -22102,17 +22300,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.2713650865028636,
-        "NQ": 0.27174317663081693
+        "ES": 0.27097117954232436,
+        "NQ": 0.27162935160538443
       },
       "ES": {
-        "GC": 0.2713650865028636,
+        "GC": 0.27097117954232436,
         "ES": 1.0,
-        "NQ": 0.9180094805610188
+        "NQ": 0.9179924284239988
       },
       "NQ": {
-        "GC": 0.27174317663081693,
-        "ES": 0.9180094805610188,
+        "GC": 0.27162935160538443,
+        "ES": 0.9179924284239988,
         "NQ": 1.0
       }
     },

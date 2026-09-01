@@ -5377,8 +5377,8 @@
           29518.25,
           29522.5,
           29434.75,
-          29475.5,
-          33192.0
+          29470.25,
+          34596.0
         ]
       ],
       "vwap": null
@@ -9293,9 +9293,9 @@
           1788235200000,
           29485.0,
           29503.0,
+          29466.0,
           29470.25,
-          29475.5,
-          2027.0
+          3404.0
         ]
       ],
       "vwap": [
@@ -11253,7 +11253,7 @@
         ],
         [
           1788235200000,
-          29482.92
+          29479.75
         ]
       ]
     },
@@ -13456,8 +13456,16 @@
           29493.75,
           29503.0,
           29470.25,
-          29475.5,
-          767.0
+          29471.25,
+          918.0
+        ],
+        [
+          1788237900000,
+          29471.25,
+          29494.0,
+          29466.0,
+          29470.0,
+          1226.0
         ]
       ],
       "vwap": [
@@ -14559,7 +14567,11 @@
         ],
         [
           1788237000000,
-          29488.85
+          29487.84
+        ],
+        [
+          1788237900000,
+          29483.82
         ]
       ]
     },
@@ -21106,8 +21118,32 @@
           29488.75,
           29491.5,
           29470.25,
-          29475.5,
-          261.0
+          29471.25,
+          412.0
+        ],
+        [
+          1788237900000,
+          29471.25,
+          29494.0,
+          29467.0,
+          29490.75,
+          609.0
+        ],
+        [
+          1788238200000,
+          29491.0,
+          29493.0,
+          29474.0,
+          29476.25,
+          396.0
+        ],
+        [
+          1788238500000,
+          29476.0,
+          29477.75,
+          29466.0,
+          29470.0,
+          221.0
         ]
       ],
       "vwap": [
@@ -24381,7 +24417,19 @@
         ],
         [
           1788237600000,
-          29491.87
+          29490.71
+        ],
+        [
+          1788237900000,
+          29489.23
+        ],
+        [
+          1788238200000,
+          29488.21
+        ],
+        [
+          1788238500000,
+          29487.11
         ]
       ]
     }
@@ -25037,7 +25085,7 @@
           29518.25,
           29522.5,
           29434.75,
-          29475.5
+          29470.25
         ]
       }
     ]
@@ -26658,11 +26706,11 @@
   ],
   "vrp": {
     "iv_pct": 61.2,
-    "rv_pct": 15.67,
-    "vrp_pct": 45.53,
+    "rv_pct": 15.66,
+    "vrp_pct": 45.54,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (61.2%) > Realized Vol (15.67%). Net option sellers capture rich premium."
+    "description": "Implied Vol (61.2%) > Realized Vol (15.66%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -15.49,
@@ -26730,7 +26778,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-01 04:54 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -26738,7 +26786,7 @@
       "detail": "NQ trading at 28684.50 <= Put Wall 28700.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-01 04:54 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -26746,7 +26794,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-01 04:54 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26758,17 +26806,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.2713650865028636,
-        "NQ": 0.27174317663081693
+        "ES": 0.27097117954232436,
+        "NQ": 0.27162935160538443
       },
       "ES": {
-        "GC": 0.2713650865028636,
+        "GC": 0.27097117954232436,
         "ES": 1.0,
-        "NQ": 0.9180094805610188
+        "NQ": 0.9179924284239988
       },
       "NQ": {
-        "GC": 0.27174317663081693,
-        "ES": 0.9180094805610188,
+        "GC": 0.27162935160538443,
+        "ES": 0.9179924284239988,
         "NQ": 1.0
       }
     },
@@ -26947,9 +26995,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.0,
-    "prob_bear": 0.609,
-    "prob_range": 0.391,
+    "prob_bear": 0.608,
+    "prob_range": 0.392,
     "confidence_pct": 60,
-    "description": "Prob(Bear)=60.9%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=60.8%. Elevated put flow and downside hedging pressure."
   }
 }

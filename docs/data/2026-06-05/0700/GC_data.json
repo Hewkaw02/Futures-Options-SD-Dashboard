@@ -1,6 +1,6 @@
 {
   "bias": {
-    "price": 4476.7,
+    "price": 4475.7,
     "iv": "0.0%"
   },
   "oi_walls": {
@@ -1366,9 +1366,9 @@
           1788220800000,
           4498.7,
           4510.5,
-          4475.2,
-          4476.7,
-          21311.0
+          4473.9,
+          4475.7,
+          22853.0
         ]
       ],
       "vwap": null
@@ -5291,9 +5291,9 @@
           1788235200000,
           4485.7,
           4486.7,
-          4475.2,
-          4476.7,
-          2231.0
+          4473.9,
+          4475.7,
+          3829.0
         ]
       ],
       "vwap": [
@@ -7255,7 +7255,7 @@
         ],
         [
           1788235200000,
-          4479.53
+          4478.77
         ]
       ]
     },
@@ -9458,8 +9458,16 @@
           4478.2,
           4479.4,
           4475.2,
-          4476.7,
-          838.0
+          4476.5,
+          932.0
+        ],
+        [
+          1788237900000,
+          4475.9,
+          4478.2,
+          4473.9,
+          4475.7,
+          1504.0
         ]
       ],
       "vwap": [
@@ -10561,7 +10569,11 @@
         ],
         [
           1788237000000,
-          4479.56
+          4479.43
+        ],
+        [
+          1788237900000,
+          4478.06
         ]
       ]
     },
@@ -17132,8 +17144,32 @@
           4478.2,
           4478.6,
           4475.2,
-          4476.7,
-          408.0
+          4476.5,
+          502.0
+        ],
+        [
+          1788237900000,
+          4475.9,
+          4478.1,
+          4474.1,
+          4475.6,
+          739.0
+        ],
+        [
+          1788238200000,
+          4475.4,
+          4478.2,
+          4473.9,
+          4477.6,
+          561.0
+        ],
+        [
+          1788238500000,
+          4477.6,
+          4478.0,
+          4474.1,
+          4475.7,
+          204.0
         ]
       ],
       "vwap": [
@@ -20419,7 +20455,19 @@
         ],
         [
           1788237600000,
-          4479.69
+          4479.56
+        ],
+        [
+          1788237900000,
+          4478.68
+        ],
+        [
+          1788238200000,
+          4478.36
+        ],
+        [
+          1788238500000,
+          4478.23
         ]
       ]
     }
@@ -21074,23 +21122,23 @@
         "y": [
           4498.7,
           4510.5,
-          4475.2,
-          4476.7
+          4473.9,
+          4475.7
         ]
       }
     ]
   },
   "sd_bands": {
-    "price": 4476.7,
-    "sd1": 71.19,
+    "price": 4475.7,
+    "sd1": 71.16,
     "daily_vol_pct": 1.59,
     "levels": {
-      "+1SD": 4547.89,
-      "+2SD": 4619.08,
-      "+3SD": 4690.26,
-      "-1SD": 4405.51,
-      "-2SD": 4334.32,
-      "-3SD": 4263.14
+      "+1SD": 4546.86,
+      "+2SD": 4618.02,
+      "+3SD": 4689.19,
+      "-1SD": 4404.54,
+      "-2SD": 4333.38,
+      "-3SD": 4262.21
     }
   },
   "sd_step": 0,
@@ -21581,11 +21629,11 @@
   ],
   "vrp": {
     "iv_pct": 0.0,
-    "rv_pct": 24.34,
-    "vrp_pct": -24.34,
+    "rv_pct": 24.35,
+    "vrp_pct": -24.35,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (24.34%) > Implied Vol (0.0%). Option buyers favored."
+    "description": "Realized Vol (24.35%) > Implied Vol (0.0%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 0.0,
@@ -21653,15 +21701,15 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-01 04:54 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
-      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -24.3%)",
+      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -24.4%)",
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-01 04:54 UTC",
+      "timestamp": "2026-09-01 05:09 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -21673,17 +21721,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.2713650865028636,
-        "NQ": 0.27174317663081693
+        "ES": 0.27097117954232436,
+        "NQ": 0.27162935160538443
       },
       "ES": {
-        "GC": 0.2713650865028636,
+        "GC": 0.27097117954232436,
         "ES": 1.0,
-        "NQ": 0.9180094805610188
+        "NQ": 0.9179924284239988
       },
       "NQ": {
-        "GC": 0.27174317663081693,
-        "ES": 0.9180094805610188,
+        "GC": 0.27162935160538443,
+        "ES": 0.9179924284239988,
         "NQ": 1.0
       }
     },
@@ -21695,13 +21743,13 @@
     "description": "Normal inter-market correlation (ES/NQ: 0.92, GC/ES: 0.27)."
   },
   "scenarios": {
-    "base_price": 4476.7,
+    "base_price": 4475.7,
     "base_gex": 0.0,
     "base_dex": 0.0,
     "scenarios": [
       {
         "shift_pct": -3.0,
-        "hypo_price": 4342.4,
+        "hypo_price": 4341.43,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21710,7 +21758,7 @@
       },
       {
         "shift_pct": -2.0,
-        "hypo_price": 4387.17,
+        "hypo_price": 4386.19,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21719,7 +21767,7 @@
       },
       {
         "shift_pct": -1.0,
-        "hypo_price": 4431.93,
+        "hypo_price": 4430.94,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21728,7 +21776,7 @@
       },
       {
         "shift_pct": 0.0,
-        "hypo_price": 4476.7,
+        "hypo_price": 4475.7,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21737,7 +21785,7 @@
       },
       {
         "shift_pct": 1.0,
-        "hypo_price": 4521.47,
+        "hypo_price": 4520.46,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21746,7 +21794,7 @@
       },
       {
         "shift_pct": 2.0,
-        "hypo_price": 4566.23,
+        "hypo_price": 4565.21,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21755,7 +21803,7 @@
       },
       {
         "shift_pct": 3.0,
-        "hypo_price": 4611.0,
+        "hypo_price": 4609.97,
         "total_gex": 0.0,
         "total_dex": 0.0,
         "gex_regime": "VOLATILE (Negative Gamma)",
@@ -21769,8 +21817,8 @@
     "pin_score": 0.0,
     "gamma_concentration_pct": 0.0,
     "pinning_zone": [
-      4431.933,
-      4521.467
+      4430.943,
+      4520.456999999999
     ],
     "pin_magnet_active": false,
     "description": "Zero Open Interest."
