@@ -4,12 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Futures Options S/D Dashboard</title>
   <meta name="description"
     content="Real-time Futures Options Trading Dashboard — GC, ES, NQ with OI Walls, SD Bands, GEX Profile, and Master Bias Reports.">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2.6">
 
   <!-- ApexCharts CDN -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
@@ -40,6 +43,13 @@
           </button>
           <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')">
             NQ <span class="kbd-hint">3</span>
+          </button>
+        </div>
+
+        <!-- Refresh Button -->
+        <div class="refresh-control">
+          <button class="asset-btn" id="btn-refresh" onclick="forceRefreshData()" title="Force Refresh Latest Data (R)" aria-label="Refresh Data">
+            <span class="refresh-icon">🔄</span> <span class="kbd-hint">R</span>
           </button>
         </div>
 
@@ -467,7 +477,7 @@
   </div>
 
   <!-- App Logic -->
-  <script src="app.js"></script>
+  <script src="app.js?v=2.6"></script>
 
 </body>
 
