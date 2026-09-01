@@ -1166,20 +1166,220 @@ body::after {
 
 
 
-/* ── Accessibility ────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .logo-dot,
-  .status-dot,
-  .pulse-dot,
-  .loading-spinner,
-  .asset-btn,
-  .time-btn,
-  .card,
-  .chart-tab,
-  .layer-toggle,
-  .gauge-bar,
-  .distance-widget.live-today {
-    animation: none !important;
-    transition: none !important;
+
+/* ── Quantitative Edge Grid ────────────────────────────────── */
+.quant-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  padding: var(--space-md);
+}
+
+@media (max-width: 1200px) {
+  .quant-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
+
+@media (max-width: 768px) {
+  .quant-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quant-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.quant-card-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quant-card-hero {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: 4px;
+}
+
+.quant-value-lg {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.quant-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-active);
+  color: var(--text-secondary);
+}
+
+.badge-expensive {
+  background: rgba(0, 255, 102, 0.12);
+  border-color: rgba(0, 255, 102, 0.4);
+  color: var(--accent-bull);
+}
+
+.badge-cheap {
+  background: rgba(255, 0, 85, 0.12);
+  border-color: rgba(255, 0, 85, 0.4);
+  color: var(--accent-bear);
+}
+
+.badge-callskew {
+  background: rgba(0, 255, 102, 0.12);
+  border-color: rgba(0, 255, 102, 0.4);
+  color: var(--accent-bull);
+}
+
+.badge-putskew {
+  background: rgba(255, 0, 85, 0.12);
+  border-color: rgba(255, 0, 85, 0.4);
+  color: var(--accent-bear);
+}
+
+.quant-metrics-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.quant-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-dim);
+  margin-top: auto;
+  padding-top: var(--space-xs);
+}
+
+/* Order Flow Split Bar */
+.flow-bar-container {
+  display: flex;
+  height: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 6px 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+
+.flow-bar-call {
+  background: var(--accent-bull);
+  color: #000;
+  transition: width 0.3s ease;
+}
+
+.flow-bar-put {
+  background: var(--accent-bear);
+  color: #fff;
+  transition: width 0.3s ease;
+}
+
+/* Alert Feed Items */
+.alerts-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.alert-empty {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  padding: 8px 0;
+}
+
+.alert-item {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border-left: 3px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.alert-item.critical {
+  border-left-color: var(--accent-bear);
+  background: rgba(255, 0, 85, 0.06);
+}
+
+.alert-item.warning {
+  border-left-color: var(--accent-neutral);
+  background: rgba(255, 184, 0, 0.06);
+}
+
+.alert-item.info {
+  border-left-color: var(--accent-info);
+  background: rgba(77, 158, 255, 0.06);
+}
+
+.alert-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.alert-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.alert-sev-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.alert-sev-badge.critical {
+  background: var(--accent-bear);
+  color: #fff;
+}
+
+.alert-sev-badge.warning {
+  background: var(--accent-neutral);
+  color: #000;
+}
+
+.alert-sev-badge.info {
+  background: var(--accent-info);
+  color: #000;
+}
+
+.alert-detail {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.3;
 }
