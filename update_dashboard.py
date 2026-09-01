@@ -26,6 +26,12 @@ from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
 
+from analytics.vrp import calc_yang_zhang_rv, calc_vrp, calc_iv_percentile_rank
+from analytics.term_structure import calc_term_structure_slope, calc_25delta_skew
+from analytics.order_flow import calc_volume_imbalance, detect_unusual_flow_spikes
+from alerts.engine import evaluate_market_alerts
+
+
 # Try yfinance for candle data (optional)
 try:
     import yfinance as yf
@@ -777,8 +783,62 @@ def process_timestamp(date_str, hour_str):
             data["intraday_levels"] = None
             data["intraday_volume_profile"] = None
 
+        # 6. Quantitative Extensions (VRP, Skew Dynamics, Order Flow, Alerts)
+        # 6a. Volatility Risk Premium (VRP)
+        if "1d" in multi_candles and multi_candles["1d"].get("ohlcv"):
+            ohlcv_rows = multi_candles["1d"]["ohlcv"]
+            df_1d = pd.DataFrame(ohlcv_rows, columns=["ts", "Open", "High", "Low", "Close", "Volume"])
+            rv = calc_yang_zhang_rv(df_1d, window=20, annualization_factor=365.0)
+            data["vrp"] = calc_vrp(iv, rv)
+        else:
+            data["vrp"] = {
+                "iv_pct": round(iv * 100.0, 2),
+                "rv_pct": 0.0,
+                "vrp_pct": 0.0,
+                "regime": "FAIR",
+                "signal": "NEUTRAL",
+                "description": "Historical candle data unavailable for Realized Volatility."
+            }
+
+        # 6b. 25-Delta Skew Dynamics & 6c. Order Flow Imbalance
+        if opt_csv:
+            raw_rows = []
+            try:
+                if HAS_PD:
+                    df_opt = pd.read_csv(opt_csv)
+                    raw_rows = df_opt.to_dict("records")
+                else:
+                    with open(opt_csv, "r") as f_opt:
+                        r_lines = [line.strip().split(",") for line in f_opt.readlines()]
+                        if len(r_lines) > 1:
+                            hdr = r_lines[0]
+                            for l_parts in r_lines[1:]:
+                                raw_rows.append(dict(zip(hdr, l_parts)))
+            except Exception:
+                raw_rows = []
+
+            data["skew_dynamics"] = calc_25delta_skew(raw_rows, price, iv)
+            
+            call_v = sum(float(r.get("Volume", 0) or 0) for r in raw_rows if str(r.get("Type", "")).upper() in ["CALL", "C"])
+            put_v = sum(float(r.get("Volume", 0) or 0) for r in raw_rows if str(r.get("Type", "")).upper() in ["PUT", "P"])
+            data["order_flow"] = {
+                "imbalance": calc_volume_imbalance(call_v, put_v),
+                "anomalies": detect_unusual_flow_spikes(raw_rows)[:5]
+            }
+        else:
+            data["skew_dynamics"] = None
+            data["order_flow"] = None
+
+        # 6d. Automated Market Alerts
+        cw = data.get("bias", {}).get("wall_resistance", 0.0)
+        pw = data.get("bias", {}).get("wall_support", 0.0)
+        gex_reg = data.get("bias", {}).get("gex", "")
+        bias_lbl = data.get("bias", {}).get("label", "")
+        flow_anom = data.get("order_flow", {}).get("anomalies", []) if data.get("order_flow") else []
+        data["alerts"] = evaluate_market_alerts(asset, price, bias_lbl, cw, pw, gex_reg, data["vrp"], flow_anom)
+
         # Write JSON
-        out_file = out_dir / f"{asset}_data.json"
+        out_file = out_dir / f"{asset}_data.json" 
         with open(out_file, 'w') as f:
             json.dump(data, f, indent=2)
         print(f"  [OK] {out_file}")
@@ -844,10 +904,36 @@ def update_manifest():
             if jsons:
                 timestamps.append(f"{date_name}/{hour_name}")
 
+    # Quantitative Backtesting Scorecard
+    backtest_scorecard = None
+    try:
+        from analytics.backtest import load_historical_signals, evaluate_signal_performance
+        sig_df = load_historical_signals(str(SOURCE_ROOT))
+        candles = {}
+        for a in ASSETS:
+            mc = get_multi_timeframe_candles(a)
+            if "1h" in mc and mc["1h"].get("ohlcv"):
+                df_c = pd.DataFrame(mc["1h"]["ohlcv"], columns=["ts", "Open", "High", "Low", "Close", "Volume"])
+                df_c["Datetime"] = pd.to_datetime(df_c["ts"], unit="ms")
+                candles[a] = df_c
+        perf = evaluate_signal_performance(sig_df, candles, horizons_hours=[1, 3, 6])
+        backtest_scorecard = {
+            "total_signals": perf.get("total_signals", 0),
+            "evaluated_signals": perf.get("evaluated_signals", 0),
+            "overall_accuracy_pct": perf.get("overall_accuracy_pct", 0.0),
+            "bull_accuracy_pct": perf.get("bull_accuracy_pct", 0.0),
+            "bear_accuracy_pct": perf.get("bear_accuracy_pct", 0.0),
+            "profit_factor": perf.get("profit_factor", 0.0),
+            "sharpe_ratio": perf.get("sharpe_ratio", 0.0)
+        }
+    except Exception as e:
+        print(f"  [WARN] Backtest scorecard computation skipped: {e}")
+
     manifest = {
         "timestamps": timestamps,
         "last_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
         "assets": ASSETS,
+        "quant_backtest_scorecard": backtest_scorecard,
     }
 
     manifest_file = OUTPUT_ROOT / "manifest.json"
