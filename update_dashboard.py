@@ -479,29 +479,29 @@ def get_intraday_data(date_str, hour_str, asset):
         if df.empty:
             return None
             
-        # Parse S/R levels
+        # Parse S/R levels without using slow iterrows
         df_c_oi = df[df['Type'] == 'C'].nlargest(3, 'Open_Interest')
         df_p_oi = df[df['Type'] == 'P'].nlargest(3, 'Open_Interest')
-        oi_resistances = [[float(row['Strike']), float(row['Open_Interest'])] for _, row in df_c_oi.iterrows() if row['Open_Interest'] > 0]
-        oi_supports = [[float(row['Strike']), float(row['Open_Interest'])] for _, row in df_p_oi.iterrows() if row['Open_Interest'] > 0]
+        oi_resistances = [[float(s), float(oi)] for s, oi in zip(df_c_oi['Strike'], df_c_oi['Open_Interest']) if oi > 0]
+        oi_supports = [[float(s), float(oi)] for s, oi in zip(df_p_oi['Strike'], df_p_oi['Open_Interest']) if oi > 0]
         
         df_c_vol = df[df['Type'] == 'C'].nlargest(3, 'Today_Volume')
         df_p_vol = df[df['Type'] == 'P'].nlargest(3, 'Today_Volume')
-        vol_resistances = [[float(row['Strike']), float(row['Today_Volume'])] for _, row in df_c_vol.iterrows() if row['Today_Volume'] > 0]
-        vol_supports = [[float(row['Strike']), float(row['Today_Volume'])] for _, row in df_p_vol.iterrows() if row['Today_Volume'] > 0]
+        vol_resistances = [[float(s), float(v)] for s, v in zip(df_c_vol['Strike'], df_c_vol['Today_Volume']) if v > 0]
+        vol_supports = [[float(s), float(v)] for s, v in zip(df_p_vol['Strike'], df_p_vol['Today_Volume']) if v > 0]
         
-        # Parse volume profile
+        # Parse volume profile without using slow iterrows
         profile = []
         df_pivot = df.pivot(index='Strike', columns='Type', values='Today_Volume').fillna(0)
         # Ensure Call/Put columns exist
         if 'C' not in df_pivot: df_pivot['C'] = 0
         if 'P' not in df_pivot: df_pivot['P'] = 0
         
-        for strike, row in df_pivot.iterrows():
+        for strike, c_vol, p_vol in zip(df_pivot.index, df_pivot['C'], df_pivot['P']):
             profile.append({
                 "strike": float(strike),
-                "call_vol": float(row['C']),
-                "put_vol": float(row['P'])
+                "call_vol": float(c_vol),
+                "put_vol": float(p_vol)
             })
             
         return {
