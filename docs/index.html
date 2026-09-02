@@ -34,14 +34,14 @@
 
       <div class="controls-bar">
         <!-- Asset Selector -->
-        <div class="asset-selector" id="asset-selector">
-          <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')">
+        <div class="asset-selector" id="asset-selector" role="group" aria-label="Asset Selection">
+          <button class="asset-btn active" data-asset="GC" id="btn-gc" onclick="switchAsset('GC')" aria-pressed="true">
             GC <span class="kbd-hint">1</span>
           </button>
-          <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')">
+          <button class="asset-btn" data-asset="ES" id="btn-es" onclick="switchAsset('ES')" aria-pressed="false">
             ES <span class="kbd-hint">2</span>
           </button>
-          <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')">
+          <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')" aria-pressed="false">
             NQ <span class="kbd-hint">3</span>
           </button>
         </div>

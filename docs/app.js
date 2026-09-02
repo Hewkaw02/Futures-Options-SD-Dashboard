@@ -583,7 +583,9 @@ function switchAsset(asset) {
 
   // Update button states
   document.querySelectorAll('.asset-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.asset === asset);
+    const isActive = btn.dataset.asset === asset;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
   });
 
   // Update asset label
