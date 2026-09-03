@@ -130,6 +130,106 @@ Outputs the Top 3 pin candidates with exact percentage odds (e.g., Strike 4,150.
 
 ---
 
+## 🔬 Complete Quantitative Analytics Engine (`analytics/` & `ml/`)
+
+The platform's analytical foundation is built on institutional derivatives pricing, microstructure order flow decomposition, and machine learning regime classification standardized to quantitative finance best practices:
+
+### 1. Black-76 Math & Institutional Exposures (`analytics/exposure.py`)
+Futures options trade with distinct cost-of-carry characteristics compared to cash equity options. Holding futures requires initial margin rather than full upfront capital. All pricing equations follow the canonical **Black-76 model** with continuous risk-free discounting $e^{-rT}$:
+
+* **$d_1$ and $d_2$ Formulations:**
+  $$d_1 = \frac{\ln(F/K) + \frac{1}{2}\sigma^2 T}{\sigma \sqrt{T}}, \quad d_2 = d_1 - \sigma \sqrt{T}$$
+* **Delta ($\Delta$):**
+  $$\Delta_{\text{Call}} = e^{-rT} N(d_1), \quad \Delta_{\text{Put}} = -e^{-rT} N(-d_1)$$
+* **Gamma ($\Gamma$):**
+  $$\Gamma = \frac{e^{-rT} n(d_1)}{F \sigma \sqrt{T}}$$
+* **Vega ($\mathcal{V}$):**
+  $$\mathcal{V} = e^{-rT} F \sqrt{T} n(d_1)$$
+* **Vanna ($\frac{\partial \Delta}{\partial \sigma}$ - Volatility Sensitivity):**
+  $$\text{Vanna} = -e^{-rT} n(d_1) \frac{d_2}{\sigma}$$
+* **Charm ($\frac{\partial \Delta}{\partial t}$ - Overnight Delta Decay Rate):**
+  $$\text{Charm}_{\text{Call}} = -r e^{-rT} N(d_1) - e^{-rT} n(d_1) \left[ \frac{d_2}{2T} \right]$$
+  $$\text{Charm}_{\text{Put}} = r e^{-rT} N(-d_1) - e^{-rT} n(d_1) \left[ \frac{d_2}{2T} \right]$$
+
+#### Dealer Exposure Formulations:
+* **GEX (Gamma Exposure per 1% move):**
+  $$\text{GEX} = \text{Position Sign} \times \text{OI} \times \Gamma \times F^2 \times 0.01 \times \text{Multiplier}$$
+* **DEX (Delta Exposure in $USD):**
+  $$\text{DEX} = \text{Position Sign} \times \text{OI} \times \Delta \times F \times \text{Multiplier}$$
+* **Vanna Exposure:**
+  $$\text{Vanna Exposure} = \text{Position Sign} \times \text{OI} \times \text{Vanna} \times \text{Multiplier}$$
+* **Charm Exposure ($/day overnight flow):**
+  $$\text{Charm Exposure} = \text{Position Sign} \times \text{OI} \times \left( \frac{\text{Charm}}{365.0} \right) \times F \times \text{Multiplier}$$
+
+### 2. Flanking Strike ATM IV Spline (`analytics/volatility.py`)
+Eliminates the distortion of `min(IV)` searches (which frequently pick illiquid, skewed deep OTM strikes) by employing a **localized flanking strike spline interpolation**:
+1. Locates the two nearest traded strikes bounding the current mark price ($K_{\text{lower}} \le F < K_{\text{upper}}$).
+2. Performs linear spline interpolation to calculate exact at-the-money implied volatility ($\sigma_{\text{ATM}}$):
+   $$\sigma_{\text{ATM}} = \sigma_{\text{lower}} + \frac{F - K_{\text{lower}}}{K_{\text{upper}} - K_{\text{lower}}} (\sigma_{\text{upper}} - \sigma_{\text{lower}})$$
+3. Produces dynamic standard deviation bands ($\pm 1\sigma, \pm 2\sigma, \pm 3\sigma$) centered on real market expectations.
+
+### 3. Volatility Risk Premium & Yang-Zhang Estimator (`analytics/vrp.py`)
+Quantifies the spread between implied market volatility and actual continuous-path realized price action:
+* **Yang-Zhang (2000) Continuous Realized Volatility ($RV_{\text{YZ}}$):**
+  Combines overnight jump variance, continuous Garman-Klass drift variance, and close-to-close variance for minimum-variance efficiency:
+  $$\sigma_{\text{YZ}}^2 = \sigma_{\text{OJ}}^2 + k \sigma_{\text{open}}^2 + (1-k) \sigma_{\text{RS}}^2$$
+* **Volatility Risk Premium (VRP):**
+  $$\text{VRP} = \text{IV}_{\text{ATM}} - \text{RV}_{\text{YZ}}$$
+  * **$\text{VRP} > 0$ (Vol Rich):** Implied volatility trades at a premium to realized move $\to$ favorable environment for option sellers (Iron Condors, credit spreads).
+  * **$\text{VRP} < 0$ (Vol Cheap):** Market is realizing larger moves than option pricing anticipates $\to$ favorable environment for long vol/straddle buyers.
+
+### 4. 4-Quadrant Institutional Order Flow & Rolls (`analytics/order_flow.py`)
+Deconstructs intraday trades into institutional positioning vs retail scalp noise:
+* **Quadrant 1: High Volume + $\Delta\text{OI} > 0$ ➔ `🟢 ACCUMULATION`:** New positions initiated and carried overnight.
+* **Quadrant 2: High Volume + $\Delta\text{OI} < 0$ ➔ `🔴 LIQUIDATION`:** Positions closed, de-risking ahead of binary catalysts.
+* **Quadrant 3: High Volume + $\Delta\text{OI} \approx 0$ ➔ `⚪ DAY TRADING`:** High turnover scalping with zero overnight directional commitment.
+* **Quadrant 4: Low Volume + Stable OI ➔ `💤 INACTIVE`:** Dormant strikes.
+* **Calendar Roll Tracker:** Cross-references front-month liquidation ($\Delta\text{OI}_{\text{front}} < 0$) with simultaneous back-month creation ($\Delta\text{OI}_{\text{back}} > 0$) at identical or adjacent strikes to identify institutional roll hedging.
+
+### 5. Scenario Stress Engine & IV Shock Grid (`analytics/scenarios.py`)
+Simulates dealer inventory rebalancing pressures under non-linear market shocks:
+* **Spot Price Shocks ($\pm 1\%, \pm 2\%, \pm 3\%$):** Measures instantaneous change in dealer delta ($\Delta\text{DEX}$) to quantify the exact volume of underlying contracts market makers must execute to maintain delta neutrality.
+* **Event IV Shock Grid ($\pm 5.0\%$ IV Shift):** Predicts post-FOMC/CPI **Vanna Rallies** or crash cascades by calculating the dollar re-hedging requirement when volatility collapses.
+
+### 6. Delta & Gamma-Weighted Expiry Pinning Model (`analytics/pin_risk.py`)
+Calculates the probabilistic gravitational pull exerted by large open interest concentrations into expiration:
+$$W(K) = \text{OI}_K \times \Gamma_K \times \exp\left( -\frac{(K - F)^2}{2 \sigma^2 F^2 T} \right)$$
+$$P(\text{Pin at } K) = \frac{W(K)}{\sum_j W(j)}$$
+Identifies the top 3 highest-probability pinning strikes and their exact percentage odds.
+
+### 7. Term Structure & Skew Dynamics (`analytics/term_structure.py`)
+Analyzes the volatility surface across time and strike space:
+* **Constant Maturity Term Structure:** Interpolates 7D, 30D, 60D, 90D IV to detect Contango (normal) vs Backwardation (panic).
+* **25-Delta Skew:**
+  $$\text{Risk Reversal (RR}_{25}) = \text{IV}_{25\Delta\text{ Call}} - \text{IV}_{25\Delta\text{ Put}}$$
+  $$\text{Butterfly (FLY}_{25}) = \frac{\text{IV}_{25\Delta\text{ Call}} + \text{IV}_{25\Delta\text{ Put}}}{2} - \text{IV}_{\text{ATM}}$$
+  Quantifies directional skew asymmetry and tail-fatness pricing (kurtosis).
+
+### 8. Monte Carlo Barrier & Wall Touch Engine (`analytics/monte_carlo.py`)
+Simulates 3,000 to 10,000 Geometric Brownian Motion (GBM) paths with risk-neutral drift:
+$$S_{t+\Delta t} = S_t \exp\left( \left( r - \frac{1}{2}\sigma^2 \right) \Delta t + \sigma \sqrt{\Delta t} Z \right)$$
+Calculates the exact statistical probability that the underlying price will test or breach Call Wall, Put Wall, or Key SD Bands before expiration.
+
+### 9. 🤖 Machine Learning Regime Classifier (`ml/features.py` & `ml/regime_classifier.py`)
+* **10-Factor Feature Vector:** Ingests normalized GEX, Net OI Bias, VRP, 25Δ Skew, Overnight Charm Flow, Spot Momentum, Volume/OI ratio, and Term Slope.
+* **Softmax Multi-Factor Classifier:** Outputs probabilistic distribution across 3 institutional market regimes:
+  * 🟢 **BULLISH REGIME:** High Call Accumulation, +GEX, Positive Skew, Favorable VRP.
+  * 🔴 **BEARISH REGIME:** Put Dominated, -GEX, Negative Skew, High Realized Vol.
+  * 🟡 **RANGE-BOUND REGIME:** Balanced OI, Positive GEX Damping, Low VRP.
+* Generates actionable trading playbooks (Iron Condors vs Long Straddles vs Trend Momentum).
+
+### 10. Microstructure Quality & Globex Filter (`analytics/quality.py`)
+Ensures data integrity during overnight Globex hours when liquidity is thin:
+* **Bid-Ask Spread Filter:** Flags or prunes strikes where $\frac{\text{Ask} - \text{Bid}}{\text{Mid}} > 0.50$.
+* **Zero Bid Handling:** Protects against artificially inflated implied volatilities on illiquid wings.
+* **Volume/OI Ratio Warning:** Alerts when $\text{Volume} > 2 \times \text{OI}$ signaling aggressive intraday institutional intervention.
+* Computes an institutional **Data Quality Score (0–100%)**.
+
+### 11. Walk-Forward Backtesting & Signal Evaluator (`analytics/backtest.py`)
+Validates signal predictive power by evaluating forward returns at 1-day, 3-day, and 5-day horizons following Gamma Flips, Volume/OI quadrant transitions, and SD Band touches.
+
+---
+
 ## 🔌 Multi-Provider Data Adapters
 
 This project supports **5 curated data providers** through a unified adapter architecture:
