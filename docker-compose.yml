@@ -35,6 +35,8 @@ services:
     environment:
       - UPDATE_INTERVAL_SECONDS=${UPDATE_INTERVAL_SECONDS:-300}
       - PYTHONUNBUFFERED=1
+    healthcheck:
+      disable: true
     command: ["python", "docker_updater.py"]
 
   # ══════ 3. ON-DEMAND CLI RUNNER SERVICE ══════
