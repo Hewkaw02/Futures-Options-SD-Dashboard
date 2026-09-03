@@ -57,6 +57,9 @@ async def main():
         # 6. Focused Asset Analysis (Gold)
         ("Analysis_Tools/gc_oi_focused.py", "Gold OI Walls (Focused)"),
         ("Analysis_Tools/gc_option_viz.py", "Gold Volume & OI Visualization"),
+        
+        # 7. Quantitative Edge & Backtesting
+        ("Analysis_Tools/backtest_report.py", "Quant Signal Backtest & Scorecard"),
     ]
 
     success_count = 0

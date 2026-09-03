@@ -26,6 +26,19 @@ from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
 
+from analytics.vrp import calc_yang_zhang_rv, calc_vrp, calc_iv_percentile_rank
+from analytics.term_structure import calc_term_structure_slope, calc_25delta_skew
+from analytics.order_flow import calc_volume_imbalance, detect_unusual_flow_spikes, decompose_strike_flow
+from alerts.engine import evaluate_market_alerts
+from analytics.correlation import calc_asset_correlations
+from analytics.scenarios import run_stress_scenarios
+from analytics.pin_risk import calc_pin_risk, calc_pinning_probability_distribution
+from analytics.monte_carlo import simulate_price_cones
+from ml.features import extract_quant_feature_vector
+from ml.regime_classifier import predict_market_regime
+
+
+
 # Try yfinance for candle data (optional)
 try:
     import yfinance as yf
@@ -213,22 +226,26 @@ def parse_option_data_csv(csv_path):
         if oi > 0:
             supports.append({"strike": s, "oi": int(oi)})
 
-    # Parse GEX & Vanna (Exact vs Proxy)
+    # Parse GEX, Vanna, & Charm (Exact vs Proxy)
     gex_values = []
     vanna_values = []
+    charm_values = []
     
     gex_map = {}
     vanna_map = {}
+    charm_map = {}
     for r in rows:
         s = r['Strike']
         gex_map[s] = gex_map.get(s, 0.0) + r['GEX']
         vanna_map[s] = vanna_map.get(s, 0.0) + r['Vanna']
+        charm_map[s] = charm_map.get(s, 0.0) + r.get('Charm', 0.0)
 
     atm = active_strikes[len(active_strikes) // 2]
     for s in active_strikes:
         if has_greeks:
             gex_values.append(gex_map.get(s, 0.0))
             vanna_values.append(vanna_map.get(s, 0.0))
+            charm_values.append(charm_map.get(s, 0.0))
         else:
             # Approximate GEX profile (simplified: call_oi - put_oi weighted by distance from ATM)
             dist = abs(s - atm) / atm if atm > 0 else 1
@@ -239,6 +256,9 @@ def parse_option_data_csv(csv_path):
             delta_proxy = (s - atm) / atm if atm > 0 else 0
             vanna_approx = (call_oi.get(s, 0) - put_oi.get(s, 0)) * delta_proxy * 100
             vanna_values.append(round(vanna_approx, 2))
+
+            # Approximate Charm (decay proxy)
+            charm_values.append(0.0)
 
     # Find gamma flip price (linear interpolation)
     flip_price = None
@@ -262,6 +282,15 @@ def parse_option_data_csv(csv_path):
         "strikes": active_strikes,
         "vanna_exp": vanna_values,
     }
+
+    total_overnight_flow = sum(charm_values)
+    charm = {
+        "strikes": active_strikes,
+        "charm_exp": [round(c, 2) for c in charm_values],
+        "total_overnight_flow_usd": round(total_overnight_flow, 2),
+        "bias": "BUY_PRESSURE" if total_overnight_flow > 0 else ("SELL_PRESSURE" if total_overnight_flow < 0 else "NEUTRAL")
+    }
+
 
     # IV Smile / Skew Curve
     iv_smile = None
@@ -288,23 +317,34 @@ def parse_option_data_csv(csv_path):
     # Max Pain Calculation
     max_pain_result = None
     if active_strikes and (any(call_oi.get(s, 0) > 0 for s in active_strikes) or any(put_oi.get(s, 0) > 0 for s in active_strikes)):
-        min_pain = float('inf')
-        best_strike = active_strikes[len(active_strikes) // 2]
+        # Calculate O(N) Max Pain using cumulative sums instead of nested O(N^2) loops
+        s0 = active_strikes[0]
+        call_pain = 0
+        put_pain = sum(put_oi.get(s, 0) * (s - s0) for s in active_strikes if s > s0)
         
-        for settle_price in active_strikes:
-            total_pain = 0
-            for s in active_strikes:
-                # Call pain: if settle > strike, calls are ITM
-                if settle_price > s:
-                    total_pain += call_oi.get(s, 0) * (settle_price - s)
-                # Put pain: if settle < strike, puts are ITM  
-                if settle_price < s:
-                    total_pain += put_oi.get(s, 0) * (s - settle_price)
+        min_pain = call_pain + put_pain
+        best_strike = s0
+
+        cum_call_oi = call_oi.get(s0, 0)
+        cum_put_oi = sum(put_oi.get(s, 0) for s in active_strikes if s > s0)
+
+        for i in range(1, len(active_strikes)):
+            prev_s = active_strikes[i - 1]
+            curr_s = active_strikes[i]
+            delta_s = curr_s - prev_s
             
+            call_pain += cum_call_oi * delta_s
+            put_pain -= cum_put_oi * delta_s
+
+            total_pain = call_pain + put_pain
             if total_pain < min_pain:
                 min_pain = total_pain
-                best_strike = settle_price
+                best_strike = curr_s
+
+            cum_call_oi += call_oi.get(curr_s, 0)
+            cum_put_oi -= put_oi.get(curr_s, 0)
         
+
         max_pain_result = {
             "price": best_strike,
             "total_pain": round(min_pain, 0),
@@ -326,10 +366,22 @@ def parse_option_data_csv(csv_path):
 
     # Build Volume Profile
     profile = []
-    all_strikes = sorted(set(r['Strike'] for r in rows))
+    call_vol = {}
+    put_vol = {}
+
+    # Aggregate volume once per strike to avoid rescanning every option row
+    # for each output strike.
+    for r in rows:
+        s = r['Strike']
+        if r['Type'] in ['Call', 'C']:
+            call_vol[s] = call_vol.get(s, 0) + r['Volume']
+        elif r['Type'] in ['Put', 'P']:
+            put_vol[s] = put_vol.get(s, 0) + r['Volume']
+
+    all_strikes = sorted(set(list(call_vol.keys()) + list(put_vol.keys())))
     for s in all_strikes:
-        c_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] in ['Call', 'C'])
-        p_v = sum(r['Volume'] for r in rows if r['Strike'] == s and r['Type'] in ['Put', 'P'])
+        c_v = call_vol.get(s, 0)
+        p_v = put_vol.get(s, 0)
         if c_v > 0 or p_v > 0:
             profile.append({"strike": float(s), "call_vol": float(c_v), "put_vol": float(p_v)})
 
@@ -340,6 +392,7 @@ def parse_option_data_csv(csv_path):
         "supports": supports,
         "gex_profile": gex_profile,
         "vanna": vanna,
+        "charm": charm,
         "vol_resistances": vol_resistances,
         "vol_supports": vol_supports,
         "volume_profile": profile,
@@ -645,6 +698,7 @@ def process_timestamp(date_str, hour_str):
                 data["supports"] = opt_data["supports"]
                 data["gex_profile"] = opt_data["gex_profile"]
                 data["vanna"] = opt_data["vanna"]
+                data["charm"] = opt_data.get("charm")
                 data["iv_smile"] = opt_data.get("iv_smile")
                 data["max_pain"] = opt_data.get("max_pain")
             else:
@@ -654,6 +708,7 @@ def process_timestamp(date_str, hour_str):
                 data["supports"] = []
                 data["gex_profile"] = None
                 data["vanna"] = None
+                data["charm"] = None
                 data["iv_smile"] = None
                 data["max_pain"] = None
         else:
@@ -663,6 +718,7 @@ def process_timestamp(date_str, hour_str):
             data["supports"] = []
             data["gex_profile"] = None
             data["vanna"] = None
+            data["charm"] = None
             data["iv_smile"] = None
             data["max_pain"] = None
 
@@ -692,6 +748,25 @@ def process_timestamp(date_str, hour_str):
                             "call_change": call_change,
                             "put_change": put_change,
                         }
+
+        # 2c. Institutional Flow Decomposition (4-Quadrant Matrix)
+        data["flow_decomposition"] = None
+        if data["oi_change"] and opt_data and opt_data.get("volume_profile"):
+            vp_map = {item["strike"]: item for item in opt_data["volume_profile"]}
+            doi_strikes = data["oi_change"]["strikes"]
+            c_doi_map = dict(zip(doi_strikes, data["oi_change"]["call_change"]))
+            p_doi_map = dict(zip(doi_strikes, data["oi_change"]["put_change"]))
+            
+            strike_records = []
+            for s in sorted(set(list(vp_map.keys()) + doi_strikes)):
+                strike_records.append({
+                    'strike': s,
+                    'call_vol': vp_map.get(s, {}).get('call_vol', 0.0),
+                    'call_doi': c_doi_map.get(s, 0.0),
+                    'put_vol': vp_map.get(s, {}).get('put_vol', 0.0),
+                    'put_doi': p_doi_map.get(s, 0.0),
+                })
+            data["flow_decomposition"] = decompose_strike_flow(strike_records)
 
         # 3. Candlestick & VWAP Data from yfinance
         multi_candles = get_multi_timeframe_candles(asset)
@@ -754,8 +829,100 @@ def process_timestamp(date_str, hour_str):
             data["intraday_levels"] = None
             data["intraday_volume_profile"] = None
 
+        # 6. Quantitative Extensions (VRP, Skew Dynamics, Order Flow, Alerts)
+        # 6a. Volatility Risk Premium (VRP)
+        if "1d" in multi_candles and multi_candles["1d"].get("ohlcv"):
+            ohlcv_rows = multi_candles["1d"]["ohlcv"]
+            df_1d = pd.DataFrame(ohlcv_rows, columns=["ts", "Open", "High", "Low", "Close", "Volume"])
+            rv = calc_yang_zhang_rv(df_1d, window=20, annualization_factor=365.0)
+            data["vrp"] = calc_vrp(iv, rv)
+        else:
+            data["vrp"] = {
+                "iv_pct": round(iv * 100.0, 2),
+                "rv_pct": 0.0,
+                "vrp_pct": 0.0,
+                "regime": "FAIR",
+                "signal": "NEUTRAL",
+                "description": "Historical candle data unavailable for Realized Volatility."
+            }
+
+        # 6b. 25-Delta Skew Dynamics & 6c. Order Flow Imbalance
+        if opt_csv:
+            raw_rows = []
+            try:
+                if HAS_PD:
+                    df_opt = pd.read_csv(opt_csv)
+                    raw_rows = df_opt.to_dict("records")
+                else:
+                    with open(opt_csv, "r") as f_opt:
+                        r_lines = [line.strip().split(",") for line in f_opt.readlines()]
+                        if len(r_lines) > 1:
+                            hdr = r_lines[0]
+                            for l_parts in r_lines[1:]:
+                                raw_rows.append(dict(zip(hdr, l_parts)))
+            except Exception:
+                raw_rows = []
+
+            data["skew_dynamics"] = calc_25delta_skew(raw_rows, price, iv)
+            
+            call_v = sum(float(r.get("Volume", 0) or 0) for r in raw_rows if str(r.get("Type", "")).upper() in ["CALL", "C"])
+            put_v = sum(float(r.get("Volume", 0) or 0) for r in raw_rows if str(r.get("Type", "")).upper() in ["PUT", "P"])
+            data["order_flow"] = {
+                "imbalance": calc_volume_imbalance(call_v, put_v),
+                "anomalies": detect_unusual_flow_spikes(raw_rows)[:5]
+            }
+        else:
+            data["skew_dynamics"] = None
+            data["order_flow"] = None
+
+        # 6d. Automated Market Alerts
+        cw = data.get("bias", {}).get("wall_resistance", 0.0)
+        pw = data.get("bias", {}).get("wall_support", 0.0)
+        gex_reg = data.get("bias", {}).get("gex", "")
+        bias_lbl = data.get("bias", {}).get("label", "")
+        flow_anom = data.get("order_flow", {}).get("anomalies", []) if data.get("order_flow") else []
+        data["alerts"] = evaluate_market_alerts(asset, price, bias_lbl, cw, pw, gex_reg, data["vrp"], flow_anom)
+
+        # 6e. Cross-Asset Correlation & Macro Regime
+        all_candles = {}
+        for a_sym in ASSETS:
+            mc_a = get_multi_timeframe_candles(a_sym)
+            if "1d" in mc_a and mc_a["1d"].get("ohlcv"):
+                df_a = pd.DataFrame(mc_a["1d"]["ohlcv"], columns=["ts", "Open", "High", "Low", "Close", "Volume"])
+                all_candles[a_sym] = df_a
+        data["correlation"] = calc_asset_correlations(all_candles)
+
+        # 6f. Stress Scenarios & Dealer Hedging Shock Grid
+        mult = 50.0 if asset == "ES" else (20.0 if asset == "NQ" else 100.0)
+        dte_val = 5.0
+        data["scenarios"] = run_stress_scenarios(raw_rows, price, dte_val, multiplier=mult) if opt_csv and raw_rows else None
+
+        # 6g. Pin Risk & Expiry Magnet Dynamics (Delta & Gamma Weighted)
+        max_pain_val = data.get("max_pain", {}).get("max_pain_strike") if data.get("max_pain") else None
+        pin_res = calc_pin_risk(raw_rows, price, dte_val, max_pain_strike=max_pain_val) if opt_csv and raw_rows else None
+        if pin_res and opt_csv and raw_rows:
+            dist_res = calc_pinning_probability_distribution(raw_rows, price, dte_val, atm_iv=iv if iv > 0 else 0.20)
+            pin_res['pin_probabilities'] = dist_res.get('pin_probabilities', [])
+            pin_res['most_likely_pin_strike'] = dist_res.get('most_likely_pin_strike', price)
+            pin_res['top_3_pin_strikes'] = dist_res.get('top_3_pin_strikes', [])
+        data["pin_risk"] = pin_res
+
+        # 6h. Monte Carlo Probability Cones (3,000 paths)
+        data["monte_carlo"] = simulate_price_cones(price, iv, days_horizon=30, num_paths=3000, call_wall=cw, put_wall=pw) if price > 0 and iv > 0 else None
+
+        # 6i. Machine Learning Quantitative Regime Classifier
+        feats = extract_quant_feature_vector(
+            bias=data.get("bias", {}),
+            vrp=data.get("vrp", {}),
+            skew=data.get("skew_dynamics", {}),
+            flow=data.get("order_flow", {}),
+            corr=data.get("correlation", {}),
+            pin=data.get("pin_risk", {})
+        )
+        data["ml_regime"] = predict_market_regime(feats)
+
         # Write JSON
-        out_file = out_dir / f"{asset}_data.json"
+        out_file = out_dir / f"{asset}_data.json" 
         with open(out_file, 'w') as f:
             json.dump(data, f, indent=2)
         print(f"  [OK] {out_file}")
@@ -763,7 +930,7 @@ def process_timestamp(date_str, hour_str):
     return True
 
 
-def cleanup_old_data(days=90):
+def cleanup_old_data(days=365):
     """Delete date directories older than the specified number of days."""
     cutoff_date = datetime.now() - timedelta(days=days)
     directories_to_clean = [SOURCE_ROOT, INTRADAY_ROOT, OUTPUT_ROOT]
@@ -821,10 +988,36 @@ def update_manifest():
             if jsons:
                 timestamps.append(f"{date_name}/{hour_name}")
 
+    # Quantitative Backtesting Scorecard
+    backtest_scorecard = None
+    try:
+        from analytics.backtest import load_historical_signals, evaluate_signal_performance
+        sig_df = load_historical_signals(str(SOURCE_ROOT))
+        candles = {}
+        for a in ASSETS:
+            mc = get_multi_timeframe_candles(a)
+            if "1h" in mc and mc["1h"].get("ohlcv"):
+                df_c = pd.DataFrame(mc["1h"]["ohlcv"], columns=["ts", "Open", "High", "Low", "Close", "Volume"])
+                df_c["Datetime"] = pd.to_datetime(df_c["ts"], unit="ms")
+                candles[a] = df_c
+        perf = evaluate_signal_performance(sig_df, candles, horizons_hours=[1, 3, 6])
+        backtest_scorecard = {
+            "total_signals": perf.get("total_signals", 0),
+            "evaluated_signals": perf.get("evaluated_signals", 0),
+            "overall_accuracy_pct": perf.get("overall_accuracy_pct", 0.0),
+            "bull_accuracy_pct": perf.get("bull_accuracy_pct", 0.0),
+            "bear_accuracy_pct": perf.get("bear_accuracy_pct", 0.0),
+            "profit_factor": perf.get("profit_factor", 0.0),
+            "sharpe_ratio": perf.get("sharpe_ratio", 0.0)
+        }
+    except Exception as e:
+        print(f"  [WARN] Backtest scorecard computation skipped: {e}")
+
     manifest = {
         "timestamps": timestamps,
         "last_updated": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
         "assets": ASSETS,
+        "quant_backtest_scorecard": backtest_scorecard,
     }
 
     manifest_file = OUTPUT_ROOT / "manifest.json"

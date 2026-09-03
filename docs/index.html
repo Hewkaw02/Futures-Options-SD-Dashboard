@@ -4,12 +4,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Futures Options S/D Dashboard</title>
   <meta name="description"
     content="Real-time Futures Options Trading Dashboard — GC, ES, NQ with OI Walls, SD Bands, GEX Profile, and Master Bias Reports.">
 
+  <!-- Material Symbols Outlined (Google Material Design 3) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
   <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2.8">
 
   <!-- ApexCharts CDN -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
@@ -40,6 +46,27 @@
           </button>
           <button class="asset-btn" data-asset="NQ" id="btn-nq" onclick="switchAsset('NQ')">
             NQ <span class="kbd-hint">3</span>
+          </button>
+        </div>
+
+        <!-- Refresh Button (Material Design 3) -->
+        <div class="refresh-control">
+          <button class="asset-btn icon-btn" id="btn-refresh" onclick="forceRefreshData()" title="Force Refresh Live Data (R)" aria-label="Refresh Data">
+            <span class="material-symbols-outlined refresh-icon" id="refresh-icon-symbol">sync</span>
+            <span class="kbd-hint">R</span>
+          </button>
+        </div>
+
+        <!-- Mode Toggle (Real-Time vs History Archive) -->
+        <div class="mode-toggle-group">
+          <button class="mode-btn active" id="btn-mode-realtime" onclick="setDashboardMode('realtime')" title="Switch to Real-Time Streaming Mode">
+            <span class="material-symbols-outlined mode-icon">bolt</span>
+            <span class="mode-label">REAL-TIME</span>
+            <span class="live-status-dot"></span>
+          </button>
+          <button class="mode-btn" id="btn-mode-history" onclick="setDashboardMode('history')" title="Switch to Historical Snapshots Archive">
+            <span class="material-symbols-outlined mode-icon">history</span>
+            <span class="mode-label">HISTORY</span>
           </button>
         </div>
 
@@ -98,10 +125,19 @@
               <div class="metric-label">Max Pain</div>
               <div class="metric-value" id="metric-max-pain">—</div>
             </div>
+            <div class="metric-item">
+              <div class="metric-label">Overnight Hedging Flow</div>
+              <div class="metric-value" id="metric-charm-overnight">—</div>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- ══════ SECTION 01: TACTICAL EXECUTION & PRICE STRUCTURE ══════ -->
+      <div class="section-divider full-width">
+        <span class="section-tag">[ SECTION 01 ]</span>
+        <span class="section-title">Tactical Execution &amp; Intraday Price Structure</span>
+      </div>
 
       <!-- ══════ HYBRID CANDLE + OI CHARTS (Tabbed) ══════ -->
       <div class="card full-width" id="card-hybrid">
@@ -237,7 +273,7 @@
         </div>
       </div>
 
-      <!-- ══════ INTRADAY VOLUME ══════ -->
+      <!-- ══════ INTRADAY VOLUME PROFILE ══════ -->
       <div class="card full-width" id="card-intraday-vol">
         <div class="card-header">
           <span class="card-title">Intraday Volume Profile</span>
@@ -245,6 +281,181 @@
         </div>
         <div class="chart-container" id="chart-intraday-vol"></div>
         <div class="no-data" id="intraday-vol-nodata" style="display: none;">NO CHART DATA</div>
+      </div>
+
+      <!-- ══════ SECTION 02: QUANTITATIVE EDGE & SCENARIO STRESS ENGINE ══════ -->
+      <div class="section-divider full-width">
+        <span class="section-tag">[ SECTION 02 ]</span>
+        <span class="section-title">Quantitative Edge &amp; Scenario Stress Engine</span>
+      </div>
+
+      <!-- ══════ QUANTITATIVE INTELLIGENCE & MICROSTRUCTURE ══════ -->
+      <div class="card full-width" id="card-quant-intelligence">
+        <div class="card-header">
+          <span class="card-title">Quantitative Edge &amp; Microstructure Intelligence</span>
+          <span class="card-badge" id="quant-status-badge">INSTITUTIONAL QUANT (PHASE 1-3)</span>
+        </div>
+        <div class="quant-grid">
+          <!-- 1. VRP Card -->
+          <div class="quant-card">
+            <div class="quant-card-title">VOLATILITY RISK PREMIUM (VRP)</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="vrp-spread-val">—</span>
+              <span class="quant-badge" id="vrp-regime-badge">CALCULATING</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Implied Vol (IV): <span id="vrp-iv-val" class="text-mono">—</span></div>
+              <div>Yang-Zhang RV (20D): <span id="vrp-rv-val" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="vrp-desc">—</div>
+          </div>
+
+          <!-- 2. Skew Dynamics & Surface -->
+          <div class="quant-card">
+            <div class="quant-card-title">25-DELTA SKEW &amp; SURFACE</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="skew-rr-val">—</span>
+              <span class="quant-badge" id="skew-surface-badge">SKEW STATE</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Risk Reversal (RR25): <span id="skew-rr25-sub" class="text-mono">—</span></div>
+              <div>Butterfly Tail Risk (BF25): <span id="skew-bf25-sub" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="skew-surface-desc">—</div>
+          </div>
+
+          <!-- 3. Order Flow Imbalance -->
+          <div class="quant-card">
+            <div class="quant-card-title">ORDER FLOW IMBALANCE</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="flow-imbalance-val">—</span>
+              <span class="quant-badge" id="flow-bias-badge">FLOW BIAS</span>
+            </div>
+            <div class="flow-bar-container">
+              <div class="flow-bar-call" id="flow-bar-call" style="width: 50%">50% C</div>
+              <div class="flow-bar-put" id="flow-bar-put" style="width: 50%">50% P</div>
+            </div>
+            <div class="quant-desc" id="flow-anomalies-desc">Monitoring flow anomalies...</div>
+          </div>
+
+          <!-- 4. Institutional Alert Feed -->
+          <div class="quant-card">
+            <div class="quant-card-title">LIVE MARKET ALERTS</div>
+            <div class="alerts-feed-container" id="alerts-feed-container">
+              <div class="alert-empty">No active critical alerts.</div>
+            </div>
+          </div>
+
+          <!-- 5. AI/ML Quant Regime Classifier -->
+          <div class="quant-card">
+            <div class="quant-card-title">AI/ML REGIME CLASSIFIER</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="ml-regime-val">—</span>
+              <span class="quant-badge" id="ml-confidence-badge">ML CONF: —</span>
+            </div>
+            <div class="tri-prob-container">
+              <div class="tri-bar-bull" id="ml-bar-bull" style="width: 33%">BULL —%</div>
+              <div class="tri-bar-range" id="ml-bar-range" style="width: 34%">RANGE —%</div>
+              <div class="tri-bar-bear" id="ml-bar-bear" style="width: 33%">BEAR —%</div>
+            </div>
+            <div class="quant-desc" id="ml-action-desc">Action Signal: —</div>
+          </div>
+
+          <!-- 6. Cross-Asset Correlation -->
+          <div class="quant-card">
+            <div class="quant-card-title">CROSS-ASSET MACRO CORRELATION</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="corr-macro-val">—</span>
+              <span class="quant-badge" id="corr-divergence-badge">NORMAL</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>GC vs ES: <span id="corr-gces-val" class="text-mono">—</span> | ES vs NQ: <span id="corr-esnq-val" class="text-mono">—</span></div>
+              <div>GC vs NQ: <span id="corr-gcnq-val" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="corr-desc">—</div>
+          </div>
+
+          <!-- 7. Pin Risk & Expiry Dynamics -->
+          <div class="quant-card">
+            <div class="quant-card-title">PIN RISK &amp; EXPIRY DYNAMICS</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="pin-score-val">—</span>
+              <span class="quant-badge" id="pin-magnet-badge">MAGNET: OFF</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Gamma Concentration: <span id="pin-gamma-conc" class="text-mono">—</span></div>
+              <div>Expected Pin Zone: <span id="pin-zone-val" class="text-mono">—</span></div>
+            </div>
+            <div class="quant-desc" id="pin-desc">—</div>
+          </div>
+
+          <!-- 8. Monte Carlo Probability Odds -->
+          <div class="quant-card">
+            <div class="quant-card-title">MONTE CARLO PROBABILITY ODDS</div>
+            <div class="quant-card-hero">
+              <span class="quant-value-lg" id="mc-spot-val">—</span>
+              <span class="quant-badge" id="mc-sim-badge">3,000 PATHS</span>
+            </div>
+            <div class="quant-metrics-sub">
+              <div>Touch Call Wall Odds: <span id="mc-call-odds" class="text-mono text-bull">—</span></div>
+              <div>Touch Put Wall Odds: <span id="mc-put-odds" class="text-mono text-bear">—</span></div>
+            </div>
+            <div class="quant-desc" id="mc-envelope-desc">30D Envelope: —</div>
+          </div>
+        </div>
+
+        <!-- Dual Scenario Stress Grids (Spot Shocks + Event IV Shocks) -->
+        <div class="scenario-dual-grid">
+          <div class="scenario-table-container">
+            <div class="scenario-title">DEALER HEDGING STRESS TEST (SPOT SHOCKS)</div>
+            <div class="scenario-table-scroll">
+              <table class="scenario-table" id="scenario-stress-table">
+                <thead>
+                  <tr>
+                    <th>Shift</th>
+                    <th>Price</th>
+                    <th>GEX Regime</th>
+                    <th>Net GEX ($)</th>
+                    <th>Net DEX ($)</th>
+                    <th>Dealer Rebalance (ΔDEX)</th>
+                  </tr>
+                </thead>
+                <tbody id="scenario-table-body">
+                  <tr><td colspan="6" class="text-center">Loading stress test grid...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="scenario-table-container">
+            <div class="scenario-title" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>EVENT IV SHOCK (VANNA RALLY PREDICTOR)</span>
+              <span class="card-badge" id="vanna-rally-badge">FOMC / CPI SENSITIVITY</span>
+            </div>
+            <div class="scenario-table-scroll">
+              <table class="scenario-table" id="vanna-stress-table">
+                <thead>
+                  <tr>
+                    <th>IV Shift</th>
+                    <th>Market Context</th>
+                    <th>Dealer Rebalance ($)</th>
+                    <th>Contracts</th>
+                    <th>Predicted Action</th>
+                  </tr>
+                </thead>
+                <tbody id="vanna-table-body">
+                  <tr><td colspan="5" class="text-center">Loading IV shock grid...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════ SECTION 03: DEALER INVENTORY MAP & GREEKS STRUCTURE ══════ -->
+      <div class="section-divider full-width">
+        <span class="section-tag">[ SECTION 03 ]</span>
+        <span class="section-title">Dealer Inventory Map &amp; Greeks Structure (4 Pillars)</span>
       </div>
 
       <!-- ══════ OI WALLS CHART ══════ -->
@@ -274,17 +485,35 @@
         <div class="chart-container" id="chart-gex"></div>
       </div>
 
-      <!-- ══════ VANNA / CHARM ══════ -->
+      <!-- ══════ VANNA EXPOSURE ══════ -->
       <div class="card" id="card-vanna">
         <div class="card-header">
           <span class="card-title">Vanna Exposure</span>
-          <span class="card-badge">IV RISK</span>
+          <span class="card-badge">IV SENSITIVITY</span>
         </div>
         <div class="chart-container" id="chart-vanna"></div>
       </div>
 
+      <!-- ══════ CHARM EXPOSURE (TIME DECAY) ══════ -->
+      <div class="card" id="card-charm">
+        <div class="card-header">
+          <span class="card-title">Charm Exposure (Time Decay Flow)</span>
+          <span class="card-badge" id="charm-flow-badge">OVERNIGHT FLOW</span>
+        </div>
+        <div class="chart-container" id="chart-charm"></div>
+      </div>
+
+      <!-- ══════ MAX PAIN ANALYSIS ══════ -->
+      <div class="card" id="card-max-pain">
+        <div class="card-header">
+          <span class="card-title">Max Pain Analysis</span>
+          <span class="card-badge" id="max-pain-badge">PAIN ZONE</span>
+        </div>
+        <div class="chart-container" id="chart-max-pain"></div>
+      </div>
+
       <!-- ══════ IV SMILE / SKEW CURVE ══════ -->
-      <div class="card full-width" id="card-iv-smile">
+      <div class="card" id="card-iv-smile">
         <div class="card-header">
           <span class="card-title">IV Smile / Skew Curve</span>
           <span class="card-badge" id="iv-smile-badge">CALL vs PUT IV</span>
@@ -301,13 +530,40 @@
         <div class="chart-container" id="chart-oi-change"></div>
       </div>
 
-      <!-- ══════ MAX PAIN ══════ -->
-      <div class="card" id="card-max-pain">
+      <!-- ══════ SECTION 04: INSTITUTIONAL FLOW DECOMPOSITION ══════ -->
+      <div class="section-divider full-width">
+        <span class="section-tag">[ SECTION 04 ]</span>
+        <span class="section-title">Institutional Flow Decomposition (4-Quadrant Matrix)</span>
+      </div>
+
+      <!-- ══════ 4-QUADRANT FLOW & ACCUMULATION TABLE ══════ -->
+      <div class="card full-width" id="card-flow-quadrant">
         <div class="card-header">
-          <span class="card-title">Max Pain Analysis</span>
-          <span class="card-badge" id="max-pain-badge">PAIN ZONE</span>
+          <span class="card-title">Institutional Position Flow Decomposition (4-Quadrant Matrix)</span>
+          <span class="card-badge" id="flow-quadrant-badge">ANALYZING FLOW...</span>
         </div>
-        <div class="chart-container" id="chart-max-pain"></div>
+        <div class="card-body" style="padding: 15px;">
+          <div class="quant-desc" id="quadrant-summary-text" style="margin-bottom: 12px; font-weight: bold; color: var(--color-text-dim);">
+            Loading flow decomposition...
+          </div>
+          <div class="scenario-table-scroll">
+            <table class="scenario-table" id="table-flow-quadrant">
+              <thead>
+                <tr>
+                  <th>Strike</th>
+                  <th>Type</th>
+                  <th>Volume</th>
+                  <th>ΔOI</th>
+                  <th>Classification</th>
+                  <th>Institutional Mechanics</th>
+                </tr>
+              </thead>
+              <tbody id="flow-quadrant-tbody">
+                <tr><td colspan="6" class="text-center">No flow anomalies detected.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -328,7 +584,7 @@
   </div>
 
   <!-- App Logic -->
-  <script src="app.js"></script>
+  <script src="app.js?v=2.8"></script>
 
 </body>
 

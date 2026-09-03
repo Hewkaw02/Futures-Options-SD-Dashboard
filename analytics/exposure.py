@@ -85,7 +85,9 @@ def calculate_dealer_exposures(
     spot: float,
     multiplier: float,
     option_type: str,
-    dealer_assumed_side: str = "short"
+    dealer_assumed_side: str = "short",
+    strike: float = 0.0,
+    dealer_model: str = "symmetric"
 ) -> dict:
     """
     Calculate dollar-notional dealer exposures for a single option contract.
@@ -101,17 +103,28 @@ def calculate_dealer_exposures(
       multiplier : Contract multiplier (e.g., MES=5, ES=50)
       option_type : "C" or "P"
       dealer_assumed_side : "short" (MM is short) or "long" (MM is long)
+      strike : Option strike price (used for asymmetric dealer model)
+      dealer_model : "symmetric" (all short/long) or "asymmetric" (OTM calls dealer long, ATM/ITM calls & puts dealer short)
       
     Returns:
       dict with GEX, DEX, Vanna Exposure, and Charm Exposure
     """
-    # Determine the MM position sign based on assumption
-    # Under standard 'short' dealer assumption, customers buy options -> dealer is short
-    position_sign = -1.0 if dealer_assumed_side == "short" else 1.0
+    opt_type_upper = option_type.upper()
+    is_call = ('C' in opt_type_upper)
+
+    if dealer_model == "asymmetric" and strike > 0 and spot > 0:
+        if is_call:
+            # Customers sell OTM calls (covered calls / call overwriting) -> Dealer is LONG (+1)
+            # Customers buy ATM/ITM calls (directional speculation) -> Dealer is SHORT (-1)
+            position_sign = 1.0 if strike > spot else -1.0
+        else:
+            # Customers buy puts for portfolio insurance / tail hedges -> Dealer is SHORT (-1)
+            position_sign = -1.0
+    else:
+        position_sign = -1.0 if dealer_assumed_side == "short" else 1.0
     
     # 1. GEX (Gamma Exposure per 1% underlying move)
     # GEX = Position * OI * Gamma * Spot^2 * 0.01 * multiplier
-    # Standard sign conventions: short calls and short puts both have negative GEX
     gex = position_sign * oi * gamma * (spot**2) * 0.01 * multiplier
     
     # 2. DEX (Delta Exposure)
@@ -120,11 +133,9 @@ def calculate_dealer_exposures(
     
     # 3. Vanna Exposure (volatility risk)
     # Vanna Exposure is sensitivity of Delta to Volatility
-    # vanna_exp = Position * OI * Vanna * multiplier
     vanna_exp = position_sign * oi * vanna * multiplier
     
     # 4. Charm Exposure (Delta Decay rate per day)
-    # charm_exp = Position * OI * (Charm / 365.0) * Spot * multiplier
     charm_exp = position_sign * oi * (charm / 365.0) * spot * multiplier
     
     return {
@@ -133,3 +144,4 @@ def calculate_dealer_exposures(
         "vanna_exp": vanna_exp,
         "charm_exp": charm_exp
     }
+

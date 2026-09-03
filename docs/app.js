@@ -8,6 +8,9 @@ const state = {
   currentAsset: 'GC',
   currentIndex: -1,        // index into manifest timestamps
   manifest: [],            // sorted array of "YYYY-MM-DD/HH00"
+  mode: 'realtime',        // 'realtime' or 'history'
+  realtimeTimer: null,     // auto-polling timer for live ticks
+  lastSyncTime: null,      // formatted time of latest sync
   cache: {},               // "GC:2026-05-08/1100" -> data
   fetchPromises: {},       // coalesce concurrent fetch requests
   charts: {},              // chart instance refs for cleanup
@@ -484,14 +487,86 @@ const ASSET_LABELS = {
 
 // ── Bootstrap ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  loadManifest();
   setupKeyboardNav();
+  // Default to Real-time Streaming Mode
+  setDashboardMode('realtime');
+  loadManifest();
 });
 
-// ── Manifest Loading ─────────────────────────────────────────
-async function loadManifest() {
+// ── Mode Switcher (Real-Time vs History Archive) ─────────────
+function setDashboardMode(mode) {
+  state.mode = mode;
+  const btnRealtime = document.getElementById('btn-mode-realtime');
+  const btnHistory = document.getElementById('btn-mode-history');
+  const timeNav = document.getElementById('time-nav');
+
+  if (mode === 'realtime') {
+    if (btnRealtime) btnRealtime.classList.add('active');
+    if (btnHistory) btnHistory.classList.remove('active');
+    if (timeNav) timeNav.classList.add('realtime-mode');
+    
+    // Start real-time auto-polling loop
+    startRealtimePolling();
+    loadRealtimeData(true);
+  } else {
+    if (btnRealtime) btnRealtime.classList.remove('active');
+    if (btnHistory) btnHistory.classList.add('active');
+    if (timeNav) timeNav.classList.remove('realtime-mode');
+    
+    // Stop real-time polling so user can freely explore history
+    stopRealtimePolling();
+    if (state.currentIndex < 0 && state.manifest.length > 0) {
+      state.currentIndex = state.manifest.length - 1;
+    }
+    loadCurrentData();
+  }
+}
+
+function startRealtimePolling() {
+  stopRealtimePolling();
+  // Auto-poll live snapshot every 4 seconds
+  state.realtimeTimer = setInterval(() => {
+    if (state.mode === 'realtime') {
+      loadRealtimeData(false);
+    }
+  }, 4000);
+}
+
+function stopRealtimePolling() {
+  if (state.realtimeTimer) {
+    clearInterval(state.realtimeTimer);
+    state.realtimeTimer = null;
+  }
+}
+
+// ── Force Refresh Data (Manual Trigger / Key R) ──────────────
+async function forceRefreshData() {
+  const refreshIcon = document.getElementById('refresh-icon-symbol');
+  if (refreshIcon) refreshIcon.classList.add('spinning');
+
+  // Clear caches for force refresh
+  state.cache = {};
+  state.fetchPromises = {};
+
   try {
-    const res = await fetch('data/manifest.json');
+    if (state.mode === 'realtime') {
+      await loadRealtimeData(true);
+    } else {
+      await loadManifest(true);
+    }
+  } catch (e) {
+    console.warn("Refresh error:", e);
+  } finally {
+    setTimeout(() => {
+      if (refreshIcon) refreshIcon.classList.remove('spinning');
+    }, 600);
+  }
+}
+
+// ── Manifest Loading ─────────────────────────────────────────
+async function loadManifest(refreshCurrent = false) {
+  try {
+    const res = await fetch(`data/manifest.json?_=${Date.now()}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     state.manifest = data.timestamps || [];
@@ -499,9 +574,16 @@ async function loadManifest() {
       showGlobalError('No data available yet. Run the analysis pipeline first.');
       return;
     }
-    // Start at the latest timestamp
-    state.currentIndex = state.manifest.length - 1;
-    loadCurrentData();
+    
+    if (state.currentIndex < 0 || state.currentIndex >= state.manifest.length) {
+      state.currentIndex = state.manifest.length - 1;
+    }
+
+    if (state.mode === 'realtime') {
+      loadRealtimeData(false);
+    } else if (refreshCurrent) {
+      loadCurrentData(true);
+    }
   } catch (err) {
     console.error('Failed to load manifest:', err);
     showGlobalError('Could not load data manifest. Ensure data/manifest.json exists.');
@@ -509,26 +591,23 @@ async function loadManifest() {
 }
 
 // Global fetch promise cache to prevent redundant concurrent fetches
-async function fetchDataWithCache(asset, ts) {
+async function fetchDataWithCache(asset, ts, force = false) {
   const cacheKey = `${asset}:${ts}`;
   
-  // 1. Check if we already have the data in cache
-  if (state.cache[cacheKey]) {
+  if (!force && state.cache[cacheKey]) {
     return state.cache[cacheKey];
   }
   
-  // 2. Check if there is already an active fetch promise for this key
-  if (state.fetchPromises[cacheKey]) {
+  if (!force && state.fetchPromises[cacheKey]) {
     return state.fetchPromises[cacheKey];
   }
   
-  // 3. Create a new fetch promise
   const promise = (async () => {
-    const url = `data/${ts}/${asset}_data.json`;
+    const url = `data/${ts}/${asset}_data.json?_=${Date.now()}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    // Clean raw/unquoted NaN values that pandas/python might export, which are invalid in JS JSON.parse.
+    // Clean raw/unquoted NaN values that pandas/python might export
     const cleanedText = text.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")|(\bNaN\b)/g, (match, p1) => {
       if (p1) return match;
       return 'null';
@@ -538,10 +617,8 @@ async function fetchDataWithCache(asset, ts) {
     return data;
   })();
   
-  // Store it in the promise cache
   state.fetchPromises[cacheKey] = promise;
   
-  // Clean up promise cache once resolved or rejected
   promise.finally(() => {
     delete state.fetchPromises[cacheKey];
   });
@@ -549,8 +626,62 @@ async function fetchDataWithCache(asset, ts) {
   return promise;
 }
 
-// ── Data Loading ─────────────────────────────────────────────
-async function loadCurrentData() {
+// ── Live Real-Time Data Fetching ─────────────────────────────
+async function loadRealtimeData(showVisualLoading = false) {
+  if (showVisualLoading) showLoading(true);
+
+  const asset = state.currentAsset;
+  const liveUrl = `data/live/${asset}_data.json?_=${Date.now()}`;
+
+  try {
+    const res = await fetch(liveUrl);
+    if (!res.ok) throw new Error(`Live feed HTTP ${res.status}`);
+    const text = await res.text();
+    const cleanedText = text.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*")|(\bNaN\b)/g, (match, p1) => {
+      return p1 ? match : 'null';
+    });
+    const data = JSON.parse(cleanedText);
+
+    // Update time navigator to show Live status
+    const timeLabel = document.getElementById('time-label');
+    const timeIndex = document.getElementById('time-index');
+    const syncTime = data.bias?.live_sync_time || new Date().toISOString().substring(11, 19) + ' UTC';
+
+    if (timeLabel) {
+      timeLabel.innerHTML = `⚡ LIVE FEED <span style="font-size:0.75rem; color:var(--text-dim);">(${syncTime.replace(' UTC', '')})</span>`;
+    }
+    if (timeIndex) {
+      timeIndex.textContent = '● REAL-TIME';
+      timeIndex.style.color = '#00E396';
+    }
+
+    const updatedFooter = document.getElementById('footer-updated');
+    if (updatedFooter) {
+      updatedFooter.textContent = `Last real-time sync: ${syncTime}`;
+    }
+
+    // Subtle price tick flash animation
+    const priceEl = document.getElementById('bias-price');
+    if (priceEl) {
+      priceEl.style.textShadow = '0 0 12px rgba(0, 229, 255, 0.8)';
+      setTimeout(() => { if (priceEl) priceEl.style.textShadow = ''; }, 350);
+    }
+
+    renderAll(data);
+  } catch (err) {
+    // Graceful fallback to latest historical snapshot if live data is not yet produced
+    console.warn(`[Realtime] Fallback to latest snapshot for ${asset}:`, err);
+    if (state.manifest.length > 0) {
+      state.currentIndex = state.manifest.length - 1;
+      await loadCurrentData(false);
+    }
+  } finally {
+    if (showVisualLoading) showLoading(false);
+  }
+}
+
+// ── Historical Snapshot Loading ──────────────────────────────
+async function loadCurrentData(force = false) {
   const ts = state.manifest[state.currentIndex];
   if (!ts) return;
 
@@ -558,12 +689,10 @@ async function loadCurrentData() {
   updateNavButtons();
 
   const cacheKey = `${state.currentAsset}:${ts}`;
-
-  // Show loading state
   showLoading(true);
 
   try {
-    const data = await fetchDataWithCache(state.currentAsset, ts);
+    const data = await fetchDataWithCache(state.currentAsset, ts, force);
     renderAll(data);
   } catch (err) {
     console.warn(`No data for ${cacheKey}:`, err);
@@ -573,24 +702,31 @@ async function loadCurrentData() {
   }
 }
 
-
 // ── Navigation ───────────────────────────────────────────────
 function switchAsset(asset) {
-  if (state.currentAsset === asset) return;
+  if (asset === state.currentAsset) return;
   state.currentAsset = asset;
 
   // Update button states
-  document.querySelectorAll('.asset-btn').forEach(btn => {
+  document.querySelectorAll('.asset-btn[data-asset]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.asset === asset);
   });
 
   // Update asset label
   document.getElementById('bias-asset-label').textContent = ASSET_LABELS[asset] || asset;
 
-  loadCurrentData();
+  if (state.mode === 'realtime') {
+    loadRealtimeData(true);
+  } else {
+    loadCurrentData();
+  }
 }
 
 function navigateTime(direction) {
+  // If user navigates time while in Realtime mode, switch seamlessly to History mode
+  if (state.mode === 'realtime') {
+    setDashboardMode('history');
+  }
   const newIndex = state.currentIndex + direction;
   if (newIndex < 0 || newIndex >= state.manifest.length) return;
   state.currentIndex = newIndex;
@@ -602,16 +738,26 @@ function updateTimeDisplay(ts) {
   const dateStr = parts[0] || '';
   const hourStr = parts[1] || '';
   const displayText = `${dateStr}  ${hourStr}`;
-  document.getElementById('time-label').textContent = displayText;
-  document.getElementById('time-index').textContent =
-    `[${state.currentIndex + 1}/${state.manifest.length}]`;
-  document.getElementById('footer-updated').textContent =
-    `Last updated: ${displayText} UTC`;
+  const timeLabel = document.getElementById('time-label');
+  const timeIndex = document.getElementById('time-index');
+
+  if (timeLabel) timeLabel.textContent = displayText;
+  if (timeIndex) {
+    timeIndex.textContent = `[${state.currentIndex + 1}/${state.manifest.length}]`;
+    timeIndex.style.color = '';
+  }
+
+  const updatedFooter = document.getElementById('footer-updated');
+  if (updatedFooter) {
+    updatedFooter.textContent = `Last updated: ${displayText} UTC`;
+  }
 }
 
 function updateNavButtons() {
-  document.getElementById('btn-prev').disabled = state.currentIndex <= 0;
-  document.getElementById('btn-next').disabled = state.currentIndex >= state.manifest.length - 1;
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  if (btnPrev) btnPrev.disabled = state.currentIndex <= 0;
+  if (btnNext) btnNext.disabled = state.currentIndex >= state.manifest.length - 1;
 }
 
 function setupKeyboardNav() {
@@ -621,6 +767,7 @@ function setupKeyboardNav() {
     if (e.key === '1') switchAsset('GC');
     if (e.key === '2') switchAsset('ES');
     if (e.key === '3') switchAsset('NQ');
+    if (e.key === 'r' || e.key === 'R') forceRefreshData();
   });
 }
 
@@ -725,6 +872,7 @@ function renderAll(data) {
     clearChart('chart-net-oi');
     clearChart('chart-gex');
     clearChart('chart-vanna');
+    clearChart('chart-charm');
     clearChart('chart-iv-smile');
     clearChart('chart-oi-change');
     clearChart('chart-max-pain');
@@ -734,7 +882,7 @@ function renderAll(data) {
     return;
   }
 
-  renderBiasCard(data.bias);
+  renderBiasCard(data.bias, data);
   renderHybridChart(data);
   renderIntradayMasterChart(data);
   renderIntradayVolChart(data);
@@ -742,11 +890,14 @@ function renderAll(data) {
   renderNetOIChart(data.net_oi, data);
   renderGEXChart(data.gex_profile, data);
   renderVannaChart(data.vanna, data);
+  renderCharmChart(data.charm, data);
   renderIVSmileChart(data.iv_smile, data.bias, data);
   renderOIChangeChart(data.oi_change, data);
+  renderFlowQuadrantTable(data.flow_decomposition, data);
   renderMaxPainChart(data.oi_walls, data.max_pain, data.bias, data);
   
   updateMiniPanels(data);
+  renderQuantIntelligence(data);
 }
 
 // ── Bias Card ────────────────────────────────────────────────
@@ -810,6 +961,18 @@ function renderBiasCard(bias) {
   if (maxPainEl) {
     maxPainEl.textContent = '—';
     maxPainEl.className = 'metric-value';
+  }
+
+  // Overnight Hedging Flow (Charm)
+  const charmMetricEl = document.getElementById('metric-charm-overnight');
+  if (charmMetricEl) {
+    if (data && data.charm && data.charm.total_overnight_flow_usd !== undefined) {
+      const flowVal = data.charm.total_overnight_flow_usd;
+      const sign = flowVal > 0 ? '+' : '';
+      setMetric('metric-charm-overnight', `${sign}${formatCompact(flowVal)}`, flowVal > 0 ? 'bull' : (flowVal < 0 ? 'bear' : ''));
+    } else {
+      setMetric('metric-charm-overnight', '—');
+    }
   }
 }
 
@@ -1138,6 +1301,96 @@ function renderVannaChart(vannaData, data) {
   renderApexChart('chart-vanna', options);
 }
 
+// ── Chart: Charm Exposure (Time Decay Flow) ───────────────────────────
+function renderCharmChart(charmData, data) {
+  if (!charmData || !charmData.strikes || charmData.strikes.length === 0) {
+    clearChart('chart-charm');
+    return;
+  }
+
+  const badgeEl = document.getElementById('charm-flow-badge');
+  if (badgeEl) {
+    const totalFlow = charmData.total_overnight_flow_usd || 0;
+    if (totalFlow > 0) {
+      badgeEl.textContent = `🟢 BUY FLOW (+${formatCompact(totalFlow)})`;
+      badgeEl.className = 'card-badge bull';
+    } else if (totalFlow < 0) {
+      badgeEl.textContent = `🔴 SELL FLOW (${formatCompact(totalFlow)})`;
+      badgeEl.className = 'card-badge bear';
+    } else {
+      badgeEl.textContent = 'NEUTRAL FLOW';
+      badgeEl.className = 'card-badge neutral';
+    }
+  }
+
+  const sdAnnotations = getSDBandAnnotations(data, charmData.strikes);
+
+  const options = {
+    chart: {
+      type: 'bar',
+      height: '100%',
+      background: 'transparent',
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: "'JetBrains Mono', monospace",
+    },
+    series: [{
+      name: 'Charm Exp',
+      data: charmData.charm_exp || [],
+    }],
+    xaxis: {
+      categories: (charmData.strikes || []).map(s => s.toString()),
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        rotate: -45,
+        rotateAlways: true,
+      },
+      axisBorder: { color: '#1A1B20' },
+      axisTicks: { color: '#1A1B20' },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: '#6B6B75', fontSize: '10px' },
+        formatter: v => formatCompact(v),
+      },
+    },
+    colors: ['#00E5FF'],
+    plotOptions: {
+      bar: {
+        borderRadius: 0,
+        columnWidth: '65%',
+        colors: {
+          ranges: [
+            { from: -999999999, to: 0, color: '#FF9100' },
+            { from: 0, to: 999999999, color: '#00E5FF' },
+          ],
+        },
+      },
+    },
+    grid: {
+      borderColor: '#1A1B20',
+      strokeDashArray: 3,
+    },
+    tooltip: {
+      theme: 'dark',
+      y: { formatter: v => formatCompact(v) },
+    },
+    dataLabels: { enabled: false },
+    annotations: {
+      yaxis: [{
+        y: 0,
+        borderColor: '#6B6B75',
+        strokeDashArray: 0,
+        borderWidth: 1,
+      }],
+      xaxis: sdAnnotations,
+    },
+  };
+
+  renderApexChart('chart-charm', options);
+}
+
+
 // ── Chart: IV Smile / Skew Curve ───────────────────────────────────────
 function renderIVSmileChart(ivData, bias, data) {
   if (!ivData || !ivData.strikes || ivData.strikes.length < 3) {
@@ -1362,6 +1615,86 @@ function renderOIChangeChart(oiChangeData, data) {
 
   renderApexChart('chart-oi-change', options);
 }
+
+// ── Table: 4-Quadrant Institutional Flow Decomposition ────────────
+function renderFlowQuadrantTable(flowData, data) {
+  const badgeEl = document.getElementById('flow-quadrant-badge');
+  const summaryEl = document.getElementById('quadrant-summary-text');
+  const tbodyEl = document.getElementById('flow-quadrant-tbody');
+
+  if (!tbodyEl) return;
+
+  if (!flowData || (!flowData.accumulation_strikes && !flowData.liquidation_strikes && !flowData.day_trading_strikes)) {
+    if (badgeEl) {
+      badgeEl.textContent = 'NO RECENT FLOW DELTA';
+      badgeEl.className = 'card-badge neutral';
+    }
+    if (summaryEl) {
+      summaryEl.textContent = 'Historical hourly comparison unavailable or zero net change across strikes.';
+    }
+    tbodyEl.innerHTML = '<tr><td colspan="6" class="text-center" style="color: var(--color-text-dim);">No significant flow anomalies detected in this interval.</td></tr>';
+    return;
+  }
+
+  // Update badge
+  if (badgeEl) {
+    if (flowData.dominant_regime === 'ACCUMULATION') {
+      badgeEl.textContent = '🟢 ACCUMULATION DOMINANT';
+      badgeEl.className = 'card-badge bull';
+    } else if (flowData.dominant_regime === 'LIQUIDATION') {
+      badgeEl.textContent = '🔴 DE-RISKING / UNWIND';
+      badgeEl.className = 'card-badge bear';
+    } else {
+      badgeEl.textContent = '⚪ SPECULATIVE CHURN / DAY-TRADING';
+      badgeEl.className = 'card-badge neutral';
+    }
+  }
+
+  if (summaryEl && flowData.summary) {
+    summaryEl.textContent = flowData.summary;
+  }
+
+  // Gather priority strikes: top 4 accumulation + top 3 liquidation + top 3 day trading
+  const rows = [
+    ...(flowData.accumulation_strikes || []).slice(0, 5),
+    ...(flowData.liquidation_strikes || []).slice(0, 4),
+    ...(flowData.day_trading_strikes || []).slice(0, 3),
+  ];
+
+  if (rows.length === 0) {
+    tbodyEl.innerHTML = '<tr><td colspan="6" class="text-center">All strike flow balanced near baseline.</td></tr>';
+    return;
+  }
+
+  tbodyEl.innerHTML = rows.map(item => {
+    const isCall = item.type === 'CALL';
+    const typeBadge = isCall ? '<span class="text-bull">CALL</span>' : '<span class="text-bear">PUT</span>';
+    const doiVal = item.delta_oi || 0;
+    const doiFormatted = (doiVal > 0 ? '+' : '') + formatCompact(doiVal);
+    const doiClass = doiVal > 0 ? 'text-bull' : (doiVal < 0 ? 'text-bear' : 'text-mono');
+
+    let mechanicsText = '';
+    if (doiVal > 0 && Math.abs(doiVal) > item.volume * 0.2) {
+      mechanicsText = 'Institutional position accumulation (High conviction hold into close)';
+    } else if (doiVal < 0) {
+      mechanicsText = 'Position liquidation / risk mitigation (Dealers/Funds unwinding)';
+    } else {
+      mechanicsText = 'Intraday inventory churn / scalping without overnight commitment';
+    }
+
+    return `
+      <tr>
+        <td class="text-mono" style="font-weight: bold;">${formatNumber(item.strike)}</td>
+        <td>${typeBadge}</td>
+        <td class="text-mono">${formatCompact(item.volume)}</td>
+        <td class="${doiClass} text-mono" style="font-weight: bold;">${doiFormatted}</td>
+        <td>${item.badge || '—'}</td>
+        <td style="color: var(--color-text-dim); font-size: 11px;">${mechanicsText}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
 
 // ── Chart: Max Pain Analysis ─────────────────────────────────────
 function renderMaxPainChart(oiData, maxPainData, bias, data) {
@@ -2499,3 +2832,278 @@ function switchChartTab(group, tabKey) {
   }
 }
 
+
+
+// ── Quantitative Intelligence & Microstructure Renderer ──────
+function renderQuantIntelligence(data) {
+  if (!data) return;
+
+  // 1. VRP
+  const vrp = data.vrp || {};
+  const vrpSpreadEl = document.getElementById('vrp-spread-val');
+  const vrpBadgeEl = document.getElementById('vrp-regime-badge');
+  const vrpIvEl = document.getElementById('vrp-iv-val');
+  const vrpRvEl = document.getElementById('vrp-rv-val');
+  const vrpDescEl = document.getElementById('vrp-desc');
+
+  if (vrpSpreadEl && vrp.vrp_pct !== undefined) {
+    const vrpSign = vrp.vrp_pct > 0 ? '+' : '';
+    vrpSpreadEl.textContent = `${vrpSign}${Number(vrp.vrp_pct).toFixed(2)}%`;
+    vrpSpreadEl.className = 'quant-value-lg ' + (vrp.vrp_pct > 3.0 ? 'bull' : (vrp.vrp_pct < -3.0 ? 'bear' : 'neutral'));
+    
+    if (vrpBadgeEl) {
+      vrpBadgeEl.textContent = vrp.regime || 'FAIR';
+      vrpBadgeEl.className = 'quant-badge ' + (vrp.regime === 'EXPENSIVE' ? 'badge-expensive' : (vrp.regime === 'CHEAP' ? 'badge-cheap' : 'badge-neutral'));
+    }
+    if (vrpIvEl) vrpIvEl.textContent = `${vrp.iv_pct || 0}%`;
+    if (vrpRvEl) vrpRvEl.textContent = `${vrp.rv_pct || 0}%`;
+    if (vrpDescEl) vrpDescEl.textContent = vrp.description || '—';
+  }
+
+  // 2. Skew Dynamics
+  const skew = data.skew_dynamics || {};
+  const skewRrEl = document.getElementById('skew-rr-val');
+  const skewBadgeEl = document.getElementById('skew-surface-badge');
+  const skewRrSubEl = document.getElementById('skew-rr25-sub');
+  const skewBfSubEl = document.getElementById('skew-bf25-sub');
+  const skewDescEl = document.getElementById('skew-surface-desc');
+
+  if (skewRrEl && skew.risk_reversal_25d !== undefined) {
+    const rrSign = skew.risk_reversal_25d > 0 ? '+' : '';
+    skewRrEl.textContent = `${rrSign}${Number(skew.risk_reversal_25d).toFixed(2)}%`;
+    skewRrEl.className = 'quant-value-lg ' + (skew.risk_reversal_25d > 1.0 ? 'bull' : (skew.risk_reversal_25d < -1.0 ? 'bear' : 'neutral'));
+
+    if (skewBadgeEl) {
+      skewBadgeEl.textContent = skew.skew_regime ? skew.skew_regime.split(' ')[0] : 'NEUTRAL';
+      skewBadgeEl.className = 'quant-badge ' + (skew.risk_reversal_25d > 1.0 ? 'badge-callskew' : (skew.risk_reversal_25d < -1.0 ? 'badge-putskew' : 'badge-neutral'));
+    }
+    if (skewRrSubEl) skewRrSubEl.textContent = `${skew.risk_reversal_25d || 0}%`;
+    if (skewBfSubEl) skewBfSubEl.textContent = `${skew.butterfly_25d || 0}%`;
+    if (skewDescEl) skewDescEl.textContent = skew.skew_regime || '—';
+  }
+
+  // 3. Order Flow
+  const flow = data.order_flow || {};
+  const imb = flow.imbalance || {};
+  const flowImbEl = document.getElementById('flow-imbalance-val');
+  const flowBadgeEl = document.getElementById('flow-bias-badge');
+  const flowCallBar = document.getElementById('flow-bar-call');
+  const flowPutBar = document.getElementById('flow-bar-put');
+  const flowAnomDesc = document.getElementById('flow-anomalies-desc');
+
+  if (flowImbEl && imb.imbalance !== undefined) {
+    const imbSign = imb.imbalance > 0 ? '+' : '';
+    flowImbEl.textContent = `${imbSign}${Number(imb.imbalance).toFixed(3)}`;
+    flowImbEl.className = 'quant-value-lg ' + (imb.imbalance > 0.2 ? 'bull' : (imb.imbalance < -0.2 ? 'bear' : 'neutral'));
+
+    if (flowBadgeEl) {
+      flowBadgeEl.textContent = imb.bias ? imb.bias.replace(/_/g, ' ') : 'BALANCED';
+      flowBadgeEl.className = 'quant-badge ' + (imb.imbalance > 0.2 ? 'badge-expensive' : (imb.imbalance < -0.2 ? 'badge-cheap' : 'badge-neutral'));
+    }
+    if (flowCallBar && flowPutBar) {
+      const callShare = imb.call_share_pct || 50;
+      const putShare = imb.put_share_pct || 50;
+      flowCallBar.style.width = `${callShare}%`;
+      flowCallBar.textContent = `${callShare}% C`;
+      flowPutBar.style.width = `${putShare}%`;
+      flowPutBar.textContent = `${putShare}% P`;
+    }
+
+    if (flowAnomDesc) {
+      const anoms = flow.anomalies || [];
+      if (anoms.length > 0) {
+        const a0 = anoms[0];
+        flowAnomDesc.textContent = `⚠️ Spike: ${a0.type} ${a0.strike} (${a0.vol_oi_ratio}x OI, ${Math.round(a0.volume)} contracts)`;
+      } else {
+        flowAnomDesc.textContent = 'No extreme flow anomalies detected.';
+      }
+    }
+  }
+
+  // 4. Alerts Feed
+  const alerts = data.alerts || [];
+  const alertsContainer = document.getElementById('alerts-feed-container');
+  if (alertsContainer) {
+    if (alerts.length === 0) {
+      alertsContainer.innerHTML = '<div class="alert-empty">● All microstructure parameters within normal bounds.</div>';
+    } else {
+      alertsContainer.innerHTML = alerts.map(a => `
+        <div class="alert-item ${(a.severity || '').toLowerCase()}">
+          <div class="alert-item-header">
+            <span class="alert-title">${a.title}</span>
+            <span class="alert-sev-badge ${(a.severity || '').toLowerCase()}">${a.severity}</span>
+          </div>
+          <div class="alert-detail">${a.detail}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // 5. AI/ML Quant Regime Classifier
+  const ml = data.ml_regime || {};
+  const mlValEl = document.getElementById('ml-regime-val');
+  const mlConfEl = document.getElementById('ml-confidence-badge');
+  const mlBarBull = document.getElementById('ml-bar-bull');
+  const mlBarRange = document.getElementById('ml-bar-range');
+  const mlBarBear = document.getElementById('ml-bar-bear');
+  const mlActionEl = document.getElementById('ml-action-desc');
+
+  if (mlValEl && ml.regime) {
+    mlValEl.textContent = ml.regime.replace(/_/g, ' ');
+    mlValEl.className = 'quant-value-lg ' + (ml.regime.includes('BULL') ? 'bull' : (ml.regime.includes('BEAR') ? 'bear' : 'neutral'));
+    if (mlConfEl) mlConfEl.textContent = `ML CONF: ${ml.confidence_pct || 0}%`;
+
+    const pBull = Math.round((ml.prob_bull || 0) * 100);
+    const pRange = Math.round((ml.prob_range || 0) * 100);
+    const pBear = Math.round((ml.prob_bear || 0) * 100);
+
+    if (mlBarBull) { mlBarBull.style.width = `${pBull}%`; mlBarBull.textContent = `BULL ${pBull}%`; }
+    if (mlBarRange) { mlBarRange.style.width = `${pRange}%`; mlBarRange.textContent = `RANGE ${pRange}%`; }
+    if (mlBarBear) { mlBarBear.style.width = `${pBear}%`; mlBarBear.textContent = `BEAR ${pBear}%`; }
+
+    if (mlActionEl) mlActionEl.textContent = `Action Signal: ${ml.action_signal ? ml.action_signal.replace(/_/g, ' ') : '—'}`;
+  }
+
+  // 6. Cross-Asset Correlation
+  const corr = data.correlation || {};
+  const corrMacroEl = document.getElementById('corr-macro-val');
+  const corrDivBadge = document.getElementById('corr-divergence-badge');
+  const corrGcesEl = document.getElementById('corr-gces-val');
+  const corrEsnqEl = document.getElementById('corr-esnq-val');
+  const corrGcnqEl = document.getElementById('corr-gcnq-val');
+  const corrDescEl = document.getElementById('corr-desc');
+
+  if (corrMacroEl && corr.macro_regime) {
+    corrMacroEl.textContent = corr.macro_regime.split(' ')[0].replace(/_/g, ' ');
+    corrMacroEl.className = 'quant-value-lg ' + (corr.macro_regime.includes('RISK_ON') ? 'bull' : (corr.macro_regime.includes('RISK_OFF') ? 'bear' : 'neutral'));
+
+    if (corrDivBadge) {
+      corrDivBadge.textContent = corr.divergence_detected ? '⚡ DIVERGENCE' : '● BALANCED';
+      corrDivBadge.className = 'quant-badge ' + (corr.divergence_detected ? 'badge-cheap' : 'badge-neutral');
+    }
+    if (corrGcesEl) corrGcesEl.textContent = `${corr.gc_es_corr || 0}`;
+    if (corrEsnqEl) corrEsnqEl.textContent = `${corr.es_nq_corr || 0}`;
+    if (corrGcnqEl) corrGcnqEl.textContent = `${corr.gc_nq_corr || 0}`;
+    if (corrDescEl) corrDescEl.textContent = corr.description || '—';
+  }
+
+  // 7. Pin Risk
+  const pin = data.pin_risk || {};
+  const pinScoreEl = document.getElementById('pin-score-val');
+  const pinMagnetBadge = document.getElementById('pin-magnet-badge');
+  const pinGammaConcEl = document.getElementById('pin-gamma-conc');
+  const pinZoneEl = document.getElementById('pin-zone-val');
+  const pinDescEl = document.getElementById('pin-desc');
+
+  if (pinScoreEl && pin.pin_score !== undefined) {
+    pinScoreEl.textContent = `${pin.pin_score.toFixed(1)} / 100`;
+    pinScoreEl.className = 'quant-value-lg ' + (pin.pin_score > 60 ? 'bull' : 'neutral');
+
+    if (pinMagnetBadge) {
+      pinMagnetBadge.textContent = pin.pin_magnet_active ? '🧲 ACTIVE MAGNET' : 'FREE-FLOATING';
+      pinMagnetBadge.className = 'quant-badge ' + (pin.pin_magnet_active ? 'badge-magnet-active' : 'badge-neutral');
+    }
+    if (pinGammaConcEl) pinGammaConcEl.textContent = `${pin.gamma_concentration_pct || 0}%`;
+    if (pinZoneEl) {
+      if (pin.top_3_pin_strikes && pin.top_3_pin_strikes.length > 0) {
+        const top = pin.top_3_pin_strikes[0];
+        pinZoneEl.textContent = `${formatNumber(top.strike)} (${top.probability_pct}%)`;
+      } else if (pin.pinning_zone) {
+        pinZoneEl.textContent = `${pin.pinning_zone[0]} - ${pin.pinning_zone[1]}`;
+      }
+    }
+    if (pinDescEl) pinDescEl.textContent = pin.description || '—';
+  }
+
+  // 8. Monte Carlo Odds
+  const mc = data.monte_carlo || {};
+  const mcSpotEl = document.getElementById('mc-spot-val');
+  const mcCallOdds = document.getElementById('mc-call-odds');
+  const mcPutOdds = document.getElementById('mc-put-odds');
+  const mcEnvDesc = document.getElementById('mc-envelope-desc');
+
+  if (mcSpotEl && mc.spot) {
+    mcSpotEl.textContent = formatNumber(mc.spot);
+    const odds = mc.barrier_odds || {};
+    if (mcCallOdds) mcCallOdds.textContent = `${odds.prob_touch_call_wall_pct || 0}%`;
+    if (mcPutOdds) mcPutOdds.textContent = `${odds.prob_touch_put_wall_pct || 0}%`;
+
+    const cones = mc.cones || [];
+    if (cones.length > 0 && mcEnvDesc) {
+      const c30 = cones[cones.length - 1];
+      mcEnvDesc.textContent = `30D Cone: P10=${formatNumber(c30.p10)}, P50=${formatNumber(c30.p50)}, P90=${formatNumber(c30.p90)}`;
+    }
+  }
+
+  // 9. Stress Scenarios Table
+  const scen = data.scenarios || {};
+  const tableBody = document.getElementById('scenario-table-body');
+  if (tableBody && scen.scenarios) {
+    tableBody.innerHTML = scen.scenarios.map(s => {
+      const shiftSign = s.shift_pct > 0 ? '+' : '';
+      const isBase = s.shift_pct === 0;
+      const isPositiveGamma = s.total_gex >= 0;
+      const rowStyle = isBase ? 'style="background: rgba(255,255,255,0.04); font-weight: bold;"' : '';
+      return `
+        <tr ${rowStyle}>
+          <td>${shiftSign}${s.shift_pct.toFixed(1)}% ${isBase ? '(Spot)' : ''}</td>
+          <td>${formatNumber(s.hypo_price)}</td>
+          <td><span class="${isPositiveGamma ? 'text-bull' : 'text-bear'}">● ${isPositiveGamma ? 'STABLE' : 'VOLATILE'}</span></td>
+          <td class="${s.total_gex >= 0 ? 'text-bull' : 'text-bear'}">${formatNumber(s.total_gex)}</td>
+          <td>${formatNumber(s.total_dex)}</td>
+          <td class="${s.dealer_delta_hedge_demand >= 0 ? 'text-bull' : 'text-bear'}">${s.dealer_delta_hedge_demand > 0 ? '+' : ''}${formatNumber(s.dealer_delta_hedge_demand)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // 10. Event IV Shock & Vanna Rally Table
+  const vannaTableBody = document.getElementById('vanna-table-body');
+  const vannaBadge = document.getElementById('vanna-rally-badge');
+  if (vannaTableBody && scen.vanna_rally_scenarios) {
+    const rallyCase = scen.vanna_rally_scenarios.find(s => s.iv_shift_pct === -5.0);
+    if (vannaBadge && rallyCase) {
+      if (rallyCase.dealer_rebalance_usd > 0) {
+        vannaBadge.textContent = `🟢 VANNA RALLY EXPECTED (+${formatCompact(rallyCase.dealer_rebalance_usd)})`;
+        vannaBadge.className = 'card-badge bull';
+      } else if (rallyCase.dealer_rebalance_usd < 0) {
+        vannaBadge.textContent = `🔴 DEALER SELLING (${formatCompact(rallyCase.dealer_rebalance_usd)})`;
+        vannaBadge.className = 'card-badge bear';
+      } else {
+        vannaBadge.textContent = 'FOMC / CPI SENSITIVITY';
+        vannaBadge.className = 'card-badge neutral';
+      }
+    }
+
+    vannaTableBody.innerHTML = scen.vanna_rally_scenarios.map(s => {
+      const shiftSign = s.iv_shift_pct > 0 ? '+' : '';
+      const isBase = s.iv_shift_pct === 0;
+      const isBuying = s.dealer_rebalance_usd > 0;
+      const isSelling = s.dealer_rebalance_usd < 0;
+
+      let contextDesc = 'Baseline Volatility';
+      if (s.iv_shift_pct === -5.0) contextDesc = '⚡ Post-Event IV Crush (FOMC/CPI)';
+      else if (s.iv_shift_pct === -2.5) contextDesc = 'Moderate Vol Deflation';
+      else if (s.iv_shift_pct === 2.5) contextDesc = 'Pre-Event Hedging Bid';
+      else if (s.iv_shift_pct === 5.0) contextDesc = 'Tail-Risk Panic Spike';
+
+      const rowStyle = (s.iv_shift_pct === -5.0 && isBuying)
+        ? 'style="background: rgba(0, 227, 150, 0.08); font-weight: bold;"'
+        : (isBase ? 'style="background: rgba(255,255,255,0.04); font-weight: bold;"' : '');
+
+      const flowClass = isBuying ? 'text-bull' : (isSelling ? 'text-bear' : 'text-mono');
+
+      return `
+        <tr ${rowStyle}>
+          <td class="text-mono">${shiftSign}${s.iv_shift_pct.toFixed(1)}% IV</td>
+          <td style="font-size: 11px;">${contextDesc}</td>
+          <td class="${flowClass} text-mono" style="font-weight: bold;">
+            ${s.dealer_rebalance_usd > 0 ? '+' : ''}${formatCompact(s.dealer_rebalance_usd)}
+          </td>
+          <td class="text-mono">${s.dealer_rebalance_contracts > 0 ? '+' : ''}${formatNumber(s.dealer_rebalance_contracts)}</td>
+          <td><span class="${flowClass}">● ${s.vanna_rally_direction}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+}

@@ -1,0 +1,52 @@
+services:
+  # ══════ 1. WEB DASHBOARD SERVICE ══════
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: futures-options-dashboard
+    image: futures-options-dashboard:latest
+    ports:
+      - "${PORT:-8050}:8000"
+    volumes:
+      - ./docs:/app/docs
+      - ./trading_results:/app/trading_results
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    command: ["python", "-m", "http.server", "8000", "--directory", "docs"]
+
+  # ══════ 2. BACKGROUND AUTO-UPDATER SERVICE ══════
+  updater:
+    image: futures-options-dashboard:latest
+    container_name: futures-options-updater
+    restart: unless-stopped
+    volumes:
+      - ./docs:/app/docs
+      - ./trading_results:/app/trading_results
+      - .:/app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - UPDATE_INTERVAL_SECONDS=${UPDATE_INTERVAL_SECONDS:-300}
+      - PYTHONUNBUFFERED=1
+    command: ["python", "docker_updater.py"]
+
+  # ══════ 3. ON-DEMAND CLI RUNNER SERVICE ══════
+  pipeline:
+    image: futures-options-dashboard:latest
+    container_name: futures-options-pipeline
+    profiles: ["cli"]
+    volumes:
+      - .:/app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["python", "update_dashboard.py"]

@@ -1,6 +1,16 @@
+# === Core Dependencies (Dashboard & Analytics) ===
 tastytrade
 yfinance
 pandas
 python-dotenv
 matplotlib
 mplfinance
+
+# === Multi-Provider Adapter Core ===
+aiohttp>=3.9.0
+
+# === CME Direct Feed (Databento) ===
+databento>=0.40.0
+
+# === Interactive Brokers (IBKR TWS API) ===
+ib_insync>=0.9.86
