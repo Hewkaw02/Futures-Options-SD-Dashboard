@@ -33,6 +33,20 @@ const state = {
   }
 };
 
+// ── Safe Lightweight Charts Enums (Resilient to bundle variations) ──
+const SafeLineStyle = {
+  Solid: (typeof LightweightCharts !== 'undefined' && LightweightCharts?.LineStyle?.Solid !== undefined) ? LightweightCharts.LineStyle.Solid : 0,
+  Dotted: (typeof LightweightCharts !== 'undefined' && LightweightCharts?.LineStyle?.Dotted !== undefined) ? LightweightCharts.LineStyle.Dotted : 1,
+  Dashed: (typeof LightweightCharts !== 'undefined' && LightweightCharts?.LineStyle?.Dashed !== undefined) ? LightweightCharts.LineStyle.Dashed : 2,
+  LargeDashed: 3,
+  SparseDotted: 4
+};
+
+const SafeCrosshairMode = {
+  Normal: (typeof LightweightCharts !== 'undefined' && LightweightCharts?.CrosshairMode?.Normal !== undefined) ? LightweightCharts.CrosshairMode.Normal : 0,
+  Magnet: (typeof LightweightCharts !== 'undefined' && LightweightCharts?.CrosshairMode?.Magnet !== undefined) ? LightweightCharts.CrosshairMode.Magnet : 1
+};
+
 
 // ── Decision Terminal Toggles & Helper Functions ─────────────
 function toggleLayer(chartType, layerKey) {
@@ -486,11 +500,11 @@ const ASSET_LABELS = {
 };
 
 // ── Bootstrap ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   setupKeyboardNav();
+  await loadManifest();
   // Default to Real-time Streaming Mode
   setDashboardMode('realtime');
-  loadManifest();
 });
 
 // ── Mode Switcher (Real-Time vs History Archive) ─────────────
@@ -579,10 +593,12 @@ async function loadManifest(refreshCurrent = false) {
       state.currentIndex = state.manifest.length - 1;
     }
 
-    if (state.mode === 'realtime') {
-      loadRealtimeData(false);
-    } else if (refreshCurrent) {
-      loadCurrentData(true);
+    if (refreshCurrent) {
+      if (state.mode === 'realtime') {
+        await loadRealtimeData(false);
+      } else {
+        await loadCurrentData(true);
+      }
     }
   } catch (err) {
     console.error('Failed to load manifest:', err);
@@ -901,7 +917,7 @@ function renderAll(data) {
 }
 
 // ── Bias Card ────────────────────────────────────────────────
-function renderBiasCard(bias) {
+function renderBiasCard(bias, data) {
   const dirEl = document.getElementById('bias-direction');
   const confEl = document.getElementById('bias-confidence');
   const priceEl = document.getElementById('bias-price');
@@ -2047,7 +2063,7 @@ function createTradingViewChart(containerId, ohlcv, vwap, options = {}) {
       horzLines: { color: 'rgba(26, 27, 32, 0.4)' },
     },
     crosshair: {
-      mode: LightweightCharts.CrosshairMode.Normal,
+      mode: SafeCrosshairMode.Normal,
     },
     rightPriceScale: {
       visible: false, // Turn off right axis completely!
@@ -2146,7 +2162,7 @@ function createTradingViewChart(containerId, ohlcv, vwap, options = {}) {
         price: level.price,
         color: level.color || '#FEB019',
         lineWidth: level.lineWidth || 1,
-        lineStyle: level.lineStyle || LightweightCharts.LineStyle.Dashed,
+        lineStyle: level.lineStyle || SafeLineStyle.Dashed,
         axisLabelVisible: true,
         title: level.title || '',
       });
@@ -2302,14 +2318,14 @@ function renderHybridChart(data) {
           price: price + (step * i),
           color: '#FEB019',
           lineWidth: 1,
-          lineStyle: LightweightCharts.LineStyle.Dashed,
+          lineStyle: SafeLineStyle.Dashed,
           title: `+${i}SD`
         });
         levels.push({
           price: price - (step * i),
           color: '#008FFB',
           lineWidth: 1,
-          lineStyle: LightweightCharts.LineStyle.Dashed,
+          lineStyle: SafeLineStyle.Dashed,
           title: `-${i}SD`
         });
       }
@@ -2327,14 +2343,14 @@ function renderHybridChart(data) {
           price: pdCandle[2],
           color: '#B57CFF',
           lineWidth: 1.5,
-          lineStyle: LightweightCharts.LineStyle.Solid,
+          lineStyle: SafeLineStyle.Solid,
           title: `PDH (${pdCandle[2]})`
         });
         levels.push({
           price: pdCandle[3],
           color: '#B57CFF',
           lineWidth: 1.5,
-          lineStyle: LightweightCharts.LineStyle.Solid,
+          lineStyle: SafeLineStyle.Solid,
           title: `PDL (${pdCandle[3]})`
         });
       }
@@ -2353,7 +2369,7 @@ function renderHybridChart(data) {
           price: sH,
           color: '#FF9F43',
           lineWidth: 1.2,
-          lineStyle: LightweightCharts.LineStyle.Dashed,
+          lineStyle: SafeLineStyle.Dashed,
           title: `Session High (${sH})`
         });
       }
@@ -2362,7 +2378,7 @@ function renderHybridChart(data) {
           price: sL,
           color: '#FF9F43',
           lineWidth: 1.2,
-          lineStyle: LightweightCharts.LineStyle.Dashed,
+          lineStyle: SafeLineStyle.Dashed,
           title: `Session Low (${sL})`
         });
       }
@@ -2383,7 +2399,7 @@ function renderHybridChart(data) {
         price: r[0],
         color: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.3)' : 'rgba(255, 69, 96, 0.6)'),
         lineWidth: isHigh ? 2 : 1,
-        lineStyle: isLow ? LightweightCharts.LineStyle.Dashed : LightweightCharts.LineStyle.Solid,
+        lineStyle: isLow ? SafeLineStyle.Dashed : SafeLineStyle.Solid,
         title: `OI Res: ${r[0]} (${formatCompact(r[1])})`
       });
     });
@@ -2395,7 +2411,7 @@ function renderHybridChart(data) {
         price: s[0],
         color: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.3)' : 'rgba(0, 227, 150, 0.6)'),
         lineWidth: isHigh ? 2 : 1,
-        lineStyle: isLow ? LightweightCharts.LineStyle.Dashed : LightweightCharts.LineStyle.Solid,
+        lineStyle: isLow ? SafeLineStyle.Dashed : SafeLineStyle.Solid,
         title: `OI Sup: ${s[0]} (${formatCompact(s[1])})`
       });
     });
@@ -2495,15 +2511,15 @@ function renderIntradayMasterChart(data) {
       // Determine line styles based on score
       let color = 'rgba(255, 69, 96, 0.4)';
       let lineWidth = 1;
-      let lineStyle = LightweightCharts.LineStyle.Dotted;
+      let lineStyle = SafeLineStyle.Dotted;
       if (score >= 8.0) {
         color = 'rgba(255, 69, 96, 1.0)';
         lineWidth = 2.5;
-        lineStyle = LightweightCharts.LineStyle.Solid;
+        lineStyle = SafeLineStyle.Solid;
       } else if (score >= 5.0) {
         color = 'rgba(255, 69, 96, 0.7)';
         lineWidth = 1.5;
-        lineStyle = LightweightCharts.LineStyle.Dashed;
+        lineStyle = SafeLineStyle.Dashed;
       }
 
       levels.push({
@@ -2525,15 +2541,15 @@ function renderIntradayMasterChart(data) {
       
       let color = 'rgba(0, 227, 150, 0.4)';
       let lineWidth = 1;
-      let lineStyle = LightweightCharts.LineStyle.Dotted;
+      let lineStyle = SafeLineStyle.Dotted;
       if (score >= 8.0) {
         color = 'rgba(0, 227, 150, 1.0)';
         lineWidth = 2.5;
-        lineStyle = LightweightCharts.LineStyle.Solid;
+        lineStyle = SafeLineStyle.Solid;
       } else if (score >= 5.0) {
         color = 'rgba(0, 227, 150, 0.7)';
         lineWidth = 1.5;
-        lineStyle = LightweightCharts.LineStyle.Dashed;
+        lineStyle = SafeLineStyle.Dashed;
       }
 
       levels.push({
@@ -2653,7 +2669,7 @@ function renderIntradayMasterChart(data) {
       price: setup.stopLoss,
       color: '#FF4560',
       lineWidth: 2,
-      lineStyle: LightweightCharts.LineStyle.Solid,
+      lineStyle: SafeLineStyle.Solid,
       title: `STOP LOSS (INVALIDATION): ${setup.stopLoss.toFixed(1)}`
     });
     // Entry Min/Max
@@ -2661,14 +2677,14 @@ function renderIntradayMasterChart(data) {
       price: setup.entryMin,
       color: '#FEB019',
       lineWidth: 1.5,
-      lineStyle: LightweightCharts.LineStyle.Dashed,
+      lineStyle: SafeLineStyle.Dashed,
       title: `ENTRY ZONE MIN: ${setup.entryMin.toFixed(1)}`
     });
     levels.push({
       price: setup.entryMax,
       color: '#FEB019',
       lineWidth: 1.5,
-      lineStyle: LightweightCharts.LineStyle.Dashed,
+      lineStyle: SafeLineStyle.Dashed,
       title: `ENTRY ZONE MAX: ${setup.entryMax.toFixed(1)}`
     });
     // Targets
@@ -2676,14 +2692,14 @@ function renderIntradayMasterChart(data) {
       price: setup.target1,
       color: '#00E396',
       lineWidth: 1.5,
-      lineStyle: LightweightCharts.LineStyle.Solid,
+      lineStyle: SafeLineStyle.Solid,
       title: `TARGET 1: ${setup.target1.toFixed(1)}`
     });
     levels.push({
       price: setup.target2,
       color: '#00E396',
       lineWidth: 1.5,
-      lineStyle: LightweightCharts.LineStyle.Dashed,
+      lineStyle: SafeLineStyle.Dashed,
       title: `TARGET 2: ${setup.target2.toFixed(1)}`
     });
   }
