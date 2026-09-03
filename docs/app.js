@@ -9,6 +9,7 @@ const state = {
   currentIndex: -1,        // index into manifest timestamps
   manifest: [],            // sorted array of "YYYY-MM-DD/HH00"
   mode: 'realtime',        // 'realtime' or 'history'
+  isFirstRealtimeLoad: true, // Controls full render vs smooth live tick
   isRealtimeAvailable: null, // null = unchecked, true = active, false = offline (e.g. GitHub Pages)
   realtimeTimer: null,     // auto-polling timer for live ticks
   lastSyncTime: null,      // formatted time of latest sync
@@ -71,15 +72,13 @@ function toggleLayer(chartType, layerKey) {
 
   // Live update the affected chart!
   const ts = state.manifest[state.currentIndex];
-  if (ts) {
-    const cacheKey = `${state.currentAsset}:${ts}`;
-    const data = state.cache[cacheKey];
-    if (data) {
-      if (chartType === 'hybrid') {
-        renderHybridChart(data);
-      } else {
-        renderIntradayMasterChart(data);
-      }
+  const cacheKey = ts ? `${state.currentAsset}:${ts}` : null;
+  const data = (state.mode === 'realtime') ? (state.latestRealtimeData || (cacheKey ? state.cache[cacheKey] : null)) : (cacheKey ? state.cache[cacheKey] : null);
+  if (data) {
+    if (chartType === 'hybrid') {
+      renderHybridChart(data, false);
+    } else {
+      renderIntradayMasterChart(data, false);
     }
   }
 }
@@ -647,6 +646,7 @@ function setDashboardMode(mode) {
     }
 
     state.mode = 'realtime';
+    state.isFirstRealtimeLoad = true;
     if (btnRealtime) btnRealtime.classList.add('active');
     if (btnHistory) btnHistory.classList.remove('active');
     if (timeNav) timeNav.classList.add('realtime-mode');
@@ -820,7 +820,15 @@ async function loadRealtimeData(showVisualLoading = false) {
       setTimeout(() => { if (priceEl) priceEl.style.textShadow = ''; }, 350);
     }
 
-    renderAll(data);
+    // Store latest realtime data for tab/layer switches
+    state.latestRealtimeData = data;
+
+    if (state.isFirstRealtimeLoad) {
+      state.isFirstRealtimeLoad = false;
+      renderAll(data);
+    } else {
+      renderRealtimeTick(data);
+    }
   } catch (err) {
     console.warn(`[Realtime] Live feed error for ${asset}:`, err);
     state.isRealtimeAvailable = false;
@@ -830,6 +838,24 @@ async function loadRealtimeData(showVisualLoading = false) {
   } finally {
     if (showVisualLoading) showLoading(false);
   }
+}
+
+// ── Smooth Real-time Tick Renderer (Zero Flicker / No Canvas Rebuild) ──
+function renderRealtimeTick(data) {
+  if (!data) return;
+
+  // 1. Update Hero Bias Card with real-time price & IV
+  renderBiasCard(data.bias, data);
+
+  // 2. Smoothly update Section 01 charts without tearing down canvases or bouncing viewports
+  renderHybridChart(data, true);
+  renderIntradayMasterChart(data, true);
+
+  // 3. Update Mini Panels (PCR, GEX, Skew)
+  updateMiniPanels(data);
+
+  // 4. Update Quant Intelligence (Dealer Spot Shock Rebalancing Table)
+  renderQuantIntelligence(data);
 }
 
 // ── Historical Snapshot Loading ──────────────────────────────
@@ -858,6 +884,7 @@ async function loadCurrentData(force = false) {
 function switchAsset(asset) {
   if (asset === state.currentAsset) return;
   state.currentAsset = asset;
+  state.isFirstRealtimeLoad = true;
 
   // Update button states
   document.querySelectorAll('.asset-btn[data-asset]').forEach(btn => {
@@ -2403,10 +2430,14 @@ function createTradingViewChart(containerId, ohlcv, vwap, options = {}) {
   if (!state.resizeObservers) state.resizeObservers = {};
   state.resizeObservers[containerId] = resizeObserver;
 
+  chart._candlestickSeries = candlestickSeries;
+  chart._vwapSeries = vwapSeries;
+  chart._levels = options.levels;
+
   return chart;
 }
 
-function renderHybridChart(data) {
+function renderHybridChart(data, isLiveTick = false) {
   if (!data || !data.candlesticks) {
     clearChart('chart-hybrid');
     document.getElementById('hybrid-nodata').style.display = 'flex';
@@ -2439,6 +2470,20 @@ function renderHybridChart(data) {
   if (ohlcv.length === 0) {
     clearChart('chart-hybrid');
     document.getElementById('hybrid-nodata').style.display = 'flex';
+    return;
+  }
+
+  // Non-destructive smooth live update for Section 01
+  const existingChart = state.charts['chart-hybrid'];
+  if (isLiveTick && existingChart && existingChart._candlestickSeries && existingChart._asset === state.currentAsset && existingChart._tf === tf) {
+    const last = ohlcv[ohlcv.length - 1];
+    existingChart._candlestickSeries.update({
+      time: last[0] / 1000,
+      open: last[1],
+      high: last[2],
+      low: last[3],
+      close: last[4]
+    });
     return;
   }
 
@@ -2533,8 +2578,8 @@ function renderHybridChart(data) {
       const isLow = r[1] <= maxOI * 0.3;
       levels.push({
         price: r[0],
-        color: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.3)' : 'rgba(255, 69, 96, 0.6)'),
-        lineWidth: isHigh ? 2 : 1,
+        color: isHigh ? 'rgba(255, 69, 96, 0.9)' : (isLow ? 'rgba(255, 69, 96, 0.4)' : 'rgba(255, 69, 96, 0.7)'),
+        lineWidth: isHigh ? 2 : 1.5,
         lineStyle: isLow ? SafeLineStyle.Dashed : SafeLineStyle.Solid,
         title: `OI Res: ${r[0]} (${formatCompact(r[1])})`
       });
@@ -2545,8 +2590,8 @@ function renderHybridChart(data) {
       const isLow = s[1] <= maxOI * 0.3;
       levels.push({
         price: s[0],
-        color: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.3)' : 'rgba(0, 227, 150, 0.6)'),
-        lineWidth: isHigh ? 2 : 1,
+        color: isHigh ? 'rgba(0, 227, 150, 0.9)' : (isLow ? 'rgba(0, 227, 150, 0.4)' : 'rgba(0, 227, 150, 0.7)'),
+        lineWidth: isHigh ? 2 : 1.5,
         lineStyle: isLow ? SafeLineStyle.Dashed : SafeLineStyle.Solid,
         title: `OI Sup: ${s[0]} (${formatCompact(s[1])})`
       });
@@ -2557,6 +2602,8 @@ function renderHybridChart(data) {
 
   const datePart = ts ? ts.split('/')[0] : null;
   const chart = createTradingViewChart('chart-hybrid', ohlcv, vwap, { levels, datePart });
+  chart._asset = state.currentAsset;
+  chart._tf = tf;
   state.charts['chart-hybrid'] = chart;
 
   // Zoom visible viewport on load: Show last day of action for intraday (15m)
@@ -2573,132 +2620,9 @@ function renderHybridChart(data) {
   }
 }
 
-function renderIntradayMasterChart(data) {
-  if (!data || !data.candlesticks) {
-    clearChart('chart-intraday-master');
-    document.getElementById('intraday-master-nodata').style.display = 'flex';
-    return;
-  }
-  document.getElementById('intraday-master-nodata').style.display = 'none';
-
-  const tabKey = state.activeTabs['intraday-master'] || 'intraday_master_5m';
-  const tf = tabKey.split('_')[2]; // 5m, 1h
-  const candleData = data.candlesticks[tf];
-
-  if (!candleData || !candleData.ohlcv || candleData.ohlcv.length === 0) {
-    clearChart('chart-intraday-master');
-    document.getElementById('intraday-master-nodata').style.display = 'flex';
-    return;
-  }
-
-  // Filter candles if not the latest run to prevent future leak
-  const isLatest = state.currentIndex === state.manifest.length - 1;
-  const ts = state.manifest[state.currentIndex];
-  let ohlcv = candleData.ohlcv;
-  let vwap = candleData.vwap;
-
-  if (!isLatest && ts) {
-    const maxTs = getAnalysisTimestampMs(ts);
-    ohlcv = ohlcv.filter(c => c[0] <= maxTs);
-    vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
-  }
-
-  if (ohlcv.length === 0) {
-    clearChart('chart-intraday-master');
-    document.getElementById('intraday-master-nodata').style.display = 'flex';
-    return;
-  }
-
-  const levels = [];
-
-  // Filter viewport min/max bounds so we only show levels close to the trading range
-  let viewMin = 0;
-  let viewMax = Infinity;
-  if (ohlcv.length > 0) {
-    const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
-    viewMin = Math.min(...prices);
-    viewMax = Math.max(...prices);
-  }
-  const tolerance = (viewMax - viewMin) * 0.5 || viewMax * 0.05;
-
-  const currentPrice = ohlcv[ohlcv.length - 1][4];
-  const step = data.sd_step;
-  const latestVwap = vwap && vwap.length > 0 ? vwap[vwap.length - 1][1] : null;
-
-  // 1. Calculate Option Walls and Strength Scores (if toggled)
-  if (state.toggles.master.oiWalls && data.intraday_levels) {
-    const supports = data.intraday_levels.vol_supports || [];
-    const resistances = data.intraday_levels.vol_resistances || [];
-    
-    // Find max Vol for normalization
-    let maxVol = 0;
-    supports.forEach(s => { if (s[1] > maxVol) maxVol = s[1]; });
-    resistances.forEach(r => { if (r[1] > maxVol) maxVol = r[1]; });
-
-    // Process resistances (Intraday Call Volume Walls)
-    resistances.forEach(r => {
-      const strike = r[0];
-      if (strike < viewMin - tolerance || strike > viewMax + tolerance) return;
-      
-      const vol = r[1];
-      // Use vol as both oi and vol for dynamic volume wall strength scoring!
-      const score = calculateWallStrength(strike, true, vol, vol, currentPrice, latestVwap, step, maxVol, maxVol);
-      
-      // Determine line styles based on score
-      let color = 'rgba(255, 69, 96, 0.4)';
-      let lineWidth = 1;
-      let lineStyle = SafeLineStyle.Dotted;
-      if (score >= 8.0) {
-        color = 'rgba(255, 69, 96, 1.0)';
-        lineWidth = 2.5;
-        lineStyle = SafeLineStyle.Solid;
-      } else if (score >= 5.0) {
-        color = 'rgba(255, 69, 96, 0.7)';
-        lineWidth = 1.5;
-        lineStyle = SafeLineStyle.Dashed;
-      }
-
-      levels.push({
-        price: strike,
-        color,
-        lineWidth,
-        lineStyle,
-        title: `Intraday Call Wall: ${strike} (${formatCompact(vol)} Vol, Score: ${score.toFixed(1)})`
-      });
-    });
-
-    // Process supports (Intraday Put Volume Walls)
-    supports.forEach(s => {
-      const strike = s[0];
-      if (strike < viewMin - tolerance || strike > viewMax + tolerance) return;
-      
-      const vol = s[1];
-      const score = calculateWallStrength(strike, false, vol, vol, currentPrice, latestVwap, step, maxVol, maxVol);
-      
-      let color = 'rgba(0, 227, 150, 0.4)';
-      let lineWidth = 1;
-      let lineStyle = SafeLineStyle.Dotted;
-      if (score >= 8.0) {
-        color = 'rgba(0, 227, 150, 1.0)';
-        lineWidth = 2.5;
-        lineStyle = SafeLineStyle.Solid;
-      } else if (score >= 5.0) {
-        color = 'rgba(0, 227, 150, 0.7)';
-        lineWidth = 1.5;
-        lineStyle = SafeLineStyle.Dashed;
-      }
-
-      levels.push({
-        price: strike,
-        color,
-        lineWidth,
-        lineStyle,
-        title: `Intraday Put Wall: ${strike} (${formatCompact(vol)} Vol, Score: ${score.toFixed(1)})`
-      });
-    });
-  }
-
-  // 2. Compute Distance to Dynamic Real-time Volume Profile Walls
+// ── Master Chart Widgets Extractor ────────────────────────────
+function updateMasterWidgets(data, ohlcv, vwap, currentPrice, step, isLatest, ts) {
+  // 1. Compute Distance to Dynamic Real-time Volume Profile Walls
   let nearestCall = null;
   let nearestPut = null;
   if (data.intraday_levels) {
@@ -2748,13 +2672,14 @@ function renderIntradayMasterChart(data) {
     }
   }
 
-  // 3. Trade Setup Calculations & UI Widget updates
+  // 2. Trade Setup Calculations & UI Widget updates
+  const latestVwap = vwap && vwap.length > 0 ? vwap[vwap.length - 1][1] : null;
   const setup = getSetupDetails(data, currentPrice, latestVwap, step);
   
   // Calculate Wall Interaction & Gamma Hedging Status (Day-bounded intraday scan)
   const gexRegime = data.bias ? data.bias.gex : 'NEUTRAL';
-  const maxSupportVal = setup.entryMin + step * 0.15; // Put wall strike (aligned with Tighter tactical Entry)
-  const maxResistanceVal = setup.entryMax - step * 0.15; // Call wall strike (aligned with Tighter tactical Entry)
+  const maxSupportVal = setup.entryMin + step * 0.15;
+  const maxResistanceVal = setup.entryMax - step * 0.15;
   const datePart = ts ? ts.split('/')[0] : null;
   const wallInteractions = getWallInteractionDetails(ohlcv, currentPrice, maxSupportVal, maxResistanceVal, step, gexRegime, datePart);
   
@@ -2798,9 +2723,170 @@ function renderIntradayMasterChart(data) {
   setVal('setup-targets', `${setup.target1.toFixed(1)} / ${setup.target2.toFixed(1)}`);
   setVal('setup-rr', setup.rr);
 
-  // Draw setup zones on chart (if toggled)
-  if (state.toggles.master.tradeSetup) {
-    // Invalidation
+  return setup;
+}
+
+function renderIntradayMasterChart(data, isLiveTick = false) {
+  if (!data || !data.candlesticks) {
+    clearChart('chart-intraday-master');
+    document.getElementById('intraday-master-nodata').style.display = 'flex';
+    return;
+  }
+  document.getElementById('intraday-master-nodata').style.display = 'none';
+
+  const tabKey = state.activeTabs['intraday-master'] || 'intraday_master_5m';
+  const tf = tabKey.split('_')[2]; // 5m, 1h
+  const candleData = data.candlesticks[tf];
+
+  if (!candleData || !candleData.ohlcv || candleData.ohlcv.length === 0) {
+    clearChart('chart-intraday-master');
+    document.getElementById('intraday-master-nodata').style.display = 'flex';
+    return;
+  }
+
+  // Filter candles if not the latest run to prevent future leak
+  const isLatest = state.currentIndex === state.manifest.length - 1;
+  const ts = state.manifest[state.currentIndex];
+  let ohlcv = candleData.ohlcv;
+  let vwap = candleData.vwap;
+
+  if (!isLatest && ts) {
+    const maxTs = getAnalysisTimestampMs(ts);
+    ohlcv = ohlcv.filter(c => c[0] <= maxTs);
+    vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+  }
+
+  if (ohlcv.length === 0) {
+    clearChart('chart-intraday-master');
+    document.getElementById('intraday-master-nodata').style.display = 'flex';
+    return;
+  }
+
+  const currentPrice = ohlcv[ohlcv.length - 1][4];
+  const step = data.sd_step || (currentPrice * 0.015);
+  const latestVwap = vwap && vwap.length > 0 ? vwap[vwap.length - 1][1] : null;
+
+  // Non-destructive smooth live update for Section 01
+  const existingChart = state.charts['chart-intraday-master'];
+  if (isLiveTick && existingChart && existingChart._candlestickSeries && existingChart._asset === state.currentAsset && existingChart._tf === tf) {
+    const last = ohlcv[ohlcv.length - 1];
+    existingChart._candlestickSeries.update({
+      time: last[0] / 1000,
+      open: last[1],
+      high: last[2],
+      low: last[3],
+      close: last[4]
+    });
+    updateMasterWidgets(data, ohlcv, vwap, currentPrice, step, isLatest, ts);
+    return;
+  }
+
+  const levels = [];
+
+  // 1. Calculate Option Walls and Strength Scores (if toggled)
+  if (state.toggles.master.oiWalls && data.intraday_levels) {
+    const supports = data.intraday_levels.vol_supports || [];
+    const resistances = data.intraday_levels.vol_resistances || [];
+    
+    // Find max Vol for normalization
+    let maxVol = 0;
+    supports.forEach(s => { if (s[1] > maxVol) maxVol = s[1]; });
+    resistances.forEach(r => { if (r[1] > maxVol) maxVol = r[1]; });
+
+    // Process resistances (Intraday Call Volume Walls)
+    resistances.forEach(r => {
+      const strike = r[0];
+      if (Math.abs(strike - currentPrice) > currentPrice * 0.15) return;
+      
+      const vol = r[1];
+      const score = calculateWallStrength(strike, true, vol, vol, currentPrice, latestVwap, step, maxVol, maxVol);
+      
+      let color = 'rgba(255, 69, 96, 0.5)';
+      let lineWidth = 1.5;
+      let lineStyle = SafeLineStyle.Dashed;
+      if (score >= 8.0) {
+        color = 'rgba(255, 69, 96, 1.0)';
+        lineWidth = 2.5;
+        lineStyle = SafeLineStyle.Solid;
+      } else if (score >= 5.0) {
+        color = 'rgba(255, 69, 96, 0.8)';
+        lineWidth = 2;
+        lineStyle = SafeLineStyle.Dashed;
+      }
+
+      levels.push({
+        price: strike,
+        color,
+        lineWidth,
+        lineStyle,
+        title: `Call Wall: ${strike} (${formatCompact(vol)} Vol)`
+      });
+    });
+
+    // Process supports (Intraday Put Volume Walls)
+    supports.forEach(s => {
+      const strike = s[0];
+      if (Math.abs(strike - currentPrice) > currentPrice * 0.15) return;
+      
+      const vol = s[1];
+      const score = calculateWallStrength(strike, false, vol, vol, currentPrice, latestVwap, step, maxVol, maxVol);
+      
+      let color = 'rgba(0, 227, 150, 0.5)';
+      let lineWidth = 1.5;
+      let lineStyle = SafeLineStyle.Dashed;
+      if (score >= 8.0) {
+        color = 'rgba(0, 227, 150, 1.0)';
+        lineWidth = 2.5;
+        lineStyle = SafeLineStyle.Solid;
+      } else if (score >= 5.0) {
+        color = 'rgba(0, 227, 150, 0.8)';
+        lineWidth = 2;
+        lineStyle = SafeLineStyle.Dashed;
+      }
+
+      levels.push({
+        price: strike,
+        color,
+        lineWidth,
+        lineStyle,
+        title: `Put Wall: ${strike} (${formatCompact(vol)} Vol)`
+      });
+    });
+
+    // Also include top OI resistances and supports
+    const oiResistances = data.intraday_levels.oi_resistances || [];
+    const oiSupports = data.intraday_levels.oi_supports || [];
+    oiResistances.slice(0, 2).forEach(r => {
+      const strike = r[0];
+      if (Math.abs(strike - currentPrice) > currentPrice * 0.15) return;
+      if (levels.some(l => l.price === strike)) return;
+      levels.push({
+        price: strike,
+        color: 'rgba(255, 69, 96, 0.7)',
+        lineWidth: 1.5,
+        lineStyle: SafeLineStyle.Dotted,
+        title: `OI Res: ${strike} (${formatCompact(r[1])} OI)`
+      });
+    });
+    oiSupports.slice(0, 2).forEach(s => {
+      const strike = s[0];
+      if (Math.abs(strike - currentPrice) > currentPrice * 0.15) return;
+      if (levels.some(l => l.price === strike)) return;
+      levels.push({
+        price: strike,
+        color: 'rgba(0, 227, 150, 0.7)',
+        lineWidth: 1.5,
+        lineStyle: SafeLineStyle.Dotted,
+        title: `OI Sup: ${strike} (${formatCompact(s[1])} OI)`
+      });
+    });
+  }
+
+  // 2. Update Master Widgets (Distance, Wall Status, Setup)
+  const setup = updateMasterWidgets(data, ohlcv, vwap, currentPrice, step, isLatest, ts);
+
+  // 3. Draw setup zones on chart (if toggled)
+  if (state.toggles.master.tradeSetup && setup) {
     levels.push({
       price: setup.stopLoss,
       color: '#FF4560',
@@ -2808,7 +2894,6 @@ function renderIntradayMasterChart(data) {
       lineStyle: SafeLineStyle.Solid,
       title: `STOP LOSS (INVALIDATION): ${setup.stopLoss.toFixed(1)}`
     });
-    // Entry Min/Max
     levels.push({
       price: setup.entryMin,
       color: '#FEB019',
@@ -2823,7 +2908,6 @@ function renderIntradayMasterChart(data) {
       lineStyle: SafeLineStyle.Dashed,
       title: `ENTRY ZONE MAX: ${setup.entryMax.toFixed(1)}`
     });
-    // Targets
     levels.push({
       price: setup.target1,
       color: '#00E396',
@@ -2842,10 +2926,12 @@ function renderIntradayMasterChart(data) {
 
   destroyChart('chart-intraday-master');
 
-  // If VWAP is toggled off, pass null vwap to createTradingViewChart
+  const datePart = ts ? ts.split('/')[0] : null;
   const activeVwap = state.toggles.master.vwap ? vwap : null;
 
   const chart = createTradingViewChart('chart-intraday-master', ohlcv, activeVwap, { levels, datePart });
+  chart._asset = state.currentAsset;
+  chart._tf = tf;
   state.charts['chart-intraday-master'] = chart;
 
   // Zoom visible viewport on load: Show last day of action for intraday (5m)
@@ -2951,18 +3037,16 @@ function switchChartTab(group, tabKey) {
   // Store active tab
   state.activeTabs[group] = tabKey;
 
-  // Re-render the chart using cached data
+  // Re-render the chart using cached data or realtime data
   const ts = state.manifest[state.currentIndex];
-  if (!ts) return;
-
-  const cacheKey = `${state.currentAsset}:${ts}`;
-  const data = state.cache[cacheKey];
+  const cacheKey = ts ? `${state.currentAsset}:${ts}` : null;
+  const data = (state.mode === 'realtime') ? (state.latestRealtimeData || (cacheKey ? state.cache[cacheKey] : null)) : (cacheKey ? state.cache[cacheKey] : null);
   if (!data) return;
 
   if (group === 'hybrid') {
-    renderHybridChart(data);
+    renderHybridChart(data, false);
   } else if (group === 'intraday-master') {
-    renderIntradayMasterChart(data);
+    renderIntradayMasterChart(data, false);
   }
 }
 

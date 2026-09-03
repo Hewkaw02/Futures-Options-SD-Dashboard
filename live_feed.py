@@ -118,24 +118,32 @@ def generate_live_snapshot():
                 data["bias"]["is_realtime"] = True
                 data["bias"]["live_sync_time"] = now_str
 
-            # 2. Update Intraday / Hybrid Live Bar
-            if "intraday_candles" in data and isinstance(data["intraday_candles"], list) and data["intraday_candles"]:
-                last_candle = dict(data["intraday_candles"][-1])
-                # Append or update current candle
-                live_candle = {
-                    "time": now_epoch_s,
-                    "open": last_candle.get("close", current_price),
-                    "high": max(last_candle.get("close", current_price), current_price),
-                    "low": min(last_candle.get("close", current_price), current_price),
-                    "close": current_price,
-                    "volume": 100.0
+            # 2. Update SD Bands dynamically around current live price (Eliminates Slippage Gap)
+            if "sd_bands" in data and isinstance(data["sd_bands"], dict):
+                iv = float(data.get("bias", {}).get("iv_raw") or 0.25)
+                sd1 = round(current_price * iv * math.sqrt(1.0 / 365.0), 2)
+                data["sd_bands"]["price"] = current_price
+                data["sd_bands"]["sd1"] = sd1
+                data["sd_bands"]["levels"] = {
+                    "+1SD": round(current_price + sd1, 2),
+                    "+2SD": round(current_price + sd1 * 2, 2),
+                    "+3SD": round(current_price + sd1 * 3, 2),
+                    "-1SD": round(current_price - sd1, 2),
+                    "-2SD": round(current_price - sd1 * 2, 2),
+                    "-3SD": round(current_price - sd1 * 3, 2),
                 }
-                # Keep last 150 bars
-                data["intraday_candles"].append(live_candle)
-                if len(data["intraday_candles"]) > 200:
-                    data["intraday_candles"] = data["intraday_candles"][-200:]
+                data["sd_step"] = sd1
 
-            # 3. Add live indicator metadata
+            # 3. Update active candlestick last bar with live tick (High/Low/Close)
+            if "candlesticks" in data and isinstance(data["candlesticks"], dict):
+                for tf_key, tf_obj in data["candlesticks"].items():
+                    if isinstance(tf_obj, dict) and "ohlcv" in tf_obj and tf_obj["ohlcv"]:
+                        last_bar = tf_obj["ohlcv"][-1]
+                        last_bar[2] = max(float(last_bar[2]), current_price)
+                        last_bar[3] = min(float(last_bar[3]), current_price)
+                        last_bar[4] = current_price
+
+            # 4. Add live indicator metadata
             data["realtime_metadata"] = {
                 "active": True,
                 "server_time_utc": now_str,
