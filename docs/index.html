@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="styles.css?v=2.9">
+  <link rel="stylesheet" href="styles.css?v=3.0">
 
   <!-- ApexCharts CDN -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
@@ -81,6 +81,15 @@
         </div>
       </div>
     </header>
+ 
+    <!-- Environment / Feed Status Banner (Dismissible & Dynamic) -->
+    <div class="feed-notification-banner" id="feed-notification-banner" style="display: none;">
+      <div class="feed-banner-content">
+        <span class="material-symbols-outlined banner-icon" id="feed-banner-icon">cloud_sync</span>
+        <span class="feed-banner-text" id="feed-banner-text"></span>
+      </div>
+      <button class="feed-banner-close" onclick="dismissFeedBanner()" title="Close notification" aria-label="Close notification">✕</button>
+    </div>
 
     <!-- ══════ BIAS CARD (Hero) ══════ -->
     <section class="dashboard-grid">
@@ -583,8 +592,11 @@
 
   </div>
 
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
   <!-- App Logic -->
-  <script src="app.js?v=2.9"></script>
+  <script src="app.js?v=3.0"></script>
 
 </body>
 

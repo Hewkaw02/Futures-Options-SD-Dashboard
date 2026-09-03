@@ -24636,7 +24636,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-03 04:12 UTC",
+      "timestamp": "2026-09-03 04:15 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -24644,7 +24644,7 @@
       "detail": "NQ trading at 27950.00 <= Put Wall 28000.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-03 04:12 UTC",
+      "timestamp": "2026-09-03 04:15 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -24656,26 +24656,26 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.22468628387880046,
-        "NQ": 0.24889246166440068
+        "ES": 0.22518955653536962,
+        "NQ": 0.24933689090326114
       },
       "ES": {
-        "GC": 0.22468628387880046,
+        "GC": 0.22518955653536962,
         "ES": 1.0,
         "NQ": 0.9126276123655863
       },
       "NQ": {
-        "GC": 0.24889246166440068,
+        "GC": 0.24933689090326114,
         "ES": 0.9126276123655863,
         "NQ": 1.0
       }
     },
     "macro_regime": "BALANCED_CORRELATION",
-    "gc_es_corr": 0.22,
+    "gc_es_corr": 0.23,
     "es_nq_corr": 0.91,
     "gc_nq_corr": 0.25,
     "divergence_detected": false,
-    "description": "Normal inter-market correlation (ES/NQ: 0.91, GC/ES: 0.22)."
+    "description": "Normal inter-market correlation (ES/NQ: 0.91, GC/ES: 0.23)."
   },
   "scenarios": {
     "base_price": 27950.0,

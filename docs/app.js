@@ -9,6 +9,7 @@ const state = {
   currentIndex: -1,        // index into manifest timestamps
   manifest: [],            // sorted array of "YYYY-MM-DD/HH00"
   mode: 'realtime',        // 'realtime' or 'history'
+  isRealtimeAvailable: null, // null = unchecked, true = active, false = offline (e.g. GitHub Pages)
   realtimeTimer: null,     // auto-polling timer for live ticks
   lastSyncTime: null,      // formatted time of latest sync
   cache: {},               // "GC:2026-05-08/1100" -> data
@@ -499,22 +500,153 @@ const ASSET_LABELS = {
   NQ: 'NQ — NASDAQ',
 };
 
+// ── Toast & Environment Banner Notifications ─────────────────
+function showToast(message, type = 'info', duration = 4000) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  const iconName = type === 'warning' ? 'warning' : (type === 'error' ? 'error' : 'info');
+  toast.innerHTML = `
+    <span class="material-symbols-outlined toast-icon">${iconName}</span>
+    <span class="toast-message">${message}</span>
+  `;
+
+  container.appendChild(toast);
+  if (typeof requestAnimationFrame !== 'undefined') {
+    requestAnimationFrame(() => toast.classList.add('visible'));
+  } else {
+    setTimeout(() => toast.classList.add('visible'), 16);
+  }
+
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+function showFeedNotificationBanner(icon, html, type = 'warning') {
+  const banner = document.getElementById('feed-notification-banner');
+  const bannerIcon = document.getElementById('feed-banner-icon');
+  const bannerText = document.getElementById('feed-banner-text');
+  if (!banner || !bannerText) return;
+
+  if (bannerIcon) bannerIcon.textContent = icon;
+  bannerText.innerHTML = html;
+  banner.className = `feed-notification-banner ${type}`;
+  banner.style.display = 'flex';
+}
+
+function dismissFeedBanner() {
+  const banner = document.getElementById('feed-notification-banner');
+  if (banner) banner.style.display = 'none';
+}
+
+// ── Real-Time Availability & GitHub Pages Environment Check ──
+async function checkRealtimeAvailability() {
+  try {
+    const res = await fetch(`data/live/status.json?_=${Date.now()}`);
+    if (!res.ok) {
+      // 404 Not Found on static hosts (GitHub Pages) where live daemon doesn't run
+      state.isRealtimeAvailable = false;
+      return false;
+    }
+    const status = await res.json();
+    const nowSec = Date.now() / 1000;
+    const lastUpdate = status.last_updated_epoch || 0;
+    const ageSeconds = nowSec - lastUpdate;
+    
+    // Consider feed alive if updated within the last 180 seconds (3 minutes)
+    if (ageSeconds > 180) {
+      console.warn(`[LiveCheck] Realtime feed is stale (${Math.round(ageSeconds)}s old).`);
+      state.isRealtimeAvailable = false;
+      return false;
+    }
+    
+    state.isRealtimeAvailable = true;
+    return true;
+  } catch (err) {
+    console.warn('[LiveCheck] Live feed offline (GitHub Pages static host):', err.message);
+    state.isRealtimeAvailable = false;
+    return false;
+  }
+}
+
+function updateRealtimeAvailabilityUI(isAvailable) {
+  const btnRealtime = document.getElementById('btn-mode-realtime');
+  const dot = btnRealtime ? btnRealtime.querySelector('.live-status-dot') : null;
+  const label = btnRealtime ? btnRealtime.querySelector('.mode-label') : null;
+
+  if (isAvailable) {
+    if (btnRealtime) {
+      btnRealtime.classList.remove('offline');
+      btnRealtime.title = 'Switch to Real-Time Streaming Mode (CME Live 5s)';
+    }
+    if (dot) dot.classList.remove('offline');
+    if (label) label.innerHTML = 'REAL-TIME';
+    dismissFeedBanner();
+  } else {
+    if (btnRealtime) {
+      btnRealtime.classList.add('offline');
+      btnRealtime.title = 'Offline on GitHub Pages (Run Docker locally for 5s real-time streaming)';
+    }
+    if (dot) dot.classList.add('offline');
+    if (label) label.innerHTML = 'REAL-TIME <span class="mode-tag-offline">OFFLINE</span>';
+
+    // Display clear, non-intrusive environment notice for GitHub Pages static users
+    showFeedNotificationBanner(
+      'cloud_sync',
+      '<strong>GitHub Pages Static Mode:</strong> Real-time streaming daemon is offline (requires local Docker daemon). Automatically viewing latest <strong>GitHub Actions</strong> automated snapshot archive.',
+      'warning'
+    );
+
+    if (state.mode === 'realtime') {
+      setDashboardMode('history');
+    }
+  }
+}
+
 // ── Bootstrap ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   setupKeyboardNav();
   await loadManifest();
-  // Default to Real-time Streaming Mode
-  setDashboardMode('realtime');
+
+  // Check if live streaming daemon is running (Local Docker vs GitHub Pages)
+  const isRealtime = await checkRealtimeAvailability();
+  updateRealtimeAvailabilityUI(isRealtime);
+
+  if (isRealtime) {
+    setDashboardMode('realtime');
+  } else {
+    // Graceful fallback to GitHub Actions snapshot archive
+    setDashboardMode('history');
+  }
 });
 
 // ── Mode Switcher (Real-Time vs History Archive) ─────────────
 function setDashboardMode(mode) {
-  state.mode = mode;
   const btnRealtime = document.getElementById('btn-mode-realtime');
   const btnHistory = document.getElementById('btn-mode-history');
   const timeNav = document.getElementById('time-nav');
 
   if (mode === 'realtime') {
+    if (state.isRealtimeAvailable === false) {
+      showToast(
+        '⚡ Live Feed is offline on GitHub Pages. Run "docker compose up" locally for real-time 5s streaming. Currently serving GitHub Actions archive.',
+        'warning',
+        5000
+      );
+      setDashboardMode('history');
+      return;
+    }
+
+    state.mode = 'realtime';
     if (btnRealtime) btnRealtime.classList.add('active');
     if (btnHistory) btnHistory.classList.remove('active');
     if (timeNav) timeNav.classList.add('realtime-mode');
@@ -523,6 +655,7 @@ function setDashboardMode(mode) {
     startRealtimePolling();
     loadRealtimeData(true);
   } else {
+    state.mode = 'history';
     if (btnRealtime) btnRealtime.classList.remove('active');
     if (btnHistory) btnHistory.classList.add('active');
     if (timeNav) timeNav.classList.remove('realtime-mode');
@@ -558,12 +691,16 @@ async function forceRefreshData() {
   const refreshIcon = document.getElementById('refresh-icon-symbol');
   if (refreshIcon) refreshIcon.classList.add('spinning');
 
+  // Re-check live daemon health on refresh
+  const isRealtime = await checkRealtimeAvailability();
+  updateRealtimeAvailabilityUI(isRealtime);
+
   // Clear caches for force refresh
   state.cache = {};
   state.fetchPromises = {};
 
   try {
-    if (state.mode === 'realtime') {
+    if (state.mode === 'realtime' && isRealtime) {
       await loadRealtimeData(true);
     } else {
       await loadManifest(true);
@@ -685,12 +822,11 @@ async function loadRealtimeData(showVisualLoading = false) {
 
     renderAll(data);
   } catch (err) {
-    // Graceful fallback to latest historical snapshot if live data is not yet produced
-    console.warn(`[Realtime] Fallback to latest snapshot for ${asset}:`, err);
-    if (state.manifest.length > 0) {
-      state.currentIndex = state.manifest.length - 1;
-      await loadCurrentData(false);
-    }
+    console.warn(`[Realtime] Live feed error for ${asset}:`, err);
+    state.isRealtimeAvailable = false;
+    updateRealtimeAvailabilityUI(false);
+    showToast(`⚡ Live CME feed is offline on GitHub Pages. Run "docker compose up" locally for real-time streaming. Switched to latest snapshot.`, 'warning', 5000);
+    setDashboardMode('history');
   } finally {
     if (showVisualLoading) showLoading(false);
   }

@@ -24470,7 +24470,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-03 04:11 UTC",
+      "timestamp": "2026-09-03 04:14 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -24478,7 +24478,7 @@
       "detail": "NQ trading at 29333.75 >= Call Wall 29250.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-03 04:11 UTC",
+      "timestamp": "2026-09-03 04:14 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -24486,7 +24486,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-03 04:11 UTC",
+      "timestamp": "2026-09-03 04:14 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -24498,26 +24498,26 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.22468628387880046,
-        "NQ": 0.24889246166440068
+        "ES": 0.22518955653536962,
+        "NQ": 0.24933689090326114
       },
       "ES": {
-        "GC": 0.22468628387880046,
+        "GC": 0.22518955653536962,
         "ES": 1.0,
         "NQ": 0.9126276123655863
       },
       "NQ": {
-        "GC": 0.24889246166440068,
+        "GC": 0.24933689090326114,
         "ES": 0.9126276123655863,
         "NQ": 1.0
       }
     },
     "macro_regime": "BALANCED_CORRELATION",
-    "gc_es_corr": 0.22,
+    "gc_es_corr": 0.23,
     "es_nq_corr": 0.91,
     "gc_nq_corr": 0.25,
     "divergence_detected": false,
-    "description": "Normal inter-market correlation (ES/NQ: 0.91, GC/ES: 0.22)."
+    "description": "Normal inter-market correlation (ES/NQ: 0.91, GC/ES: 0.23)."
   },
   "scenarios": {
     "base_price": 29333.75,
