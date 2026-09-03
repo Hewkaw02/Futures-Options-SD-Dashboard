@@ -33,7 +33,9 @@ services:
       - path: .env
         required: false
     environment:
-      - UPDATE_INTERVAL_SECONDS=${UPDATE_INTERVAL_SECONDS:-300}
+      - HOURLY_PIPELINE_INTERVAL_SECONDS=${HOURLY_PIPELINE_INTERVAL_SECONDS:-3600}
+      - UPDATE_INTERVAL_SECONDS=${UPDATE_INTERVAL_SECONDS:-3600}
+      - LIVE_SYNC_INTERVAL=${LIVE_SYNC_INTERVAL:-5}
       - PYTHONUNBUFFERED=1
     healthcheck:
       disable: true

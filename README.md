@@ -283,7 +283,12 @@ OK
 
 The platform is configured with a **Dual-Service Architecture** in `docker-compose.yml`:
 1. **`dashboard` (Web UI):** Serves the Decision Terminal on `http://localhost:8050`.
-2. **`updater` (Auto-Sync Daemon):** Runs in the background, automatically syncing latest market snapshots and updating Greeks/Flows every 5 minutes (configurable via `UPDATE_INTERVAL_SECONDS`).
+2. **`updater` (Auto-Sync Daemon - GitHub Actions Local Equivalent):**
+   - ⚡ **High-Frequency (Every 5s):** Runs `live_feed.py` to stream CME futures quotes and tick intraday candles in real time.
+   - 🕒 **Hourly Analysis Pipeline (Every 1 hour / 3600s):** Executes the **identical 2-step pipeline as GitHub Actions** (`.github/workflows/hourly_update.yml`):
+     1. `python run_all.py` (Full quantitative options analysis suite, writing to `trading_results/`)
+     2. `python update_dashboard.py` (Generates `docs/data/{date}/{hour}/` JSON snapshots and updates `docs/data/manifest.json`)
+   - Configurable via `HOURLY_PIPELINE_INTERVAL_SECONDS` (default: `3600`).
 
 ### Quick Start (PowerShell / Windows):
 ```powershell
@@ -293,16 +298,19 @@ The platform is configured with a **Dual-Service Architecture** in `docker-compo
 # 2. View Live Streaming Logs from both services
 .\docker-run.ps1 logs
 
-# 3. Run the Institutional Quant Terminal Demo inside Docker
-.\docker-run.ps1 demo
+# 3. Manually trigger the full GitHub Action analysis pipeline locally (run_all.py)
+.\docker-run.ps1 run-all
 
-# 4. Manually trigger an immediate update
+# 4. Manually trigger an immediate dashboard JSON update
 .\docker-run.ps1 update
 
-# 5. Run automated test suite inside Docker (67 tests)
+# 5. Run the Institutional Quant Terminal Demo inside Docker
+.\docker-run.ps1 demo
+
+# 6. Run automated test suite inside Docker (67 tests)
 .\docker-run.ps1 test
 
-# 6. Stop containers
+# 7. Stop containers
 .\docker-run.ps1 stop
 ```
 
