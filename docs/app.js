@@ -2870,29 +2870,11 @@ function renderIntradayVolChart(data) {
   }
   document.getElementById('intraday-vol-nodata').style.display = 'none';
 
-  const tf = state.selectedTf || '5m';
-  let viewMin = 0;
-  let viewMax = Infinity;
-  if (data.candlesticks && data.candlesticks[tf] && data.candlesticks[tf].ohlcv) {
-    const ohlcv = data.candlesticks[tf].ohlcv;
-    if (ohlcv.length > 0) {
-      const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
-      viewMin = Math.min(...prices);
-      viewMax = Math.max(...prices);
-    }
-  }
-
-  let profile = data.intraday_volume_profile;
-  // Smart Filter: Focus strikes exactly within the active chart view window (plus 30% margin) to prevent unreadable cluttered bars
-  if (viewMin > 0 && viewMax < Infinity && profile.length > 10) {
-    const margin = (viewMax - viewMin) * 0.3;
-    const minStrike = viewMin - margin;
-    const maxStrike = viewMax + margin;
-    const filtered = profile.filter(p => p.strike >= minStrike && p.strike <= maxStrike);
-    // Only apply if it keeps a reasonable number of strikes for context
-    if (filtered.length >= 5) {
-      profile = filtered;
-    }
+  let profile = data.intraday_volume_profile || [];
+  if (profile.length === 0) {
+    clearChart('chart-intraday-vol');
+    document.getElementById('intraday-vol-nodata').style.display = 'flex';
+    return;
   }
 
   const strikes = profile.map(p => p.strike);
