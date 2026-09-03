@@ -1,8 +1,8 @@
 """
 Background Dual-Speed Auto-Updater Daemon for Futures Options SD Dashboard
-1. High-frequency (every 5s): Runs live_feed.py to stream real-time CME futures quotes,
+1. High-frequency (every 5s, Threaded): Runs live_feed.py to stream real-time CME futures quotes,
    tick intraday candle bars, and refresh docs/data/live/{ASSET}_data.json.
-2. Hourly Analysis Pipeline (every 1 hour / 3600s, identical to GitHub Actions workflow):
+2. Hourly Analysis Pipeline (every 1 hour / 3600s, Threaded): Identical to GitHub Actions workflow:
    - Step 1: Runs run_all.py (All-in-one quant analysis suite, generating trading_results/)
    - Step 2: Runs update_dashboard.py (Converts trading_results/ to docs/data/ snapshots and updates manifest.json)
 """
@@ -11,6 +11,7 @@ import os
 import sys
 import time
 import signal
+import threading
 import subprocess
 from datetime import datetime
 
@@ -27,9 +28,23 @@ signal.signal(signal.SIGINT, sig_handler)
 def run_live_feed():
     try:
         cmd = [sys.executable, "live_feed.py"]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if res.returncode != 0 and res.stderr:
+            print(f"[LiveSync] Warn: {res.stderr.strip()[:100]}")
     except Exception as e:
         print(f"[LiveSync] Error running live feed: {e}")
+
+def live_worker(interval):
+    print(f"[Worker:Live] Started (polling every {interval}s)...")
+    sys.stdout.flush()
+    while running:
+        run_live_feed()
+        # Sleep in small increments for responsive shutdown
+        steps = max(1, int(interval * 10))
+        for _ in range(steps):
+            if not running:
+                break
+            time.sleep(0.1)
 
 def run_hourly_pipeline():
     """
@@ -74,44 +89,36 @@ def run_hourly_pipeline():
     print(f"{'='*65}\n")
     sys.stdout.flush()
 
+def hourly_worker(interval):
+    print(f"[Worker:Hourly] Started (interval: {interval}s / {int(interval//60)} mins)...")
+    sys.stdout.flush()
+    last_run = time.time()
+    while running:
+        time.sleep(1)
+        if time.time() - last_run >= interval:
+            run_hourly_pipeline()
+            last_run = time.time()
+
 def main():
-    live_interval = int(os.environ.get("LIVE_SYNC_INTERVAL", "5"))
-    # Default to 3600s (1 hour) matching GitHub Actions schedule: 0 * * * 1-5
-    hourly_interval = int(os.environ.get("HOURLY_PIPELINE_INTERVAL_SECONDS", os.environ.get("UPDATE_INTERVAL_SECONDS", "3600")))
+    live_interval = float(os.environ.get("LIVE_SYNC_INTERVAL", "5"))
+    hourly_interval = float(os.environ.get("HOURLY_PIPELINE_INTERVAL_SECONDS", os.environ.get("UPDATE_INTERVAL_SECONDS", "3600")))
 
     print("================================================================")
     print("  FUTURES OPTIONS DASHBOARD -- DUAL-SPEED AUTO-UPDATER DAEMON   ")
-    print(f"  Live Real-time Feed    : Every {live_interval}s")
-    print(f"  Hourly Pipeline Action : Every {hourly_interval}s ({hourly_interval//60} mins, 1 hour default)")
+    print(f"  Live Real-time Feed    : Every {live_interval}s (Threaded Worker)")
+    print(f"  Hourly Pipeline Action : Every {hourly_interval}s ({int(hourly_interval//60)} mins, 1 hour default)")
     print("  Pipeline Sequence      : 1) run_all.py -> 2) update_dashboard.py")
     print("================================================================")
     sys.stdout.flush()
 
-    # Initial live tick
-    run_live_feed()
+    t_live = threading.Thread(target=live_worker, args=(live_interval,), daemon=True)
+    t_hourly = threading.Thread(target=hourly_worker, args=(hourly_interval,), daemon=True)
 
-    # Initial quick dashboard JSON sync on startup to ensure existing data is mapped
-    try:
-        subprocess.run([sys.executable, "update_dashboard.py"])
-    except Exception as e:
-        print(f"[StartupSync] Error: {e}")
-
-    last_live = time.time()
-    last_hourly = time.time()
+    t_live.start()
+    t_hourly.start()
 
     while running:
-        time.sleep(1)
-        now = time.time()
-
-        # High-frequency real-time feed tick
-        if now - last_live >= live_interval:
-            run_live_feed()
-            last_live = now
-
-        # Hourly Analysis Pipeline (GitHub Action local equivalent)
-        if now - last_hourly >= hourly_interval:
-            run_hourly_pipeline()
-            last_hourly = now
+        time.sleep(0.5)
 
 if __name__ == "__main__":
     main()

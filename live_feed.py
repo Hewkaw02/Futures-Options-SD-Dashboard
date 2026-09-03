@@ -90,6 +90,7 @@ def generate_live_snapshot():
         "status": "LIVE_STREAMING",
         "last_sync": now_str,
         "epoch_ms": now_epoch_ms,
+        "last_updated_epoch": now_epoch_s,
         "baseline_snapshot": latest_ts,
         "prices": live_prices
     }

@@ -559,11 +559,11 @@ async function checkRealtimeAvailability() {
     }
     const status = await res.json();
     const nowSec = Date.now() / 1000;
-    const lastUpdate = status.last_updated_epoch || 0;
-    const ageSeconds = nowSec - lastUpdate;
+    const lastUpdate = status.last_updated_epoch || (status.epoch_ms ? status.epoch_ms / 1000 : 0);
+    const ageSeconds = Math.abs(nowSec - lastUpdate);
     
-    // Consider feed alive if updated within the last 180 seconds (3 minutes)
-    if (ageSeconds > 180) {
+    // Consider feed alive if updated within the last 300 seconds (5 minutes)
+    if (ageSeconds > 300) {
       console.warn(`[LiveCheck] Realtime feed is stale (${Math.round(ageSeconds)}s old).`);
       state.isRealtimeAvailable = false;
       return false;
