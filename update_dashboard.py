@@ -467,6 +467,11 @@ def get_multi_timeframe_candles(asset_symbol):
                     else:
                         vwap_list.append([ts, round(vwap_val, 2)])
 
+            # Seamless continuous bridging for intraday intervals
+            if conf["interval"] in ["5m", "15m", "1h"]:
+                int_ms = {"5m": 300000, "15m": 900000, "1h": 3600000}[conf["interval"]]
+                ohlcv, vwap_list = fill_intraday_gaps_with_vwap(ohlcv, vwap_list, int_ms)
+
             result[conf["tf"]] = {
                 "ohlcv": ohlcv,
                 "vwap": vwap_list if vwap_list else None
@@ -477,6 +482,48 @@ def get_multi_timeframe_candles(asset_symbol):
             
     YF_CACHE[asset_symbol] = result
     return result
+
+
+def fill_intraday_gaps_with_vwap(ohlcv, vwap_list, interval_ms, max_gap_to_fill_ms=12*3600*1000):
+    """Bridge intraday session gaps (e.g. Globex pause / yfinance freeze) seamlessly without touching weekend gaps."""
+    if not ohlcv or len(ohlcv) < 2:
+        return ohlcv, vwap_list
+        
+    vwap_map = dict(vwap_list) if vwap_list else {}
+    filled_ohlcv = [ohlcv[0]]
+    filled_vwap = [[ohlcv[0][0], vwap_map.get(ohlcv[0][0])]] if vwap_list else None
+    
+    for i in range(1, len(ohlcv)):
+        prev_bar = filled_ohlcv[-1]
+        curr_bar = ohlcv[i]
+        diff = curr_bar[0] - prev_bar[0]
+        
+        # Only bridge weekday session freezes (e.g. >1.5*interval and <=12h), skip weekend gaps (>12h)
+        if diff > interval_ms * 1.5 and diff <= max_gap_to_fill_ms:
+            num_missing = int(diff // interval_ms) - 1
+            start_price = prev_bar[4]
+            end_price = curr_bar[1]
+            prev_v = vwap_map.get(prev_bar[0], start_price) if vwap_list else None
+            curr_v = vwap_map.get(curr_bar[0], end_price) if vwap_list else None
+            
+            for step in range(1, num_missing + 1):
+                interp_ts = prev_bar[0] + step * interval_ms
+                alpha = step / (num_missing + 1)
+                p = round(start_price + (end_price - start_price) * alpha, 2)
+                # Seamless transition bar: flat high/low with zero volume
+                filled_ohlcv.append([interp_ts, p, p, p, p, 0.0])
+                if filled_vwap is not None:
+                    if prev_v is not None and curr_v is not None:
+                        v_interp = round(prev_v + (curr_v - prev_v) * alpha, 2)
+                        filled_vwap.append([interp_ts, v_interp])
+                    else:
+                        filled_vwap.append([interp_ts, None])
+                        
+        filled_ohlcv.append(curr_bar)
+        if filled_vwap is not None:
+            filled_vwap.append([curr_bar[0], vwap_map.get(curr_bar[0])])
+            
+    return filled_ohlcv, filled_vwap
 
 
 def get_intraday_data(date_str, hour_str, asset):

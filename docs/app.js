@@ -2243,41 +2243,6 @@ function createTradingViewChart(containerId, ohlcv, vwap, options = {}) {
     },
   });
 
-  // [NEW] Yellow Background highlight for Today's Active Intraday session (Day-bounded)
-  if (options.datePart && ohlcv.length > 0) {
-    const startOfDayMs = new Date(options.datePart + "T00:00:00Z").getTime();
-    const scanBars = ohlcv.filter(bar => bar[0] >= startOfDayMs);
-    
-    if (scanBars.length > 0) {
-      const prices = ohlcv.flatMap(c => [c[1], c[2], c[3], c[4]]);
-      const viewMax = Math.max(...prices);
-      const viewMin = Math.min(...prices);
-      
-      const todayBgSeries = chart.addAreaSeries({
-        priceScaleId: 'left',
-        topColor: 'rgba(254, 176, 25, 0.15)',
-        bottomColor: 'rgba(254, 176, 25, 0.01)',
-        lineColor: 'rgba(254, 176, 25, 0.18)',
-        lineWidth: 1.5,
-        priceLineVisible: false,
-        lastValueVisible: false,
-        crosshairMarkerVisible: false,
-        autoscaleInfoProvider: () => ({
-          priceRange: {
-            min: viewMin,
-            max: viewMax,
-          },
-        }),
-      });
-      
-      const backgroundData = scanBars.map(bar => ({
-        time: bar[0] / 1000,
-        value: viewMax * 1.1
-      }));
-      todayBgSeries.setData(backgroundData);
-    }
-  }
-
   // 4. Add Candlestick Series bound to the LEFT scale
   const candlestickSeries = chart.addCandlestickSeries({
     priceScaleId: 'left', // Bind candlestick to left scale!
@@ -2456,15 +2421,19 @@ function renderHybridChart(data, isLiveTick = false) {
   }
 
   // Filter candles if not the latest run to prevent future leak
-  const isLatest = state.currentIndex === state.manifest.length - 1;
+  const isRealtime = state.mode === 'realtime';
+  const isLatest = isRealtime || (state.currentIndex === state.manifest.length - 1);
   const ts = state.manifest[state.currentIndex];
   let ohlcv = candleData.ohlcv;
   let vwap = candleData.vwap;
 
-  if (!isLatest && ts) {
+  if (!isLatest && !isRealtime && ts) {
     const maxTs = getAnalysisTimestampMs(ts);
-    ohlcv = ohlcv.filter(c => c[0] <= maxTs);
-    vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+    const filtered = ohlcv.filter(c => c[0] <= maxTs);
+    if (filtered.length > 0) {
+      ohlcv = filtered;
+      vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+    }
   }
 
   if (ohlcv.length === 0) {
@@ -2606,17 +2575,13 @@ function renderHybridChart(data, isLiveTick = false) {
   chart._tf = tf;
   state.charts['chart-hybrid'] = chart;
 
-  // Zoom visible viewport on load: Show last day of action for intraday (15m)
-  if (tf === '15m' && ohlcv.length > 0 && chart) {
-    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
-    const analysisDateStr = getAnalysisDate().toLocaleDateString();
-    const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
-    chart.timeScale().setVisibleRange({
-      from: minTs / 1000,
-      to: latestTimestamp / 1000
+  // Zoom visible viewport on load: Show last 120 bars of active action seamlessly
+  if (chart && ohlcv.length > 0) {
+    const barsToShow = (tf === '5m' || tf === '15m') ? 120 : (tf === '1h' ? 80 : 50);
+    chart.timeScale().setVisibleLogicalRange({
+      from: Math.max(0, ohlcv.length - barsToShow),
+      to: ohlcv.length + 3
     });
-  } else if (chart) {
-    chart.timeScale().fitContent();
   }
 }
 
@@ -2745,15 +2710,19 @@ function renderIntradayMasterChart(data, isLiveTick = false) {
   }
 
   // Filter candles if not the latest run to prevent future leak
-  const isLatest = state.currentIndex === state.manifest.length - 1;
+  const isRealtime = state.mode === 'realtime';
+  const isLatest = isRealtime || (state.currentIndex === state.manifest.length - 1);
   const ts = state.manifest[state.currentIndex];
   let ohlcv = candleData.ohlcv;
   let vwap = candleData.vwap;
 
-  if (!isLatest && ts) {
+  if (!isLatest && !isRealtime && ts) {
     const maxTs = getAnalysisTimestampMs(ts);
-    ohlcv = ohlcv.filter(c => c[0] <= maxTs);
-    vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+    const filtered = ohlcv.filter(c => c[0] <= maxTs);
+    if (filtered.length > 0) {
+      ohlcv = filtered;
+      vwap = vwap ? vwap.filter(d => d[0] <= maxTs) : null;
+    }
   }
 
   if (ohlcv.length === 0) {
@@ -2934,17 +2903,13 @@ function renderIntradayMasterChart(data, isLiveTick = false) {
   chart._tf = tf;
   state.charts['chart-intraday-master'] = chart;
 
-  // Zoom visible viewport on load: Show last day of action for intraday (5m)
-  if (tf === '5m' && ohlcv.length > 0 && chart) {
-    const latestTimestamp = ohlcv[ohlcv.length - 1][0];
-    const analysisDateStr = getAnalysisDate().toLocaleDateString();
-    const minTs = getOneDayBackMinTs(ohlcv, analysisDateStr);
-    chart.timeScale().setVisibleRange({
-      from: minTs / 1000,
-      to: latestTimestamp / 1000
+  // Zoom visible viewport on load: Show last 120 bars of active action seamlessly
+  if (chart && ohlcv.length > 0) {
+    const barsToShow = (tf === '5m' || tf === '15m') ? 120 : (tf === '1h' ? 80 : 50);
+    chart.timeScale().setVisibleLogicalRange({
+      from: Math.max(0, ohlcv.length - barsToShow),
+      to: ohlcv.length + 3
     });
-  } else if (chart) {
-    chart.timeScale().fitContent();
   }
 }
 
