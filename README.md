@@ -105,28 +105,28 @@ Outputs the Top 3 pin candidates with exact percentage odds (e.g., Strike 4,150.
 
 ---
 
-## ⚡ Real-Time vs Snapshot Feature Matrix (ตารางแสดงฟีเจอร์ Real-Time vs Snapshot)
+## ⚡ Real-Time vs Snapshot Feature Matrix
 
-ระบบ Futures Options SD Dashboard ถูกออกแบบสถาปัตยกรรมแบบ **Dual-Mode** โดยแบ่งแยกชัดเจนระหว่างฟีเจอร์ที่ประมวลผลแบบ **Real-Time Streaming** (ความถี่สูง ทุก 4-5 วินาที) กับฟีเจอร์ที่ประมวลผลแบบ **Periodic Snapshot** (ความถี่รอบ 5 นาที - 1 ชั่วโมง ตามรอบการ Clearing ข้อมูลของสถาบัน):
+The Futures Options SD Dashboard is engineered with a **Dual-Mode Architecture**, cleanly decoupling high-frequency **Real-Time Streaming** features (refreshed every 4–5 seconds) from institutional **Periodic Snapshot** analytics (refreshed on 5-minute to 1-hour clearing cycles):
 
-| หมวดหมู่ / Feature | โหมดการทำงาน | แหล่งข้อมูล (Data Source) | ความถี่การอัปเดต (Frequency) | คำอธิบายพฤติกรรมในระบบ |
+| Category / Feature | Operating Mode | Data Source | Update Frequency | System Behavior & Mechanics |
 |---|:---:|---|:---:|---|
-| **Underlying Spot Price** (GC, ES, NQ) | ⚡ **Real-Time** | Yahoo Finance / CME Feed | **ทุก 4-5 วินาที** | ดึงราคาตลาดล่าสุดของสัญญาฟิวเจอร์ส พร้อมไฟกระพริบ Live Tick Flash |
-| **Intraday Master Candles** | ⚡ **Real-Time** | CME Live Ticks | **ทุก 4-5 วินาที** | แท่งเทียน 5M/15M แท่งล่าสุดขยับสด (High, Low, Close ขยับตามตลาดจริง) |
-| **Dynamic SD Bands (±1σ, ±2σ, ±3σ)** | ⚡ **Real-Time** | Dynamic Pricing Model | **ทุก 4-5 วินาที** | กรอบสถิติแปรผันตามราคาสปอตสดและ ATM Implied Volatility ทันที |
-| **Hero Bias & Wall Distances** | ⚡ **Real-Time** | Live Calculation | **ทุก 4-5 วินาที** | คำนวณระยะห่างจุด (pts) และ % ไปยัง Call Wall / Put Wall แบบสดๆ |
-| **Dealer Spot Shock Rebalancing** | ⚡ **Real-Time** | Live Stress Engine | **ทุก 4-5 วินาที** | คำนวณความต้องการซื้อ/ขาย Delta Rebalance ($\Delta\text{DEX}$) อิงตามราคาสด |
-| **Active Pinning Target Odds** | ⚡ **Real-Time** | Gaussian Gravity | **ทุก 4-5 วินาที** | คำนวณความน่าจะเป็นของราคาเป้าหมาย Pinning ตามตำแหน่งราคาสดปัจจุบัน |
-| **Open Interest (OI) & OI Walls** | 📜 **Snapshot** | CME Clearing / Broker Feed | **ทุก 5 นาที / รายวัน** | ข้อมูล OI ทางการจากตลาด CME ชำระบัญชีรอบปิดวัน แต่ละช่วงเวลาจะสะท้อนตาม Snapshot |
-| **4-Quadrant Matrix (ΔOI vs Vol)** | 📜 **Snapshot** | Delta OI Engine | **ทุก 5 นาที / รอบ Snapshot** | การวิเคราะห์ Institutional Accumulation/Liquidation ต้องใช้ผลต่าง $\Delta\text{OI}$ ระหว่าง Snapshot |
-| **Asymmetric GEX & Gamma Flip** | 📜 **Snapshot** | Black-76 Greeks Engine | **ทุก 5 นาที / รอบ Snapshot** | คำนวณ Gamma รวมของเจ้ามือตามสัญญาคงค้าง OI ล่าสุดในแต่ละ Strike |
-| **Vanna Rally & Charm Flow Matrix** | 📜 **Snapshot** | Second-Order Greeks | **ทุก 5 นาที / รอบ Snapshot** | ประมวลผลพื้นผิวความชันความผันผวน (IV Smile) และการสลายตัวของเวลาข้ามคืน |
-| **Monte Carlo 30D Envelope & ML Regime** | 📜 **Snapshot** | Quant AI Engine | **ทุก 5 นาที / รอบ Snapshot** | แบบจำลองการสุ่ม 10,000 Paths และ Machine Learning จัดหมวดหมู่ Market Regime |
+| **Underlying Spot Price** (GC, ES, NQ) | ⚡ **Real-Time** | Yahoo Finance / CME Live Feed | **Every 4–5s** | Streams live tick quotes with synchronized Live Tick Flash indicators. |
+| **Intraday Master Candles** | ⚡ **Real-Time** | CME Live Ticks | **Every 4–5s** | Active 5M/15M/1H candle mutates in-place (High, Low, Close tick with zero flicker). |
+| **Dynamic SD Bands (±1σ, ±2σ, ±3σ)** | ⚡ **Real-Time** | Dynamic Pricing Model | **Every 4–5s** | Recomputed on every tick centered on live spot using Black-76 ATM IV (zero slippage). |
+| **Hero Bias & Wall Distances** | ⚡ **Real-Time** | Live Calculation Engine | **Every 4–5s** | Computes real-time point and percentage distances to Call Wall and Put Wall. |
+| **Dealer Spot Shock Rebalancing** | ⚡ **Real-Time** | Live Stress Engine | **Every 4–5s** | Evaluates instant delta rebalancing pressure ($\Delta\text{DEX}$) against live underlying price. |
+| **Active Pinning Target Odds** | ⚡ **Real-Time** | Gaussian Gravity Model | **Every 4–5s** | Recalculates strike pinning probability distribution relative to live spot. |
+| **Open Interest (OI) & OI Walls** | 📜 **Snapshot** | CME Clearing / Broker Feed | **5m / Daily Clearing** | Official CME exchange open interest; updates per institutional snapshot interval. |
+| **4-Quadrant Matrix (ΔOI vs Vol)** | 📜 **Snapshot** | Delta OI Engine | **Snapshot Interval** | Institutional Accumulation/Liquidation requires $\Delta\text{OI}$ between discrete snapshots. |
+| **Asymmetric GEX & Gamma Flip** | 📜 **Snapshot** | Black-76 Greeks Engine | **Snapshot Interval** | Aggregates dealer gamma inventory across all active strikes from current snapshot chain. |
+| **Vanna Rally & Charm Flow Matrix** | 📜 **Snapshot** | Second-Order Greeks Engine | **Snapshot Interval** | Processes IV smile skew curvature and overnight time decay cross-derivatives. |
+| **Monte Carlo 30D Envelope & ML Regime** | 📜 **Snapshot** | Quant AI Engine | **Snapshot Interval** | 10,000 Geometric Brownian Motion paths and Softmax Machine Learning Regime classification. |
 
 > [!TIP]
-> **การสลับโหมดในหน้า Dashboard:**
-> * กดปุ่ม **`⚡ REAL-TIME`** ด้านบน: เปิดสตรีมมิ่งดึงราคาและแท่งเทียนสดทุก 4 วินาทีอัตโนมัติ (มีไฟกระพริบ `● REAL-TIME`)
-> * กดปุ่ม **`📜 HISTORY`** หรือกดลูกศร `◀` บนคีย์บอร์ด: หยุดการดึงสดชั่วคราวเพื่อย้อนเวลาดูข้อมูลโครงสร้าง Options ย้อนหลังได้ครบทั้ง 77 ช่วงเวลา
+> **Dashboard Mode Toggle:**
+> * Click **`⚡ REAL-TIME`** in the top navigation: Activates non-blocking live polling (every 4–5 seconds) with flashing `● REAL-TIME` beacon and 60fps in-place candle mutation.
+> * Click **`📜 HISTORY`** (or press keyboard `◀` / `▶` arrow keys): Suspends live polling to navigate through all historical snapshots and review past options market microstructure.
 
 ---
 
