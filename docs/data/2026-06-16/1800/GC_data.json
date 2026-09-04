@@ -2226,20 +2226,12 @@
     "1h": {
       "ohlcv": [
         [
-          1785880800000,
-          4133.8,
-          4142.1,
-          4132.1,
-          4132.5,
-          0.0
-        ],
-        [
           1785884400000,
           4132.8,
           4134.0,
           4121.6,
           4128.7,
-          3198.0
+          0.0
         ],
         [
           1785888000000,
@@ -6607,33 +6599,29 @@
           4482.3,
           4475.6,
           4477.2,
-          1749.0
+          1799.0
         ]
       ],
       "vwap": [
         [
-          1785880800000,
+          1785884400000,
           null
         ],
         [
-          1785884400000,
-          4128.1
-        ],
-        [
           1785888000000,
-          4130.26
+          4134.6
         ],
         [
           1785891600000,
-          4138.25
+          4144.82
         ],
         [
           1785895200000,
-          4160.1
+          4166.68
         ],
         [
           1785898800000,
-          4164.73
+          4170.83
         ],
         [
           1785902400000,
@@ -12421,7 +12409,7 @@
           4478.5,
           4475.6,
           4477.2,
-          350.0
+          400.0
         ]
       ],
       "vwap": [
@@ -25081,9 +25069,9 @@
           1788555300000,
           4478.1,
           4478.5,
-          4476.7,
+          4476.5,
           4477.2,
-          89.0
+          139.0
         ]
       ],
       "vwap": [
@@ -31723,7 +31711,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-04 21:13 UTC",
+      "timestamp": "2026-09-04 23:37 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -31731,7 +31719,7 @@
       "detail": "GC trading at 4360.00 >= Call Wall 4350.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-04 21:13 UTC",
+      "timestamp": "2026-09-04 23:37 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -31739,7 +31727,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-04 21:13 UTC",
+      "timestamp": "2026-09-04 23:37 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
