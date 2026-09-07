@@ -2036,8 +2036,8 @@
           4466.5,
           4481.3,
           4426.2,
-          4476.6,
-          70458.0
+          4471.1,
+          74314.0
         ]
       ],
       "vwap": null
@@ -25718,7 +25718,7 @@
           4466.5,
           4481.3,
           4426.2,
-          4476.6
+          4471.1
         ]
       }
     ]
@@ -26114,11 +26114,11 @@
   ],
   "vrp": {
     "iv_pct": 17.9,
-    "rv_pct": 24.74,
-    "vrp_pct": -6.84,
+    "rv_pct": 24.71,
+    "vrp_pct": -6.81,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (24.74%) > Implied Vol (17.9%). Option buyers favored."
+    "description": "Realized Vol (24.71%) > Implied Vol (17.9%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -1.52,
@@ -26186,7 +26186,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:56 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -26194,7 +26194,7 @@
       "detail": "GC trading at 4380.60 >= Call Wall 4350.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:56 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -26202,7 +26202,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:56 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26214,17 +26214,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31173504234833016,
-        "NQ": 0.2954455382944233
+        "ES": 0.3089331138508794,
+        "NQ": 0.29691609829410537
       },
       "ES": {
-        "GC": 0.31173504234833016,
+        "GC": 0.3089331138508794,
         "ES": 1.0,
-        "NQ": 0.9184370739232725
+        "NQ": 0.9171272831853753
       },
       "NQ": {
-        "GC": 0.2954455382944233,
-        "ES": 0.9184370739232725,
+        "GC": 0.29691609829410537,
+        "ES": 0.9171272831853753,
         "NQ": 1.0
       }
     },
@@ -26826,7 +26826,7 @@
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
     "prob_bull": 0.581,
-    "prob_bear": 0.351,
+    "prob_bear": 0.35,
     "prob_range": 0.069,
     "confidence_pct": 58,
     "description": "Prob(Bull)=58.1%. Bullish order flow and call skew dominance."

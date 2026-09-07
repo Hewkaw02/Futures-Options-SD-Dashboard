@@ -534,9 +534,9 @@
           1788739200000,
           7715.5,
           7728.5,
-          7703.5,
-          7722.0,
-          137293.0
+          7698.25,
+          7709.75,
+          146123.0
         ]
       ],
       "vwap": null
@@ -24192,8 +24192,8 @@
         "y": [
           7715.5,
           7728.5,
-          7703.5,
-          7722.0
+          7698.25,
+          7709.75
         ]
       }
     ]
@@ -24216,17 +24216,17 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 14.0,
-    "rv_pct": 9.45,
-    "vrp_pct": 4.55,
+    "rv_pct": 9.47,
+    "vrp_pct": 4.53,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (14.0%) > Realized Vol (9.45%). Net option sellers capture rich premium."
+    "description": "Implied Vol (14.0%) > Realized Vol (9.47%). Net option sellers capture rich premium."
   },
   "skew_dynamics": null,
   "order_flow": null,
   "alerts": [
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:56 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -24238,17 +24238,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31173504234833016,
-        "NQ": 0.2954455382944233
+        "ES": 0.3089331138508794,
+        "NQ": 0.29691609829410537
       },
       "ES": {
-        "GC": 0.31173504234833016,
+        "GC": 0.3089331138508794,
         "ES": 1.0,
-        "NQ": 0.9184370739232725
+        "NQ": 0.9171272831853753
       },
       "NQ": {
-        "GC": 0.2954455382944233,
-        "ES": 0.9184370739232725,
+        "GC": 0.29691609829410537,
+        "ES": 0.9171272831853753,
         "NQ": 1.0
       }
     },
@@ -24347,10 +24347,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.493,
-    "prob_bear": 0.211,
-    "prob_range": 0.295,
+    "prob_bull": 0.494,
+    "prob_bear": 0.212,
+    "prob_range": 0.294,
     "confidence_pct": 49,
-    "description": "Prob(Bull)=49.3%. Bullish order flow and call skew dominance."
+    "description": "Prob(Bull)=49.4%. Bullish order flow and call skew dominance."
   }
 }

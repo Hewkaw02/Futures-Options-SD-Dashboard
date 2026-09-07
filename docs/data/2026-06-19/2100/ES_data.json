@@ -534,9 +534,9 @@
           1788739200000,
           7715.5,
           7728.5,
-          7703.5,
-          7722.0,
-          137293.0
+          7698.25,
+          7709.75,
+          146123.0
         ]
       ],
       "vwap": null
@@ -24192,8 +24192,8 @@
         "y": [
           7715.5,
           7728.5,
-          7703.5,
-          7722.0
+          7698.25,
+          7709.75
         ]
       }
     ]
@@ -24216,11 +24216,11 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 7.9,
-    "rv_pct": 9.45,
-    "vrp_pct": -1.55,
+    "rv_pct": 9.47,
+    "vrp_pct": -1.57,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (7.9%) and RV (9.45%) are balanced (VRP: -1.6%)."
+    "description": "IV (7.9%) and RV (9.47%) are balanced (VRP: -1.6%)."
   },
   "skew_dynamics": null,
   "order_flow": null,
@@ -24229,17 +24229,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31173504234833016,
-        "NQ": 0.2954455382944233
+        "ES": 0.3089331138508794,
+        "NQ": 0.29691609829410537
       },
       "ES": {
-        "GC": 0.31173504234833016,
+        "GC": 0.3089331138508794,
         "ES": 1.0,
-        "NQ": 0.9184370739232725
+        "NQ": 0.9171272831853753
       },
       "NQ": {
-        "GC": 0.2954455382944233,
-        "ES": 0.9184370739232725,
+        "GC": 0.29691609829410537,
+        "ES": 0.9171272831853753,
         "NQ": 1.0
       }
     },
@@ -24339,9 +24339,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.375,
-    "prob_bear": 0.478,
-    "prob_range": 0.147,
+    "prob_bear": 0.479,
+    "prob_range": 0.146,
     "confidence_pct": 47,
-    "description": "Prob(Bear)=47.8%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=47.9%. Elevated put flow and downside hedging pressure."
   }
 }

@@ -1755,8 +1755,8 @@
           4466.5,
           4481.3,
           4426.2,
-          4476.6,
-          70458.0
+          4471.1,
+          74314.0
         ]
       ],
       "vwap": null
@@ -25437,7 +25437,7 @@
           4466.5,
           4481.3,
           4426.2,
-          4476.6
+          4471.1
         ]
       }
     ]
@@ -25908,11 +25908,11 @@
   ],
   "vrp": {
     "iv_pct": 40.5,
-    "rv_pct": 24.74,
-    "vrp_pct": 15.76,
+    "rv_pct": 24.71,
+    "vrp_pct": 15.79,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (40.5%) > Realized Vol (24.74%). Net option sellers capture rich premium."
+    "description": "Implied Vol (40.5%) > Realized Vol (24.71%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -11.49,
@@ -25980,7 +25980,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:55 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -25988,7 +25988,7 @@
       "detail": "GC trading at 4212.60 <= Put Wall 4275.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:55 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -25996,7 +25996,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:55 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26008,17 +26008,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31173504234833016,
-        "NQ": 0.2954455382944233
+        "ES": 0.3089331138508794,
+        "NQ": 0.29691609829410537
       },
       "ES": {
-        "GC": 0.31173504234833016,
+        "GC": 0.3089331138508794,
         "ES": 1.0,
-        "NQ": 0.9184370739232725
+        "NQ": 0.9171272831853753
       },
       "NQ": {
-        "GC": 0.2954455382944233,
-        "ES": 0.9184370739232725,
+        "GC": 0.29691609829410537,
+        "ES": 0.9171272831853753,
         "NQ": 1.0
       }
     },
@@ -26660,9 +26660,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.0,
-    "prob_bear": 0.827,
-    "prob_range": 0.173,
+    "prob_bear": 0.826,
+    "prob_range": 0.174,
     "confidence_pct": 82,
-    "description": "Prob(Bear)=82.7%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=82.6%. Elevated put flow and downside hedging pressure."
   }
 }

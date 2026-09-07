@@ -534,9 +534,9 @@
           1788739200000,
           7715.5,
           7728.5,
-          7703.5,
-          7722.0,
-          137293.0
+          7698.25,
+          7709.75,
+          146123.0
         ]
       ],
       "vwap": null
@@ -24192,8 +24192,8 @@
         "y": [
           7715.5,
           7728.5,
-          7703.5,
-          7722.0
+          7698.25,
+          7709.75
         ]
       }
     ]
@@ -24216,17 +24216,17 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 18.6,
-    "rv_pct": 9.45,
-    "vrp_pct": 9.15,
+    "rv_pct": 9.47,
+    "vrp_pct": 9.13,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (18.6%) > Realized Vol (9.45%). Net option sellers capture rich premium."
+    "description": "Implied Vol (18.6%) > Realized Vol (9.47%). Net option sellers capture rich premium."
   },
   "skew_dynamics": null,
   "order_flow": null,
   "alerts": [
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:56 UTC",
       "asset": "ES",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -24234,11 +24234,11 @@
       "detail": "ES trading at 7556.00 >= Call Wall 7550.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 21:55 UTC",
+      "timestamp": "2026-09-07 23:56 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_RICH",
-      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +9.2%)",
+      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +9.1%)",
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     }
   ],
@@ -24246,17 +24246,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31173504234833016,
-        "NQ": 0.2954455382944233
+        "ES": 0.3089331138508794,
+        "NQ": 0.29691609829410537
       },
       "ES": {
-        "GC": 0.31173504234833016,
+        "GC": 0.3089331138508794,
         "ES": 1.0,
-        "NQ": 0.9184370739232725
+        "NQ": 0.9171272831853753
       },
       "NQ": {
-        "GC": 0.2954455382944233,
-        "ES": 0.9184370739232725,
+        "GC": 0.29691609829410537,
+        "ES": 0.9171272831853753,
         "NQ": 1.0
       }
     },
@@ -24355,10 +24355,10 @@
   "ml_regime": {
     "regime": "GAMMA_PINNED_RANGE",
     "action_signal": "RANGE_MEAN_REVERSION",
-    "prob_bull": 0.357,
+    "prob_bull": 0.358,
     "prob_bear": 0.137,
-    "prob_range": 0.506,
+    "prob_range": 0.505,
     "confidence_pct": 50,
-    "description": "Prob(Range)=50.6%. Stable positive gamma dampening volatility."
+    "description": "Prob(Range)=50.5%. Stable positive gamma dampening volatility."
   }
 }
