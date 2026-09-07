@@ -31043,7 +31043,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 18:33 UTC",
+      "timestamp": "2026-09-07 21:55 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -31051,7 +31051,7 @@
       "detail": "NQ trading at 30396.50 <= Put Wall 30500.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-07 18:33 UTC",
+      "timestamp": "2026-09-07 21:55 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -31059,7 +31059,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 18:33 UTC",
+      "timestamp": "2026-09-07 21:55 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -31071,11 +31071,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },

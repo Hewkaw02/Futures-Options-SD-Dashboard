@@ -2069,7 +2069,7 @@
           4481.3,
           4426.2,
           4476.6,
-          70260.0
+          70458.0
         ]
       ],
       "vwap": null
@@ -26288,7 +26288,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 18:33 UTC",
+      "timestamp": "2026-09-07 21:55 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -26296,7 +26296,7 @@
       "detail": "GC trading at 4150.90 >= Call Wall 4150.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 18:33 UTC",
+      "timestamp": "2026-09-07 21:55 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -26304,7 +26304,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-07 18:33 UTC",
+      "timestamp": "2026-09-07 21:55 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26316,11 +26316,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
