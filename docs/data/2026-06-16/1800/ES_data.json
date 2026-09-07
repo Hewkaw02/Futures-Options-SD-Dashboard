@@ -3876,7 +3876,7 @@
           7728.5,
           7703.5,
           7722.0,
-          94879.0
+          137293.0
         ]
       ],
       "vwap": null
@@ -28316,7 +28316,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 13:11 UTC",
+      "timestamp": "2026-09-07 18:33 UTC",
       "asset": "ES",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -28324,7 +28324,7 @@
       "detail": "ES trading at 7604.00 >= Call Wall 7550.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 13:11 UTC",
+      "timestamp": "2026-09-07 18:33 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -28332,7 +28332,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 13:11 UTC",
+      "timestamp": "2026-09-07 18:33 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28344,11 +28344,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31173504234833016,
+        "ES": 0.3117350423483301,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.31173504234833016,
+        "GC": 0.3117350423483301,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
