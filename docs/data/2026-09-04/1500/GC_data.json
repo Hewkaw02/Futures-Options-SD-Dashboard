@@ -2373,9 +2373,9 @@
           1788739200000,
           4466.5,
           4481.3,
-          4430.4,
+          4426.2,
           4476.6,
-          27888.0
+          55717.0
         ]
       ],
       "vwap": null
@@ -26055,7 +26055,7 @@
         "y": [
           4466.5,
           4481.3,
-          4430.4,
+          4426.2,
           4476.6
         ]
       }
@@ -26567,11 +26567,11 @@
   ],
   "vrp": {
     "iv_pct": 20.3,
-    "rv_pct": 24.67,
-    "vrp_pct": -4.37,
+    "rv_pct": 24.74,
+    "vrp_pct": -4.44,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (24.67%) > Implied Vol (20.3%). Option buyers favored."
+    "description": "Realized Vol (24.74%) > Implied Vol (20.3%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 18.91,
@@ -26639,7 +26639,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -26647,7 +26647,7 @@
       "detail": "GC trading at 4483.80 <= Put Wall 4500.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -26655,7 +26655,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26667,11 +26667,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },

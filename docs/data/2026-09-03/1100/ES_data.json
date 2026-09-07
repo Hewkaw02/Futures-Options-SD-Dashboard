@@ -3974,10 +3974,10 @@
         [
           1788739200000,
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0,
-          40835.0
+          94879.0
         ]
       ],
       "vwap": null
@@ -27632,8 +27632,8 @@
         "x": "2026-09-07",
         "y": [
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0
         ]
       }
@@ -28320,11 +28320,11 @@
   ],
   "vrp": {
     "iv_pct": 10.73,
-    "rv_pct": 9.42,
-    "vrp_pct": 1.31,
+    "rv_pct": 9.45,
+    "vrp_pct": 1.28,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (10.73%) and RV (9.42%) are balanced (VRP: +1.3%)."
+    "description": "IV (10.73%) and RV (9.45%) are balanced (VRP: +1.3%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 2.49,
@@ -28392,7 +28392,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28404,11 +28404,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -29365,10 +29365,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.522,
-    "prob_bear": 0.099,
-    "prob_range": 0.379,
+    "prob_bull": 0.523,
+    "prob_bear": 0.1,
+    "prob_range": 0.377,
     "confidence_pct": 52,
-    "description": "Prob(Bull)=52.2%. Bullish order flow and call skew dominance."
+    "description": "Prob(Bull)=52.3%. Bullish order flow and call skew dominance."
   }
 }

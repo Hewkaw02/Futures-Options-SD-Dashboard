@@ -5854,10 +5854,10 @@
         [
           1788739200000,
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25,
-          36316.0
+          60435.0
         ]
       ],
       "vwap": null
@@ -29512,7 +29512,7 @@
         "x": "2026-09-07",
         "y": [
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25
         ]
@@ -30980,11 +30980,11 @@
   ],
   "vrp": {
     "iv_pct": 15.8,
-    "rv_pct": 16.03,
-    "vrp_pct": -0.23,
+    "rv_pct": 16.04,
+    "vrp_pct": -0.24,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (15.8%) and RV (16.03%) are balanced (VRP: -0.2%)."
+    "description": "IV (15.8%) and RV (16.04%) are balanced (VRP: -0.2%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -6.83,
@@ -31052,7 +31052,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -31060,7 +31060,7 @@
       "detail": "NQ trading at 30554.75 >= Call Wall 30500.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -31072,11 +31072,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -32730,7 +32730,7 @@
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.045,
     "prob_bear": 0.854,
-    "prob_range": 0.102,
+    "prob_range": 0.101,
     "confidence_pct": 85,
     "description": "Prob(Bear)=85.4%. Elevated put flow and downside hedging pressure."
   }

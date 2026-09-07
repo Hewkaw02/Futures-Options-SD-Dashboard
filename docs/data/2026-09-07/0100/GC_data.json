@@ -2272,9 +2272,9 @@
           1788739200000,
           4466.5,
           4481.3,
-          4430.4,
+          4426.2,
           4476.6,
-          27888.0
+          55717.0
         ]
       ],
       "vwap": null
@@ -25954,7 +25954,7 @@
         "y": [
           4466.5,
           4481.3,
-          4430.4,
+          4426.2,
           4476.6
         ]
       }
@@ -26446,11 +26446,11 @@
   ],
   "vrp": {
     "iv_pct": 21.7,
-    "rv_pct": 24.67,
-    "vrp_pct": -2.97,
-    "regime": "FAIR",
-    "signal": "NEUTRAL",
-    "description": "IV (21.7%) and RV (24.67%) are balanced (VRP: -3.0%)."
+    "rv_pct": 24.74,
+    "vrp_pct": -3.04,
+    "regime": "CHEAP",
+    "signal": "BUY_PREMIUM",
+    "description": "Realized Vol (24.74%) > Implied Vol (21.7%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 6.31,
@@ -26518,7 +26518,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -26526,7 +26526,7 @@
       "detail": "GC trading at 4476.60 <= Put Wall 4500.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26538,11 +26538,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -27224,10 +27224,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.954,
+    "prob_bull": 0.955,
     "prob_bear": 0.009,
-    "prob_range": 0.037,
+    "prob_range": 0.036,
     "confidence_pct": 95,
-    "description": "Prob(Bull)=95.4%. Bullish order flow and call skew dominance."
+    "description": "Prob(Bull)=95.5%. Bullish order flow and call skew dominance."
   }
 }

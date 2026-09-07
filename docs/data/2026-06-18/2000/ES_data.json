@@ -533,10 +533,10 @@
         [
           1788739200000,
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0,
-          40835.0
+          94879.0
         ]
       ],
       "vwap": null
@@ -24191,8 +24191,8 @@
         "x": "2026-09-07",
         "y": [
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0
         ]
       }
@@ -24216,21 +24216,21 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 31.9,
-    "rv_pct": 9.42,
-    "vrp_pct": 22.48,
+    "rv_pct": 9.45,
+    "vrp_pct": 22.45,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (31.9%) > Realized Vol (9.42%). Net option sellers capture rich premium."
+    "description": "Implied Vol (31.9%) > Realized Vol (9.45%). Net option sellers capture rich premium."
   },
   "skew_dynamics": null,
   "order_flow": null,
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_RICH",
-      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +22.5%)",
+      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +22.4%)",
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     }
   ],
@@ -24238,11 +24238,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -24349,8 +24349,8 @@
     "action_signal": "RANGE_MEAN_REVERSION",
     "prob_bull": 0.044,
     "prob_bear": 0.018,
-    "prob_range": 0.938,
+    "prob_range": 0.937,
     "confidence_pct": 93,
-    "description": "Prob(Range)=93.8%. Stable positive gamma dampening volatility."
+    "description": "Prob(Range)=93.7%. Stable positive gamma dampening volatility."
   }
 }

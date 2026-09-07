@@ -533,10 +533,10 @@
         [
           1788739200000,
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25,
-          36316.0
+          60435.0
         ]
       ],
       "vwap": null
@@ -24191,7 +24191,7 @@
         "x": "2026-09-07",
         "y": [
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25
         ]
@@ -24216,17 +24216,17 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 14.5,
-    "rv_pct": 16.03,
-    "vrp_pct": -1.53,
+    "rv_pct": 16.04,
+    "vrp_pct": -1.54,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (14.5%) and RV (16.03%) are balanced (VRP: -1.5%)."
+    "description": "IV (14.5%) and RV (16.04%) are balanced (VRP: -1.5%)."
   },
   "skew_dynamics": null,
   "order_flow": null,
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -24238,11 +24238,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },

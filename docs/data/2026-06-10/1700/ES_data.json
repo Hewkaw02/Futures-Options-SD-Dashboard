@@ -4458,10 +4458,10 @@
         [
           1788739200000,
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0,
-          40835.0
+          94879.0
         ]
       ],
       "vwap": null
@@ -28116,8 +28116,8 @@
         "x": "2026-09-07",
         "y": [
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0
         ]
       }
@@ -28924,11 +28924,11 @@
   ],
   "vrp": {
     "iv_pct": 28.2,
-    "rv_pct": 9.42,
-    "vrp_pct": 18.78,
+    "rv_pct": 9.45,
+    "vrp_pct": 18.75,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (28.2%) > Realized Vol (9.42%). Net option sellers capture rich premium."
+    "description": "Implied Vol (28.2%) > Realized Vol (9.45%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -6.08,
@@ -28996,7 +28996,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -29004,7 +29004,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -29016,11 +29016,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },

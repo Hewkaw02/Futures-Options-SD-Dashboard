@@ -3927,10 +3927,10 @@
         [
           1788739200000,
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0,
-          40835.0
+          94879.0
         ]
       ],
       "vwap": null
@@ -27585,8 +27585,8 @@
         "x": "2026-09-07",
         "y": [
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0
         ]
       }
@@ -28248,11 +28248,11 @@
   ],
   "vrp": {
     "iv_pct": 4.5,
-    "rv_pct": 9.42,
-    "vrp_pct": -4.92,
+    "rv_pct": 9.45,
+    "vrp_pct": -4.95,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (9.42%) > Implied Vol (4.5%). Option buyers favored."
+    "description": "Realized Vol (9.45%) > Implied Vol (4.5%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -10.31,
@@ -28320,7 +28320,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -28328,15 +28328,15 @@
       "detail": "ES trading at 7753.00 >= Call Wall 7750.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_CHEAP",
-      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -4.9%)",
+      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -5.0%)",
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28348,11 +28348,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },

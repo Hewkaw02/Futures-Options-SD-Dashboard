@@ -2127,9 +2127,9 @@
           1788739200000,
           4466.5,
           4481.3,
-          4430.4,
+          4426.2,
           4476.6,
-          27888.0
+          55717.0
         ]
       ],
       "vwap": null
@@ -25809,7 +25809,7 @@
         "y": [
           4466.5,
           4481.3,
-          4430.4,
+          4426.2,
           4476.6
         ]
       }
@@ -26261,11 +26261,11 @@
   ],
   "vrp": {
     "iv_pct": 22.9,
-    "rv_pct": 24.67,
-    "vrp_pct": -1.77,
+    "rv_pct": 24.74,
+    "vrp_pct": -1.84,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (22.9%) and RV (24.67%) are balanced (VRP: -1.8%)."
+    "description": "IV (22.9%) and RV (24.74%) are balanced (VRP: -1.8%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -6.67,
@@ -26333,7 +26333,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26345,11 +26345,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -27002,9 +27002,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.01,
-    "prob_bear": 0.934,
-    "prob_range": 0.056,
+    "prob_bear": 0.935,
+    "prob_range": 0.055,
     "confidence_pct": 93,
-    "description": "Prob(Bear)=93.4%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=93.5%. Elevated put flow and downside hedging pressure."
   }
 }

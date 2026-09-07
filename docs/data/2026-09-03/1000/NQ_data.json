@@ -5577,10 +5577,10 @@
         [
           1788739200000,
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25,
-          36316.0
+          60435.0
         ]
       ],
       "vwap": null
@@ -29235,7 +29235,7 @@
         "x": "2026-09-07",
         "y": [
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25
         ]
@@ -30448,11 +30448,11 @@
   ],
   "vrp": {
     "iv_pct": 21.9,
-    "rv_pct": 16.03,
-    "vrp_pct": 5.87,
+    "rv_pct": 16.04,
+    "vrp_pct": 5.86,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (21.9%) > Realized Vol (16.03%). Net option sellers capture rich premium."
+    "description": "Implied Vol (21.9%) > Realized Vol (16.04%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -5.69,
@@ -30520,7 +30520,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -30528,7 +30528,7 @@
       "detail": "NQ trading at 29147.00 <= Put Wall 29150.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -30536,7 +30536,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -30548,11 +30548,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -32096,7 +32096,7 @@
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.05,
     "prob_bear": 0.628,
-    "prob_range": 0.323,
+    "prob_range": 0.322,
     "confidence_pct": 62,
     "description": "Prob(Bear)=62.8%. Elevated put flow and downside hedging pressure."
   }

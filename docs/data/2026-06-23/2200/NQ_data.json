@@ -8031,10 +8031,10 @@
         [
           1788739200000,
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25,
-          36316.0
+          60435.0
         ]
       ],
       "vwap": null
@@ -31689,7 +31689,7 @@
         "x": "2026-09-07",
         "y": [
           29535.25,
-          29673.25,
+          29683.5,
           29530.5,
           29565.25
         ]
@@ -33377,11 +33377,11 @@
   ],
   "vrp": {
     "iv_pct": 49.5,
-    "rv_pct": 16.03,
-    "vrp_pct": 33.47,
+    "rv_pct": 16.04,
+    "vrp_pct": 33.46,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (49.5%) > Realized Vol (16.03%). Net option sellers capture rich premium."
+    "description": "Implied Vol (49.5%) > Realized Vol (16.04%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 23.71,
@@ -33449,7 +33449,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -33457,7 +33457,7 @@
       "detail": "NQ trading at 29752.00 >= Call Wall 29750.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -33465,7 +33465,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -33477,11 +33477,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },

@@ -4398,10 +4398,10 @@
         [
           1788739200000,
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0,
-          40835.0
+          94879.0
         ]
       ],
       "vwap": null
@@ -28056,8 +28056,8 @@
         "x": "2026-09-07",
         "y": [
           7715.5,
-          7723.75,
-          7709.75,
+          7728.5,
+          7703.5,
           7722.0
         ]
       }
@@ -28859,11 +28859,11 @@
   ],
   "vrp": {
     "iv_pct": 12.8,
-    "rv_pct": 9.42,
-    "vrp_pct": 3.38,
+    "rv_pct": 9.45,
+    "vrp_pct": 3.35,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (12.8%) > Realized Vol (9.42%). Net option sellers capture rich premium."
+    "description": "Implied Vol (12.8%) > Realized Vol (9.45%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -5.83,
@@ -28931,7 +28931,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 06:49 UTC",
+      "timestamp": "2026-09-07 13:11 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28943,11 +28943,11 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3117350423483301,
+        "ES": 0.31173504234833016,
         "NQ": 0.2954455382944233
       },
       "ES": {
-        "GC": 0.3117350423483301,
+        "GC": 0.31173504234833016,
         "ES": 1.0,
         "NQ": 0.9184370739232725
       },
@@ -29945,9 +29945,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.009,
-    "prob_bear": 0.903,
+    "prob_bear": 0.904,
     "prob_range": 0.087,
     "confidence_pct": 90,
-    "description": "Prob(Bear)=90.3%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=90.4%. Elevated put flow and downside hedging pressure."
   }
 }
