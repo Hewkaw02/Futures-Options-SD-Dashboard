@@ -1,12 +1,5 @@
 {
   "timestamps": [
-    "2026-06-10/0200",
-    "2026-06-10/0600",
-    "2026-06-10/0700",
-    "2026-06-10/1200",
-    "2026-06-10/1700",
-    "2026-06-10/2000",
-    "2026-06-10/2200",
     "2026-06-11/0200",
     "2026-06-11/0700",
     "2026-06-11/1200",
@@ -82,21 +75,22 @@
     "2026-09-07/1300",
     "2026-09-07/1800",
     "2026-09-07/2100",
-    "2026-09-07/2300"
+    "2026-09-07/2300",
+    "2026-09-08/0100"
   ],
-  "last_updated": "2026-09-07 23:56 UTC",
+  "last_updated": "2026-09-08 01:54 UTC",
   "assets": [
     "GC",
     "ES",
     "NQ"
   ],
   "quant_backtest_scorecard": {
-    "total_signals": 192,
-    "evaluated_signals": 143,
-    "overall_accuracy_pct": 26.6,
+    "total_signals": 177,
+    "evaluated_signals": 125,
+    "overall_accuracy_pct": 30.4,
     "bull_accuracy_pct": 44.2,
-    "bear_accuracy_pct": 16.5,
-    "profit_factor": 0.23,
-    "sharpe_ratio": -19.5
+    "bear_accuracy_pct": 20.5,
+    "profit_factor": 0.31,
+    "sharpe_ratio": -15.38
   }
 }

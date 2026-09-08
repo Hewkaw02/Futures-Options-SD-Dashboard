@@ -2073,10 +2073,10 @@
         [
           1788739200000,
           4466.5,
-          4481.3,
+          4482.5,
           4426.2,
-          4471.1,
-          74314.0
+          4478.7,
+          84067.0
         ]
       ],
       "vwap": null
@@ -25755,9 +25755,9 @@
         "x": "2026-09-07",
         "y": [
           4466.5,
-          4481.3,
+          4482.5,
           4426.2,
-          4471.1
+          4478.7
         ]
       }
     ]
@@ -26168,11 +26168,11 @@
   ],
   "vrp": {
     "iv_pct": 29.7,
-    "rv_pct": 24.71,
-    "vrp_pct": 4.99,
+    "rv_pct": 24.75,
+    "vrp_pct": 4.95,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (29.7%) > Realized Vol (24.71%). Net option sellers capture rich premium."
+    "description": "Implied Vol (29.7%) > Realized Vol (24.75%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -0.68,
@@ -26240,7 +26240,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 23:56 UTC",
+      "timestamp": "2026-09-08 01:54 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -26248,7 +26248,7 @@
       "detail": "GC trading at 4365.20 >= Call Wall 4350.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-07 23:56 UTC",
+      "timestamp": "2026-09-08 01:54 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -26256,7 +26256,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-07 23:56 UTC",
+      "timestamp": "2026-09-08 01:54 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26268,17 +26268,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3089331138508794,
-        "NQ": 0.29691609829410537
+        "ES": 0.30945022043247405,
+        "NQ": 0.3005827745739073
       },
       "ES": {
-        "GC": 0.3089331138508794,
+        "GC": 0.30945022043247405,
         "ES": 1.0,
-        "NQ": 0.9171272831853753
+        "NQ": 0.9153237884792129
       },
       "NQ": {
-        "GC": 0.29691609829410537,
-        "ES": 0.9171272831853753,
+        "GC": 0.3005827745739073,
+        "ES": 0.9153237884792129,
         "NQ": 1.0
       }
     },
@@ -26894,10 +26894,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.458,
-    "prob_bear": 0.123,
-    "prob_range": 0.419,
-    "confidence_pct": 45,
-    "description": "Prob(Bull)=45.8%. Bullish order flow and call skew dominance."
+    "prob_bull": 0.46,
+    "prob_bear": 0.124,
+    "prob_range": 0.417,
+    "confidence_pct": 46,
+    "description": "Prob(Bull)=46.0%. Bullish order flow and call skew dominance."
   }
 }

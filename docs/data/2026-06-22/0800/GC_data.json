@@ -2065,10 +2065,10 @@
         [
           1788739200000,
           4466.5,
-          4481.3,
+          4482.5,
           4426.2,
-          4471.1,
-          74314.0
+          4478.7,
+          84067.0
         ]
       ],
       "vwap": null
@@ -25747,9 +25747,9 @@
         "x": "2026-09-07",
         "y": [
           4466.5,
-          4481.3,
+          4482.5,
           4426.2,
-          4471.1
+          4478.7
         ]
       }
     ]
@@ -26205,11 +26205,11 @@
   ],
   "vrp": {
     "iv_pct": 27.5,
-    "rv_pct": 24.71,
-    "vrp_pct": 2.79,
+    "rv_pct": 24.75,
+    "vrp_pct": 2.75,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (27.5%) and RV (24.71%) are balanced (VRP: +2.8%)."
+    "description": "IV (27.5%) and RV (24.75%) are balanced (VRP: +2.8%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -4.44,
@@ -26277,7 +26277,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-07 23:56 UTC",
+      "timestamp": "2026-09-08 01:54 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26289,17 +26289,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.3089331138508794,
-        "NQ": 0.29691609829410537
+        "ES": 0.30945022043247405,
+        "NQ": 0.3005827745739073
       },
       "ES": {
-        "GC": 0.3089331138508794,
+        "GC": 0.30945022043247405,
         "ES": 1.0,
-        "NQ": 0.9171272831853753
+        "NQ": 0.9153237884792129
       },
       "NQ": {
-        "GC": 0.29691609829410537,
-        "ES": 0.9171272831853753,
+        "GC": 0.3005827745739073,
+        "ES": 0.9153237884792129,
         "NQ": 1.0
       }
     },
@@ -26926,9 +26926,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.154,
-    "prob_bear": 0.549,
-    "prob_range": 0.297,
-    "confidence_pct": 54,
-    "description": "Prob(Bear)=54.9%. Elevated put flow and downside hedging pressure."
+    "prob_bear": 0.551,
+    "prob_range": 0.295,
+    "confidence_pct": 55,
+    "description": "Prob(Bear)=55.1%. Elevated put flow and downside hedging pressure."
   }
 }
