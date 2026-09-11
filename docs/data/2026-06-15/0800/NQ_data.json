@@ -3643,20 +3643,12 @@
     "1h": {
       "ohlcv": [
         [
-          1786485600000,
-          29657.75,
-          29666.0,
-          29626.75,
-          29650.25,
-          0.0
-        ],
-        [
           1786489200000,
           29649.5,
           29663.0,
           29634.25,
           29662.25,
-          2053.0
+          0.0
         ],
         [
           1786492800000,
@@ -7781,28 +7773,24 @@
       ],
       "vwap": [
         [
-          1786485600000,
+          1786489200000,
           null
         ],
         [
-          1786489200000,
-          29653.17
-        ],
-        [
           1786492800000,
-          29655.77
+          29656.75
         ],
         [
           1786496400000,
-          29657.48
+          29658.38
         ],
         [
           1786500000000,
-          29663.16
+          29664.74
         ],
         [
           1786503600000,
-          29667.91
+          29669.87
         ],
         [
           1786507200000,
@@ -28480,7 +28468,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-11 21:31 UTC",
+      "timestamp": "2026-09-11 23:44 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -28488,7 +28476,7 @@
       "detail": "NQ trading at 30607.25 >= Call Wall 30500.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-11 21:31 UTC",
+      "timestamp": "2026-09-11 23:44 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -28496,7 +28484,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-09-11 21:31 UTC",
+      "timestamp": "2026-09-11 23:44 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
