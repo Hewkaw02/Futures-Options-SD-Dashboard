@@ -1,0 +1,14 @@
+==============================================================================================================
+                                  MASTER TRADING BIAS REPORT (ADVANCED v3.5)                                  
+                                        Date: 2026-09-23 | Time: 0212                                         
+==============================================================================================================
+  Asset    Price      Bias Conf%   IV%  PCR(V)  Skew%  Act%   GEX       Wall(R/S)  QualityScore                                                                                                                                                                                                                     QualityWarnings
+   Gold  4377.80 Mild BULL   17% 21.3%    0.93 -13.5% 11.6% VOLTL   4370.0/4425.0           0.0                                                                                                   Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).
+S&P 500  7831.75   NEUTRAL    0%  9.9%    0.84  +2.4% 25.3% VOLTL   7870.0/7790.0           0.0  Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [7890.0].
+ NASDAQ 31010.75 Mild BULL   17% 15.8%    0.52  +1.4% 41.2% VOLTL 31300.0/30900.0           0.0 Low Data Quality Alert: Only 0.0% of options have liquid spreads.; Zero Bid detected at 50 strikes (illiquid/deep OTM contracts).; High Flow Instability Warning: Daily volume exceeds 200% of open interest at strikes: [31150.0].
+==============================================================================================================
+Definitions:
+- Conf%: Signal alignment strength
+- Act%: Volume/OI Ratio (Participation)
+- GEX: Market Stability Regime
+==============================================================================================================
