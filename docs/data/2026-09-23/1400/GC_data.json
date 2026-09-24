@@ -1,7 +1,7 @@
 {
   "bias": {
-    "price": 4285.0,
-    "iv": "20.34%"
+    "price": 4306.7,
+    "iv": "20.45%"
   },
   "oi_walls": {
     "strikes": [
@@ -1785,8 +1785,8 @@
           4324.4,
           4338.0,
           4278.3,
-          4285.0,
-          111486.0
+          4306.7,
+          155409.0
         ]
       ],
       "vwap": null
@@ -1794,44 +1794,12 @@
     "1h": {
       "ohlcv": [
         [
-          1787583600000,
-          4727.8,
-          4737.0,
-          4696.5,
-          4706.0,
-          0.0
-        ],
-        [
-          1787587200000,
-          4706.0,
-          4719.6,
-          4697.9,
-          4701.9,
-          10523.0
-        ],
-        [
-          1787590800000,
-          4702.1,
-          4712.7,
-          4686.6,
-          4693.3,
-          15426.0
-        ],
-        [
-          1787594400000,
-          4693.0,
-          4699.0,
-          4681.2,
-          4693.0,
-          9639.0
-        ],
-        [
           1787598000000,
           4692.7,
           4712.1,
           4692.2,
           4707.5,
-          4546.0
+          0.0
         ],
         [
           1787601600000,
@@ -5940,64 +5908,80 @@
         [
           1790262000000,
           4288.3,
-          4290.7,
+          4295.1,
           4279.5,
-          4285.0,
-          6369.0
+          4291.3,
+          10409.0
+        ],
+        [
+          1790265600000,
+          4291.5,
+          4324.3,
+          4287.2,
+          4308.7,
+          18132.0
+        ],
+        [
+          1790269200000,
+          4308.0,
+          4313.0,
+          4293.2,
+          4300.1,
+          11268.0
+        ],
+        [
+          1790272800000,
+          4300.2,
+          4317.2,
+          4291.3,
+          4307.1,
+          8410.0
+        ],
+        [
+          1790276400000,
+          4307.2,
+          4310.9,
+          4302.2,
+          4306.7,
+          2089.0
         ]
       ],
       "vwap": [
         [
-          1787583600000,
+          1787598000000,
           null
         ],
         [
-          1787587200000,
-          4706.47
-        ],
-        [
-          1787590800000,
-          4701.16
-        ],
-        [
-          1787594400000,
-          4698.42
-        ],
-        [
-          1787598000000,
-          4699.05
-        ],
-        [
           1787601600000,
-          4699.75
+          4708.3
         ],
         [
           1787605200000,
-          4699.75
+          4708.3
         ],
         [
           1787608800000,
-          4699.75
+          4708.3
         ],
         [
           1787612400000,
-          4702.75
+          4722.46
         ],
         [
           1787616000000,
-          4708.52
+          4732.98
         ],
         [
           1787619600000,
-          4710.82
+          4729.38
         ],
         [
           1787623200000,
-          4707.39
+          4715.85
         ],
         [
           1787626800000,
-          4706.27
+          4712.78
         ],
         [
           1787630400000,
@@ -8021,7 +8005,23 @@
         ],
         [
           1790262000000,
-          4301.16
+          4300.84
+        ],
+        [
+          1790265600000,
+          4301.87
+        ],
+        [
+          1790269200000,
+          4301.89
+        ],
+        [
+          1790272800000,
+          4302.12
+        ],
+        [
+          1790276400000,
+          4302.19
         ]
       ]
     },
@@ -10894,9 +10894,137 @@
         [
           1790263800000,
           4285.4,
-          4285.9,
-          4284.1,
-          4285.0,
+          4290.5,
+          4281.5,
+          4289.9,
+          2053.0
+        ],
+        [
+          1790264700000,
+          4290.1,
+          4295.1,
+          4288.2,
+          4291.3,
+          1987.0
+        ],
+        [
+          1790265600000,
+          4291.5,
+          4294.4,
+          4287.2,
+          4294.0,
+          1540.0
+        ],
+        [
+          1790266500000,
+          4294.0,
+          4324.3,
+          4292.8,
+          4310.9,
+          10620.0
+        ],
+        [
+          1790267400000,
+          4311.2,
+          4320.7,
+          4305.4,
+          4309.6,
+          3845.0
+        ],
+        [
+          1790268300000,
+          4309.7,
+          4313.6,
+          4306.0,
+          4308.7,
+          2127.0
+        ],
+        [
+          1790269200000,
+          4308.0,
+          4313.0,
+          4301.5,
+          4305.9,
+          3270.0
+        ],
+        [
+          1790270100000,
+          4306.5,
+          4306.5,
+          4294.4,
+          4298.5,
+          4322.0
+        ],
+        [
+          1790271000000,
+          4298.5,
+          4302.7,
+          4293.4,
+          4294.2,
+          2129.0
+        ],
+        [
+          1790271900000,
+          4294.2,
+          4301.4,
+          4293.2,
+          4300.1,
+          1547.0
+        ],
+        [
+          1790272800000,
+          4300.2,
+          4305.0,
+          4291.3,
+          4304.8,
+          2857.0
+        ],
+        [
+          1790273700000,
+          4304.9,
+          4310.5,
+          4302.1,
+          4309.5,
+          1560.0
+        ],
+        [
+          1790274600000,
+          4309.6,
+          4317.2,
+          4302.8,
+          4306.7,
+          2793.0
+        ],
+        [
+          1790275500000,
+          4306.8,
+          4312.4,
+          4305.9,
+          4307.1,
+          1200.0
+        ],
+        [
+          1790276400000,
+          4307.2,
+          4308.0,
+          4302.2,
+          4302.5,
+          1043.0
+        ],
+        [
+          1790277300000,
+          4302.5,
+          4310.9,
+          4302.4,
+          4307.3,
+          1046.0
+        ],
+        [
+          1790278200000,
+          4307.4,
+          4307.9,
+          4306.3,
+          4306.7,
           0.0
         ]
       ],
@@ -12335,7 +12463,71 @@
         ],
         [
           1790263800000,
-          4301.46
+          4301.11
+        ],
+        [
+          1790264700000,
+          4300.89
+        ],
+        [
+          1790265600000,
+          4300.73
+        ],
+        [
+          1790266500000,
+          4301.67
+        ],
+        [
+          1790267400000,
+          4302.05
+        ],
+        [
+          1790268300000,
+          4302.21
+        ],
+        [
+          1790269200000,
+          4302.35
+        ],
+        [
+          1790270100000,
+          4302.25
+        ],
+        [
+          1790271000000,
+          4302.14
+        ],
+        [
+          1790271900000,
+          4302.09
+        ],
+        [
+          1790272800000,
+          4302.05
+        ],
+        [
+          1790273700000,
+          4302.12
+        ],
+        [
+          1790274600000,
+          4302.27
+        ],
+        [
+          1790275500000,
+          4302.33
+        ],
+        [
+          1790276400000,
+          4302.35
+        ],
+        [
+          1790277300000,
+          4302.39
+        ],
+        [
+          1790278200000,
+          4302.39
         ]
       ]
     },
@@ -20921,8 +21113,392 @@
           1790263800000,
           4285.4,
           4285.9,
-          4284.1,
-          4285.0,
+          4281.5,
+          4282.8,
+          701.0
+        ],
+        [
+          1790264100000,
+          4282.6,
+          4288.8,
+          4281.7,
+          4288.8,
+          810.0
+        ],
+        [
+          1790264400000,
+          4288.6,
+          4290.5,
+          4287.2,
+          4289.9,
+          542.0
+        ],
+        [
+          1790264700000,
+          4290.1,
+          4291.6,
+          4288.2,
+          4289.8,
+          919.0
+        ],
+        [
+          1790265000000,
+          4289.4,
+          4295.1,
+          4288.9,
+          4292.4,
+          620.0
+        ],
+        [
+          1790265300000,
+          4292.4,
+          4292.5,
+          4289.7,
+          4291.3,
+          448.0
+        ],
+        [
+          1790265600000,
+          4291.5,
+          4293.1,
+          4289.2,
+          4293.0,
+          352.0
+        ],
+        [
+          1790265900000,
+          4293.0,
+          4293.0,
+          4287.2,
+          4287.9,
+          535.0
+        ],
+        [
+          1790266200000,
+          4287.7,
+          4294.4,
+          4287.7,
+          4294.0,
+          653.0
+        ],
+        [
+          1790266500000,
+          4294.0,
+          4324.3,
+          4292.8,
+          4308.9,
+          7684.0
+        ],
+        [
+          1790266800000,
+          4310.0,
+          4316.8,
+          4306.4,
+          4311.6,
+          1891.0
+        ],
+        [
+          1790267100000,
+          4311.5,
+          4313.2,
+          4307.0,
+          4310.9,
+          1045.0
+        ],
+        [
+          1790267400000,
+          4311.2,
+          4313.2,
+          4305.4,
+          4308.8,
+          1304.0
+        ],
+        [
+          1790267700000,
+          4308.9,
+          4314.0,
+          4307.8,
+          4312.5,
+          998.0
+        ],
+        [
+          1790268000000,
+          4312.4,
+          4320.7,
+          4309.4,
+          4309.6,
+          1543.0
+        ],
+        [
+          1790268300000,
+          4309.7,
+          4312.6,
+          4307.9,
+          4310.3,
+          833.0
+        ],
+        [
+          1790268600000,
+          4310.9,
+          4313.6,
+          4306.0,
+          4308.0,
+          742.0
+        ],
+        [
+          1790268900000,
+          4307.9,
+          4311.3,
+          4307.9,
+          4308.7,
+          552.0
+        ],
+        [
+          1790269200000,
+          4308.0,
+          4313.0,
+          4303.8,
+          4307.1,
+          1704.0
+        ],
+        [
+          1790269500000,
+          4307.1,
+          4309.2,
+          4305.0,
+          4306.4,
+          450.0
+        ],
+        [
+          1790269800000,
+          4305.8,
+          4307.0,
+          4301.5,
+          4305.9,
+          1116.0
+        ],
+        [
+          1790270100000,
+          4306.5,
+          4306.5,
+          4297.5,
+          4297.6,
+          1216.0
+        ],
+        [
+          1790270400000,
+          4297.9,
+          4301.0,
+          4296.1,
+          4296.6,
+          1096.0
+        ],
+        [
+          1790270700000,
+          4296.5,
+          4298.7,
+          4294.4,
+          4298.5,
+          2010.0
+        ],
+        [
+          1790271000000,
+          4298.5,
+          4302.7,
+          4298.1,
+          4298.3,
+          838.0
+        ],
+        [
+          1790271300000,
+          4298.2,
+          4299.1,
+          4296.7,
+          4297.7,
+          551.0
+        ],
+        [
+          1790271600000,
+          4297.7,
+          4298.2,
+          4293.4,
+          4294.2,
+          740.0
+        ],
+        [
+          1790271900000,
+          4294.2,
+          4296.1,
+          4293.2,
+          4294.1,
+          525.0
+        ],
+        [
+          1790272200000,
+          4294.1,
+          4296.8,
+          4293.6,
+          4295.8,
+          490.0
+        ],
+        [
+          1790272500000,
+          4296.1,
+          4301.4,
+          4295.8,
+          4300.1,
+          532.0
+        ],
+        [
+          1790272800000,
+          4300.2,
+          4300.9,
+          4291.3,
+          4292.8,
+          1213.0
+        ],
+        [
+          1790273100000,
+          4292.6,
+          4298.3,
+          4292.4,
+          4297.1,
+          805.0
+        ],
+        [
+          1790273400000,
+          4297.5,
+          4305.0,
+          4297.5,
+          4304.8,
+          839.0
+        ],
+        [
+          1790273700000,
+          4304.9,
+          4307.2,
+          4303.2,
+          4304.0,
+          361.0
+        ],
+        [
+          1790274000000,
+          4304.4,
+          4304.9,
+          4302.1,
+          4304.2,
+          286.0
+        ],
+        [
+          1790274300000,
+          4304.1,
+          4310.5,
+          4303.7,
+          4309.5,
+          913.0
+        ],
+        [
+          1790274600000,
+          4309.6,
+          4312.1,
+          4305.5,
+          4305.5,
+          498.0
+        ],
+        [
+          1790274900000,
+          4305.8,
+          4317.2,
+          4302.8,
+          4312.7,
+          1856.0
+        ],
+        [
+          1790275200000,
+          4312.6,
+          4312.8,
+          4305.1,
+          4306.7,
+          439.0
+        ],
+        [
+          1790275500000,
+          4306.8,
+          4308.1,
+          4305.9,
+          4307.8,
+          329.0
+        ],
+        [
+          1790275800000,
+          4307.8,
+          4312.4,
+          4307.7,
+          4308.6,
+          523.0
+        ],
+        [
+          1790276100000,
+          4308.9,
+          4310.0,
+          4306.6,
+          4307.1,
+          348.0
+        ],
+        [
+          1790276400000,
+          4307.2,
+          4308.0,
+          4302.2,
+          4303.6,
+          693.0
+        ],
+        [
+          1790276700000,
+          4303.5,
+          4305.5,
+          4303.2,
+          4304.8,
+          136.0
+        ],
+        [
+          1790277000000,
+          4304.6,
+          4304.8,
+          4302.5,
+          4302.5,
+          214.0
+        ],
+        [
+          1790277300000,
+          4302.5,
+          4306.1,
+          4302.4,
+          4305.9,
+          505.0
+        ],
+        [
+          1790277600000,
+          4306.3,
+          4309.2,
+          4304.4,
+          4309.2,
+          282.0
+        ],
+        [
+          1790277900000,
+          4309.3,
+          4310.9,
+          4306.7,
+          4307.3,
+          259.0
+        ],
+        [
+          1790278200000,
+          4307.4,
+          4307.9,
+          4306.3,
+          4306.7,
           0.0
         ]
       ],
@@ -25217,7 +25793,199 @@
         ],
         [
           1790263800000,
-          4301.61
+          4301.45
+        ],
+        [
+          1790264100000,
+          4301.3
+        ],
+        [
+          1790264400000,
+          4301.23
+        ],
+        [
+          1790264700000,
+          4301.1
+        ],
+        [
+          1790265000000,
+          4301.04
+        ],
+        [
+          1790265300000,
+          4300.99
+        ],
+        [
+          1790265600000,
+          4300.95
+        ],
+        [
+          1790265900000,
+          4300.88
+        ],
+        [
+          1790266200000,
+          4300.81
+        ],
+        [
+          1790266500000,
+          4301.45
+        ],
+        [
+          1790266800000,
+          4301.65
+        ],
+        [
+          1790267100000,
+          4301.74
+        ],
+        [
+          1790267400000,
+          4301.84
+        ],
+        [
+          1790267700000,
+          4301.93
+        ],
+        [
+          1790268000000,
+          4302.1
+        ],
+        [
+          1790268300000,
+          4302.17
+        ],
+        [
+          1790268600000,
+          4302.22
+        ],
+        [
+          1790268900000,
+          4302.26
+        ],
+        [
+          1790269200000,
+          4302.35
+        ],
+        [
+          1790269500000,
+          4302.37
+        ],
+        [
+          1790269800000,
+          4302.39
+        ],
+        [
+          1790270100000,
+          4302.37
+        ],
+        [
+          1790270400000,
+          4302.33
+        ],
+        [
+          1790270700000,
+          4302.24
+        ],
+        [
+          1790271000000,
+          4302.22
+        ],
+        [
+          1790271300000,
+          4302.2
+        ],
+        [
+          1790271600000,
+          4302.15
+        ],
+        [
+          1790271900000,
+          4302.12
+        ],
+        [
+          1790272200000,
+          4302.09
+        ],
+        [
+          1790272500000,
+          4302.07
+        ],
+        [
+          1790272800000,
+          4302.0
+        ],
+        [
+          1790273100000,
+          4301.96
+        ],
+        [
+          1790273400000,
+          4301.96
+        ],
+        [
+          1790273700000,
+          4301.97
+        ],
+        [
+          1790274000000,
+          4301.97
+        ],
+        [
+          1790274300000,
+          4302.02
+        ],
+        [
+          1790274600000,
+          4302.04
+        ],
+        [
+          1790274900000,
+          4302.18
+        ],
+        [
+          1790275200000,
+          4302.2
+        ],
+        [
+          1790275500000,
+          4302.21
+        ],
+        [
+          1790275800000,
+          4302.24
+        ],
+        [
+          1790276100000,
+          4302.26
+        ],
+        [
+          1790276400000,
+          4302.27
+        ],
+        [
+          1790276700000,
+          4302.28
+        ],
+        [
+          1790277000000,
+          4302.28
+        ],
+        [
+          1790277300000,
+          4302.29
+        ],
+        [
+          1790277600000,
+          4302.3
+        ],
+        [
+          1790277900000,
+          4302.31
+        ],
+        [
+          1790278200000,
+          4302.31
         ]
       ]
     }
@@ -25873,25 +26641,25 @@
           4324.4,
           4338.0,
           4278.3,
-          4285.0
+          4306.7
         ]
       }
     ]
   },
   "sd_bands": {
-    "price": 4285.0,
-    "sd1": 45.63,
-    "daily_vol_pct": 1.06,
+    "price": 4306.7,
+    "sd1": 46.1,
+    "daily_vol_pct": 1.07,
     "levels": {
-      "+1SD": 4330.63,
-      "+2SD": 4376.25,
-      "+3SD": 4421.88,
-      "-1SD": 4239.37,
-      "-2SD": 4193.75,
-      "-3SD": 4148.12
+      "+1SD": 4352.8,
+      "+2SD": 4398.9,
+      "+3SD": 4445.0,
+      "-1SD": 4260.6,
+      "-2SD": 4214.5,
+      "-3SD": 4168.4
     }
   },
-  "sd_step": 45.625437655852444,
+  "sd_step": 46.10055095700838,
   "intraday_levels": {
     "oi_resistances": [
       [
@@ -26358,19 +27126,19 @@
     }
   ],
   "vrp": {
-    "iv_pct": 20.34,
-    "rv_pct": 31.11,
-    "vrp_pct": -10.77,
+    "iv_pct": 20.45,
+    "rv_pct": 31.19,
+    "vrp_pct": -10.74,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (31.11%) > Implied Vol (20.34%). Option buyers favored."
+    "description": "Realized Vol (31.19%) > Implied Vol (20.45%). Option buyers favored."
   },
   "skew_dynamics": {
-    "risk_reversal_25d": -1.2,
-    "butterfly_25d": 15.89,
-    "call_25d_iv": 35.63,
-    "put_25d_iv": 36.83,
-    "skew_regime": "PUT_SKEW (Bearish Hedging / Fear)"
+    "risk_reversal_25d": 11.52,
+    "butterfly_25d": 16.27,
+    "call_25d_iv": 42.49,
+    "put_25d_iv": 30.96,
+    "skew_regime": "CALL_SKEW (Bullish Speculation)"
   },
   "order_flow": {
     "imbalance": {
@@ -26431,15 +27199,15 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-24 15:40 UTC",
+      "timestamp": "2026-09-24 19:41 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
-      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -10.8%)",
+      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -10.7%)",
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-24 15:40 UTC",
+      "timestamp": "2026-09-24 19:41 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -26451,107 +27219,107 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.2865378659340126,
-        "NQ": 0.22710017776526994
+        "ES": 0.2775860432837832,
+        "NQ": 0.21687762252320572
       },
       "ES": {
-        "GC": 0.2865378659340126,
+        "GC": 0.2775860432837832,
         "ES": 1.0,
-        "NQ": 0.9215704242623698
+        "NQ": 0.9198023262334184
       },
       "NQ": {
-        "GC": 0.22710017776526994,
-        "ES": 0.9215704242623698,
+        "GC": 0.21687762252320572,
+        "ES": 0.9198023262334184,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.29,
+    "gc_es_corr": 0.28,
     "es_nq_corr": 0.92,
-    "gc_nq_corr": 0.23,
+    "gc_nq_corr": 0.22,
     "divergence_detected": false,
     "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
   },
   "scenarios": {
-    "base_price": 4285.0,
-    "base_gex": -42680260.15,
-    "base_dex": 832838629.56,
+    "base_price": 4306.7,
+    "base_gex": -36307287.9,
+    "base_dex": 811934591.3,
     "scenarios": [
       {
         "shift_pct": -3.0,
-        "hypo_price": 4156.45,
-        "total_gex": -40210500.99,
-        "total_dex": 958643974.05,
+        "hypo_price": 4177.5,
+        "total_gex": -44774355.04,
+        "total_dex": 941130007.87,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": -17311.83,
-        "dealer_delta_hedge_demand": 125805344.49
+        "vanna_exposure": 2119.75,
+        "dealer_delta_hedge_demand": 129195416.57
       },
       {
         "shift_pct": -2.0,
-        "hypo_price": 4199.3,
-        "total_gex": -48045970.97,
-        "total_dex": 921755325.5,
+        "hypo_price": 4220.57,
+        "total_gex": -49812339.8,
+        "total_dex": 900285108.48,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": 29195.7,
-        "dealer_delta_hedge_demand": 88916695.94
+        "vanna_exposure": 61291.74,
+        "dealer_delta_hedge_demand": 88350517.18
       },
       {
         "shift_pct": -1.0,
-        "hypo_price": 4242.15,
-        "total_gex": -49491354.72,
-        "total_dex": 878191450.13,
+        "hypo_price": 4263.63,
+        "total_gex": -48347529.25,
+        "total_dex": 851486159.57,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": 97457.76,
-        "dealer_delta_hedge_demand": 45352820.57
+        "vanna_exposure": 134342.15,
+        "dealer_delta_hedge_demand": 39551568.27
       },
       {
         "shift_pct": 0.0,
-        "hypo_price": 4285.0,
-        "total_gex": -42680260.15,
-        "total_dex": 832838629.56,
+        "hypo_price": 4306.7,
+        "total_gex": -36307287.9,
+        "total_dex": 811934591.3,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": 168633.42,
+        "vanna_exposure": 196737.12,
         "dealer_delta_hedge_demand": -0.0
       },
       {
         "shift_pct": 1.0,
-        "hypo_price": 4327.85,
-        "total_gex": -36353096.06,
-        "total_dex": 767335421.24,
+        "hypo_price": 4349.77,
+        "total_gex": -28921918.88,
+        "total_dex": 739233509.37,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": 216191.1,
-        "dealer_delta_hedge_demand": -65503208.32
+        "vanna_exposure": 229422.17,
+        "dealer_delta_hedge_demand": -72701081.93
       },
       {
         "shift_pct": 2.0,
-        "hypo_price": 4370.7,
-        "total_gex": -53056486.35,
-        "total_dex": 571901799.13,
+        "hypo_price": 4392.83,
+        "total_gex": -57116472.84,
+        "total_dex": 458165555.15,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": 236922.84,
-        "dealer_delta_hedge_demand": -260936830.43
+        "vanna_exposure": 243381.28,
+        "dealer_delta_hedge_demand": -353769036.15
       },
       {
         "shift_pct": 3.0,
-        "hypo_price": 4413.55,
-        "total_gex": -60714707.64,
-        "total_dex": 332552269.2,
+        "hypo_price": 4435.9,
+        "total_gex": -56198218.29,
+        "total_dex": 237829855.03,
         "gex_regime": "VOLATILE (Negative Gamma)",
-        "vanna_exposure": 242028.71,
-        "dealer_delta_hedge_demand": -500286360.36
+        "vanna_exposure": 233801.09,
+        "dealer_delta_hedge_demand": -574104736.27
       }
     ],
     "vanna_rally_scenarios": [
       {
         "iv_shift_pct": -5.0,
-        "dealer_rebalance_usd": -40789616.53,
-        "dealer_rebalance_contracts": -95.2,
+        "dealer_rebalance_usd": -48571023.89,
+        "dealer_rebalance_contracts": -112.8,
         "vanna_rally_direction": "SELL_UNDERLYING"
       },
       {
         "iv_shift_pct": -2.5,
-        "dealer_rebalance_usd": -19154723.64,
-        "dealer_rebalance_contracts": -44.7,
+        "dealer_rebalance_usd": -22619936.26,
+        "dealer_rebalance_contracts": -52.5,
         "vanna_rally_direction": "SELL_UNDERLYING"
       },
       {
@@ -26562,27 +27330,27 @@
       },
       {
         "iv_shift_pct": 2.5,
-        "dealer_rebalance_usd": 17099836.96,
-        "dealer_rebalance_contracts": 39.9,
+        "dealer_rebalance_usd": 19927906.61,
+        "dealer_rebalance_contracts": 46.3,
         "vanna_rally_direction": "BUY_UNDERLYING (Vanna Rally)"
       },
       {
         "iv_shift_pct": 5.0,
-        "dealer_rebalance_usd": 32478500.62,
-        "dealer_rebalance_contracts": 75.8,
+        "dealer_rebalance_usd": 37646641.6,
+        "dealer_rebalance_contracts": 87.4,
         "vanna_rally_direction": "BUY_UNDERLYING (Vanna Rally)"
       }
     ],
     "gex_cliff_risk": true
   },
   "pin_risk": {
-    "pin_score": 9.4,
-    "gamma_concentration_pct": 21.1,
+    "pin_score": 7.9,
+    "gamma_concentration_pct": 17.6,
     "pinning_zone": [
-      4263.6,
-      4306.4
+      4285.2,
+      4328.2
     ],
-    "pin_target_strike": 4285.0,
+    "pin_target_strike": 4306.7,
     "pin_magnet_active": false,
     "description": "Low pin risk (DTE 5.0d). Market is free-floating away from expiry compression.",
     "pin_probabilities": [
@@ -26594,12 +27362,12 @@
       {
         "strike": 4120.0,
         "open_interest": 8,
-        "probability_pct": 0.09
+        "probability_pct": 0.08
       },
       {
         "strike": 4125.0,
         "open_interest": 25,
-        "probability_pct": 0.28
+        "probability_pct": 0.27
       },
       {
         "strike": 4135.0,
@@ -26619,12 +27387,12 @@
       {
         "strike": 4150.0,
         "open_interest": 63,
-        "probability_pct": 0.94
+        "probability_pct": 0.86
       },
       {
         "strike": 4155.0,
         "open_interest": 14,
-        "probability_pct": 0.19
+        "probability_pct": 0.18
       },
       {
         "strike": 4160.0,
@@ -26639,7 +27407,7 @@
       {
         "strike": 4175.0,
         "open_interest": 17,
-        "probability_pct": 0.27
+        "probability_pct": 0.25
       },
       {
         "strike": 4180.0,
@@ -26649,12 +27417,12 @@
       {
         "strike": 4185.0,
         "open_interest": 18,
-        "probability_pct": 0.31
+        "probability_pct": 0.29
       },
       {
         "strike": 4190.0,
         "open_interest": 17,
-        "probability_pct": 0.31
+        "probability_pct": 0.28
       },
       {
         "strike": 4195.0,
@@ -26664,37 +27432,37 @@
       {
         "strike": 4200.0,
         "open_interest": 651,
-        "probability_pct": 12.98
+        "probability_pct": 11.92
       },
       {
         "strike": 4205.0,
         "open_interest": 14,
-        "probability_pct": 0.29
+        "probability_pct": 0.27
       },
       {
         "strike": 4210.0,
         "open_interest": 9,
-        "probability_pct": 0.2
+        "probability_pct": 0.18
       },
       {
         "strike": 4215.0,
         "open_interest": 5,
-        "probability_pct": 0.12
+        "probability_pct": 0.11
       },
       {
         "strike": 4220.0,
         "open_interest": 7,
-        "probability_pct": 0.17
+        "probability_pct": 0.16
       },
       {
         "strike": 4225.0,
         "open_interest": 75,
-        "probability_pct": 1.85
+        "probability_pct": 1.69
       },
       {
         "strike": 4230.0,
         "open_interest": 21,
-        "probability_pct": 0.53
+        "probability_pct": 0.48
       },
       {
         "strike": 4235.0,
@@ -26704,57 +27472,57 @@
       {
         "strike": 4240.0,
         "open_interest": 20,
-        "probability_pct": 0.53
+        "probability_pct": 0.49
       },
       {
         "strike": 4245.0,
         "open_interest": 15,
-        "probability_pct": 0.42
+        "probability_pct": 0.39
       },
       {
         "strike": 4250.0,
         "open_interest": 444,
-        "probability_pct": 13.75
+        "probability_pct": 12.68
       },
       {
         "strike": 4255.0,
         "open_interest": 5,
-        "probability_pct": 0.15
+        "probability_pct": 0.14
       },
       {
         "strike": 4260.0,
         "open_interest": 17,
-        "probability_pct": 0.56
+        "probability_pct": 0.52
       },
       {
         "strike": 4265.0,
         "open_interest": 13,
-        "probability_pct": 0.42
+        "probability_pct": 0.39
       },
       {
         "strike": 4270.0,
         "open_interest": 11,
-        "probability_pct": 0.36
+        "probability_pct": 0.35
       },
       {
         "strike": 4275.0,
         "open_interest": 45,
-        "probability_pct": 1.53
+        "probability_pct": 1.46
       },
       {
         "strike": 4280.0,
         "open_interest": 15,
-        "probability_pct": 0.52
+        "probability_pct": 0.5
       },
       {
         "strike": 4285.0,
         "open_interest": 101,
-        "probability_pct": 3.52
+        "probability_pct": 3.43
       },
       {
         "strike": 4290.0,
         "open_interest": 29,
-        "probability_pct": 1.02
+        "probability_pct": 1.0
       },
       {
         "strike": 4295.0,
@@ -26764,132 +27532,132 @@
       {
         "strike": 4300.0,
         "open_interest": 124,
-        "probability_pct": 4.38
+        "probability_pct": 4.41
       },
       {
         "strike": 4305.0,
         "open_interest": 12,
-        "probability_pct": 0.42
+        "probability_pct": 0.43
       },
       {
         "strike": 4310.0,
         "open_interest": 13,
-        "probability_pct": 0.44
+        "probability_pct": 0.46
       },
       {
         "strike": 4315.0,
         "open_interest": 62,
-        "probability_pct": 2.13
+        "probability_pct": 2.21
       },
       {
         "strike": 4320.0,
         "open_interest": 30,
-        "probability_pct": 0.95
+        "probability_pct": 0.99
       },
       {
         "strike": 4325.0,
         "open_interest": 111,
-        "probability_pct": 3.39
+        "probability_pct": 3.56
       },
       {
         "strike": 4330.0,
         "open_interest": 28,
-        "probability_pct": 0.8
+        "probability_pct": 0.84
       },
       {
         "strike": 4335.0,
         "open_interest": 16,
-        "probability_pct": 0.43
+        "probability_pct": 0.45
       },
       {
         "strike": 4340.0,
         "open_interest": 54,
-        "probability_pct": 1.46
+        "probability_pct": 1.55
       },
       {
         "strike": 4345.0,
         "open_interest": 21,
-        "probability_pct": 0.54
+        "probability_pct": 0.58
       },
       {
         "strike": 4350.0,
         "open_interest": 179,
-        "probability_pct": 4.41
+        "probability_pct": 4.73
       },
       {
         "strike": 4355.0,
         "open_interest": 45,
-        "probability_pct": 1.02
+        "probability_pct": 1.08
       },
       {
         "strike": 4360.0,
         "open_interest": 66,
-        "probability_pct": 1.42
+        "probability_pct": 1.51
       },
       {
         "strike": 4365.0,
         "open_interest": 12,
-        "probability_pct": 0.26
+        "probability_pct": 0.28
       },
       {
         "strike": 4370.0,
         "open_interest": 141,
-        "probability_pct": 2.74
+        "probability_pct": 2.91
       },
       {
         "strike": 4375.0,
         "open_interest": 146,
-        "probability_pct": 2.83
+        "probability_pct": 3.03
       },
       {
         "strike": 4380.0,
         "open_interest": 25,
-        "probability_pct": 0.46
+        "probability_pct": 0.49
       },
       {
         "strike": 4385.0,
         "open_interest": 16,
-        "probability_pct": 0.28
+        "probability_pct": 0.3
       },
       {
         "strike": 4390.0,
         "open_interest": 31,
-        "probability_pct": 0.51
+        "probability_pct": 0.54
       },
       {
         "strike": 4395.0,
         "open_interest": 12,
-        "probability_pct": 0.2
+        "probability_pct": 0.21
       },
       {
         "strike": 4400.0,
         "open_interest": 131,
-        "probability_pct": 2.03
+        "probability_pct": 2.15
       },
       {
         "strike": 4405.0,
         "open_interest": 70,
-        "probability_pct": 1.05
+        "probability_pct": 1.12
       },
       {
         "strike": 4410.0,
         "open_interest": 28,
-        "probability_pct": 0.41
+        "probability_pct": 0.43
       },
       {
         "strike": 4415.0,
         "open_interest": 27,
-        "probability_pct": 0.38
+        "probability_pct": 0.4
       },
       {
         "strike": 4420.0,
         "open_interest": 21,
-        "probability_pct": 0.28
+        "probability_pct": 0.3
       },
       {
         "strike": 4425.0,
         "open_interest": 280,
-        "probability_pct": 3.67
+        "probability_pct": 3.87
       },
       {
         "strike": 4430.0,
@@ -26904,17 +27672,17 @@
       {
         "strike": 4440.0,
         "open_interest": 11,
-        "probability_pct": 0.13
+        "probability_pct": 0.14
       },
       {
         "strike": 4445.0,
         "open_interest": 35,
-        "probability_pct": 0.41
+        "probability_pct": 0.43
       },
       {
         "strike": 4450.0,
         "open_interest": 157,
-        "probability_pct": 1.99
+        "probability_pct": 2.15
       },
       {
         "strike": 4455.0,
@@ -26924,22 +27692,22 @@
       {
         "strike": 4460.0,
         "open_interest": 18,
-        "probability_pct": 0.19
+        "probability_pct": 0.2
       },
       {
         "strike": 4465.0,
         "open_interest": 101,
-        "probability_pct": 1.05
+        "probability_pct": 1.11
       },
       {
         "strike": 4470.0,
         "open_interest": 29,
-        "probability_pct": 0.3
+        "probability_pct": 0.31
       },
       {
         "strike": 4475.0,
         "open_interest": 72,
-        "probability_pct": 0.8
+        "probability_pct": 0.85
       },
       {
         "strike": 4480.0,
@@ -26949,12 +27717,12 @@
       {
         "strike": 4485.0,
         "open_interest": 11,
-        "probability_pct": 0.1
+        "probability_pct": 0.11
       },
       {
         "strike": 4490.0,
         "open_interest": 8,
-        "probability_pct": 0.08
+        "probability_pct": 0.09
       },
       {
         "strike": 4495.0,
@@ -26964,7 +27732,7 @@
       {
         "strike": 4500.0,
         "open_interest": 1478,
-        "probability_pct": 13.12
+        "probability_pct": 13.69
       },
       {
         "strike": 4505.0,
@@ -26974,27 +27742,27 @@
       {
         "strike": 4510.0,
         "open_interest": 4,
-        "probability_pct": 0.03
+        "probability_pct": 0.04
       },
       {
         "strike": 4515.0,
         "open_interest": 19,
-        "probability_pct": 0.16
+        "probability_pct": 0.17
       },
       {
         "strike": 4520.0,
         "open_interest": 14,
-        "probability_pct": 0.11
+        "probability_pct": 0.12
       },
       {
         "strike": 4525.0,
         "open_interest": 31,
-        "probability_pct": 0.27
+        "probability_pct": 0.29
       },
       {
         "strike": 4530.0,
         "open_interest": 23,
-        "probability_pct": 0.18
+        "probability_pct": 0.19
       },
       {
         "strike": 4535.0,
@@ -27007,98 +27775,98 @@
         "probability_pct": 0.05
       }
     ],
-    "most_likely_pin_strike": 4250.0,
+    "most_likely_pin_strike": 4500.0,
     "top_3_pin_strikes": [
-      {
-        "strike": 4250.0,
-        "open_interest": 444,
-        "probability_pct": 13.75
-      },
       {
         "strike": 4500.0,
         "open_interest": 1478,
-        "probability_pct": 13.12
+        "probability_pct": 13.69
+      },
+      {
+        "strike": 4250.0,
+        "open_interest": 444,
+        "probability_pct": 12.68
       },
       {
         "strike": 4200.0,
         "open_interest": 651,
-        "probability_pct": 12.98
+        "probability_pct": 11.92
       }
     ]
   },
   "monte_carlo": {
-    "spot": 4285.0,
-    "iv_pct": 20.34,
+    "spot": 4306.7,
+    "iv_pct": 20.45,
     "cones": [
       {
         "day": 1,
-        "p5": 4206.0,
-        "p10": 4226.3,
-        "p25": 4254.5,
-        "p50": 4284.7,
-        "p75": 4315.6,
-        "p90": 4343.3,
-        "p95": 4360.0
+        "p5": 4226.9,
+        "p10": 4247.4,
+        "p25": 4275.8,
+        "p50": 4306.4,
+        "p75": 4337.6,
+        "p90": 4365.6,
+        "p95": 4382.5
       },
       {
         "day": 3,
-        "p5": 4157.4,
-        "p10": 4182.7,
-        "p25": 4230.5,
-        "p50": 4284.2,
-        "p75": 4339.0,
-        "p90": 4388.7,
-        "p95": 4418.7
+        "p5": 4177.8,
+        "p10": 4203.3,
+        "p25": 4251.6,
+        "p50": 4305.9,
+        "p75": 4361.3,
+        "p90": 4411.5,
+        "p95": 4441.8
       },
       {
         "day": 5,
-        "p5": 4116.2,
-        "p10": 4151.1,
-        "p25": 4215.0,
-        "p50": 4284.0,
-        "p75": 4353.1,
-        "p90": 4421.8,
-        "p95": 4460.3
+        "p5": 4136.2,
+        "p10": 4171.4,
+        "p25": 4236.0,
+        "p50": 4305.7,
+        "p75": 4375.5,
+        "p90": 4444.9,
+        "p95": 4483.9
       },
       {
         "day": 10,
-        "p5": 4055.3,
-        "p10": 4107.0,
-        "p25": 4186.7,
-        "p50": 4288.8,
-        "p75": 4384.3,
-        "p90": 4477.0,
-        "p95": 4528.1
+        "p5": 4074.7,
+        "p10": 4126.8,
+        "p25": 4207.3,
+        "p50": 4310.5,
+        "p75": 4407.0,
+        "p90": 4500.7,
+        "p95": 4552.4
       },
       {
         "day": 15,
-        "p5": 4000.9,
-        "p10": 4062.8,
-        "p25": 4168.3,
-        "p50": 4283.2,
-        "p75": 4410.1,
-        "p90": 4522.5,
-        "p95": 4589.7
+        "p5": 4019.7,
+        "p10": 4082.2,
+        "p25": 4188.8,
+        "p50": 4304.9,
+        "p75": 4433.1,
+        "p90": 4546.7,
+        "p95": 4614.6
       },
       {
         "day": 20,
-        "p5": 3947.3,
-        "p10": 4034.4,
-        "p25": 4146.6,
-        "p50": 4285.0,
-        "p75": 4423.9,
-        "p90": 4556.4,
-        "p95": 4635.0
+        "p5": 3965.6,
+        "p10": 4053.5,
+        "p25": 4166.8,
+        "p50": 4306.6,
+        "p75": 4447.1,
+        "p90": 4580.9,
+        "p95": 4660.4
       },
       {
         "day": 30,
-        "p5": 3878.2,
-        "p10": 3967.4,
-        "p25": 4108.0,
-        "p50": 4283.1,
-        "p75": 4454.0,
-        "p90": 4618.1,
-        "p95": 4728.3
+        "p5": 3895.7,
+        "p10": 3985.9,
+        "p25": 4127.9,
+        "p50": 4304.7,
+        "p75": 4477.4,
+        "p90": 4643.3,
+        "p95": 4754.7
       }
     ],
     "barrier_odds": {
@@ -27112,10 +27880,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.486,
-    "prob_bear": 0.449,
-    "prob_range": 0.065,
-    "confidence_pct": 48,
-    "description": "Prob(Bull)=48.6%. Bullish order flow and call skew dominance."
+    "prob_bull": 0.997,
+    "prob_bear": 0.0,
+    "prob_range": 0.003,
+    "confidence_pct": 99,
+    "description": "Prob(Bull)=99.7%. Bullish order flow and call skew dominance."
   }
 }
