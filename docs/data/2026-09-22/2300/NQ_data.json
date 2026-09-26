@@ -4165,28 +4165,12 @@
     "1h": {
       "ohlcv": [
         [
-          1787698800000,
-          29284.25,
-          29288.5,
-          29207.0,
-          29211.5,
-          0.0
-        ],
-        [
-          1787702400000,
-          29210.25,
-          29238.5,
-          29110.5,
-          29112.25,
-          12864.0
-        ],
-        [
           1787706000000,
           29113.0,
           29147.0,
           29096.0,
           29133.5,
-          8970.0
+          0.0
         ],
         [
           1787709600000,
@@ -8303,24 +8287,16 @@
       ],
       "vwap": [
         [
-          1787698800000,
+          1787706000000,
           null
         ],
         [
-          1787702400000,
-          29153.75
-        ],
-        [
-          1787706000000,
-          29142.14
-        ],
-        [
           1787709600000,
-          29155.06
+          29189.75
         ],
         [
           1787713200000,
-          29171.24
+          29215.49
         ],
         [
           1787716800000,
@@ -33639,7 +33615,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-09-25 23:01 UTC",
+      "timestamp": "2026-09-26 01:08 UTC",
       "asset": "NQ",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -33647,7 +33623,7 @@
       "detail": "NQ trading at 31050.50 >= Call Wall 31000.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-09-25 23:01 UTC",
+      "timestamp": "2026-09-26 01:08 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -33655,7 +33631,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-09-25 23:01 UTC",
+      "timestamp": "2026-09-26 01:08 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
