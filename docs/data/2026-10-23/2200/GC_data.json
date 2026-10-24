@@ -1672,36 +1672,12 @@
     "1h": {
       "ohlcv": [
         [
-          1790200800000,
-          4324.4,
-          4328.8,
-          4320.9,
-          4324.2,
-          0.0
-        ],
-        [
-          1790204400000,
-          4324.0,
-          4328.8,
-          4320.2,
-          4323.8,
-          2046.0
-        ],
-        [
-          1790208000000,
-          4324.1,
-          4334.6,
-          4319.0,
-          4333.7,
-          3446.0
-        ],
-        [
           1790211600000,
           4333.4,
           4338.0,
           4312.6,
           4314.8,
-          7151.0
+          0.0
         ],
         [
           1790215200000,
@@ -5853,33 +5829,21 @@
           4013.5,
           4006.0,
           4010.0,
-          2296.0
+          175533.0
         ]
       ],
       "vwap": [
         [
-          1790200800000,
+          1790211600000,
           null
         ],
         [
-          1790204400000,
-          4324.27
-        ],
-        [
-          1790208000000,
-          4327.3
-        ],
-        [
-          1790211600000,
-          4324.19
-        ],
-        [
           1790215200000,
-          4323.26
+          4321.9
         ],
         [
           1790218800000,
-          4322.98
+          4321.69
         ],
         [
           1790222400000,
@@ -7947,7 +7911,7 @@
         ],
         [
           1792785600000,
-          4024.13
+          4016.04
         ]
       ]
     },
@@ -11567,7 +11531,7 @@
           4012.1,
           4006.0,
           4010.0,
-          708.0
+          173945.0
         ]
       ],
       "vwap": [
@@ -13377,7 +13341,7 @@
         ],
         [
           1792788300000,
-          4022.77
+          4015.19
         ]
       ]
     },
@@ -24229,7 +24193,7 @@
           4012.1,
           4009.0,
           4010.0,
-          229.0
+          173466.0
         ]
       ],
       "vwap": [
@@ -29655,7 +29619,7 @@
         ],
         [
           1792788900000,
-          4022.98
+          4015.85
         ]
       ]
     }
@@ -30343,86 +30307,126 @@
   "intraday_levels": {
     "oi_resistances": [
       [
+        4200.0,
+        402
+      ],
+      [
         4100.0,
-        266.0
+        266
       ],
       [
-        4085.0,
-        118.0
-      ],
-      [
-        4075.0,
-        77.0
+        4175.0,
+        146
       ]
     ],
     "oi_supports": [
       [
         4000.0,
-        602.0
+        602
       ],
       [
         4100.0,
-        387.0
+        387
       ],
       [
-        3900.0,
-        254.0
+        4200.0,
+        275
       ]
     ],
     "vol_resistances": [
       [
-        4025.0,
-        387.0
+        4100.0,
+        500.0
       ],
       [
-        4000.0,
-        339.0
+        4085.0,
+        304.0
       ],
       [
-        4050.0,
-        337.0
+        4200.0,
+        280.0
       ]
     ],
     "vol_supports": [
       [
         4000.0,
-        1549.0
+        728.0
       ],
       [
-        3975.0,
-        343.0
+        4050.0,
+        329.0
       ],
       [
-        4010.0,
-        286.0
+        3900.0,
+        266.0
       ]
     ]
   },
   "intraday_volume_profile": [
     {
+      "strike": 3820.0,
+      "call_vol": 0.0,
+      "put_vol": 6.0
+    },
+    {
+      "strike": 3825.0,
+      "call_vol": 0.0,
+      "put_vol": 4.0
+    },
+    {
+      "strike": 3850.0,
+      "call_vol": 0.0,
+      "put_vol": 5.0
+    },
+    {
+      "strike": 3860.0,
+      "call_vol": 0.0,
+      "put_vol": 4.0
+    },
+    {
+      "strike": 3865.0,
+      "call_vol": 0.0,
+      "put_vol": 10.0
+    },
+    {
+      "strike": 3870.0,
+      "call_vol": 0.0,
+      "put_vol": 20.0
+    },
+    {
+      "strike": 3875.0,
+      "call_vol": 0.0,
+      "put_vol": 26.0
+    },
+    {
+      "strike": 3880.0,
+      "call_vol": 0.0,
+      "put_vol": 11.0
+    },
+    {
+      "strike": 3885.0,
+      "call_vol": 0.0,
+      "put_vol": 21.0
+    },
+    {
       "strike": 3890.0,
-      "call_vol": 0.0,
-      "put_vol": 2.0
-    },
-    {
-      "strike": 3895.0,
-      "call_vol": 0.0,
-      "put_vol": 0.0
-    },
-    {
-      "strike": 3900.0,
-      "call_vol": 2.0,
-      "put_vol": 18.0
-    },
-    {
-      "strike": 3905.0,
       "call_vol": 0.0,
       "put_vol": 3.0
     },
     {
+      "strike": 3900.0,
+      "call_vol": 0.0,
+      "put_vol": 266.0
+    },
+    {
+      "strike": 3905.0,
+      "call_vol": 0.0,
+      "put_vol": 9.0
+    },
+    {
       "strike": 3910.0,
       "call_vol": 0.0,
-      "put_vol": 1.0
+      "put_vol": 4.0
     },
     {
       "strike": 3915.0,
@@ -30432,217 +30436,297 @@
     {
       "strike": 3920.0,
       "call_vol": 0.0,
-      "put_vol": 0.0
+      "put_vol": 14.0
     },
     {
       "strike": 3925.0,
-      "call_vol": 0.0,
-      "put_vol": 12.0
+      "call_vol": 1.0,
+      "put_vol": 95.0
     },
     {
       "strike": 3930.0,
       "call_vol": 0.0,
-      "put_vol": 15.0
+      "put_vol": 7.0
     },
     {
       "strike": 3935.0,
       "call_vol": 0.0,
-      "put_vol": 4.0
+      "put_vol": 1.0
     },
     {
       "strike": 3940.0,
       "call_vol": 0.0,
-      "put_vol": 5.0
+      "put_vol": 33.0
     },
     {
       "strike": 3945.0,
-      "call_vol": 0.0,
-      "put_vol": 14.0
+      "call_vol": 1.0,
+      "put_vol": 4.0
     },
     {
       "strike": 3950.0,
       "call_vol": 0.0,
-      "put_vol": 56.0
+      "put_vol": 104.0
     },
     {
       "strike": 3955.0,
       "call_vol": 0.0,
-      "put_vol": 12.0
+      "put_vol": 4.0
     },
     {
       "strike": 3960.0,
       "call_vol": 0.0,
-      "put_vol": 18.0
+      "put_vol": 24.0
     },
     {
       "strike": 3965.0,
       "call_vol": 0.0,
-      "put_vol": 17.0
+      "put_vol": 31.0
     },
     {
       "strike": 3970.0,
-      "call_vol": 1.0,
-      "put_vol": 45.0
+      "call_vol": 0.0,
+      "put_vol": 15.0
     },
     {
       "strike": 3975.0,
       "call_vol": 0.0,
-      "put_vol": 343.0
+      "put_vol": 21.0
     },
     {
       "strike": 3980.0,
-      "call_vol": 15.0,
-      "put_vol": 162.0
+      "call_vol": 0.0,
+      "put_vol": 42.0
     },
     {
       "strike": 3985.0,
-      "call_vol": 2.0,
-      "put_vol": 62.0
+      "call_vol": 0.0,
+      "put_vol": 31.0
     },
     {
       "strike": 3990.0,
-      "call_vol": 7.0,
-      "put_vol": 89.0
+      "call_vol": 0.0,
+      "put_vol": 58.0
     },
     {
       "strike": 3995.0,
-      "call_vol": 26.0,
-      "put_vol": 101.0
+      "call_vol": 0.0,
+      "put_vol": 21.0
     },
     {
       "strike": 4000.0,
-      "call_vol": 339.0,
-      "put_vol": 1549.0
+      "call_vol": 249.0,
+      "put_vol": 728.0
     },
     {
       "strike": 4005.0,
-      "call_vol": 72.0,
-      "put_vol": 150.0
+      "call_vol": 0.0,
+      "put_vol": 24.0
     },
     {
       "strike": 4010.0,
-      "call_vol": 193.0,
-      "put_vol": 286.0
+      "call_vol": 0.0,
+      "put_vol": 3.0
     },
     {
       "strike": 4015.0,
-      "call_vol": 143.0,
-      "put_vol": 226.0
+      "call_vol": 0.0,
+      "put_vol": 65.0
     },
     {
       "strike": 4020.0,
-      "call_vol": 210.0,
-      "put_vol": 90.0
+      "call_vol": 3.0,
+      "put_vol": 69.0
     },
     {
       "strike": 4025.0,
-      "call_vol": 387.0,
-      "put_vol": 157.0
+      "call_vol": 4.0,
+      "put_vol": 224.0
     },
     {
       "strike": 4030.0,
-      "call_vol": 255.0,
-      "put_vol": 112.0
+      "call_vol": 2.0,
+      "put_vol": 169.0
     },
     {
       "strike": 4035.0,
-      "call_vol": 301.0,
-      "put_vol": 41.0
+      "call_vol": 0.0,
+      "put_vol": 105.0
     },
     {
       "strike": 4040.0,
-      "call_vol": 156.0,
-      "put_vol": 128.0
+      "call_vol": 5.0,
+      "put_vol": 140.0
     },
     {
       "strike": 4045.0,
-      "call_vol": 166.0,
-      "put_vol": 101.0
+      "call_vol": 9.0,
+      "put_vol": 140.0
     },
     {
       "strike": 4050.0,
-      "call_vol": 337.0,
-      "put_vol": 116.0
+      "call_vol": 62.0,
+      "put_vol": 329.0
     },
     {
       "strike": 4055.0,
-      "call_vol": 66.0,
-      "put_vol": 3.0
+      "call_vol": 27.0,
+      "put_vol": 89.0
     },
     {
       "strike": 4060.0,
-      "call_vol": 229.0,
-      "put_vol": 7.0
+      "call_vol": 147.0,
+      "put_vol": 76.0
     },
     {
       "strike": 4065.0,
-      "call_vol": 42.0,
-      "put_vol": 7.0
+      "call_vol": 35.0,
+      "put_vol": 35.0
     },
     {
       "strike": 4070.0,
-      "call_vol": 86.0,
-      "put_vol": 15.0
+      "call_vol": 124.0,
+      "put_vol": 149.0
     },
     {
       "strike": 4075.0,
-      "call_vol": 70.0,
-      "put_vol": 51.0
+      "call_vol": 126.0,
+      "put_vol": 75.0
     },
     {
       "strike": 4080.0,
-      "call_vol": 68.0,
-      "put_vol": 3.0
+      "call_vol": 91.0,
+      "put_vol": 44.0
     },
     {
       "strike": 4085.0,
-      "call_vol": 27.0,
-      "put_vol": 9.0
+      "call_vol": 304.0,
+      "put_vol": 6.0
     },
     {
       "strike": 4090.0,
-      "call_vol": 27.0,
-      "put_vol": 3.0
+      "call_vol": 70.0,
+      "put_vol": 36.0
     },
     {
       "strike": 4095.0,
-      "call_vol": 10.0,
-      "put_vol": 1.0
-    },
-    {
-      "strike": 4100.0,
-      "call_vol": 219.0,
+      "call_vol": 37.0,
       "put_vol": 10.0
     },
     {
+      "strike": 4100.0,
+      "call_vol": 500.0,
+      "put_vol": 189.0
+    },
+    {
       "strike": 4105.0,
-      "call_vol": 13.0,
-      "put_vol": 1.0
+      "call_vol": 57.0,
+      "put_vol": 3.0
     },
     {
       "strike": 4110.0,
-      "call_vol": 11.0,
-      "put_vol": 4.0
+      "call_vol": 109.0,
+      "put_vol": 13.0
     },
     {
       "strike": 4115.0,
-      "call_vol": 6.0,
-      "put_vol": 2.0
+      "call_vol": 33.0,
+      "put_vol": 6.0
     },
     {
       "strike": 4120.0,
-      "call_vol": 9.0,
-      "put_vol": 2.0
+      "call_vol": 102.0,
+      "put_vol": 11.0
     },
     {
       "strike": 4125.0,
-      "call_vol": 12.0,
-      "put_vol": 1.0
+      "call_vol": 111.0,
+      "put_vol": 31.0
     },
     {
       "strike": 4130.0,
-      "call_vol": 41.0,
-      "put_vol": 3.0
+      "call_vol": 114.0,
+      "put_vol": 49.0
+    },
+    {
+      "strike": 4135.0,
+      "call_vol": 78.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4140.0,
+      "call_vol": 68.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4145.0,
+      "call_vol": 36.0,
+      "put_vol": 8.0
+    },
+    {
+      "strike": 4150.0,
+      "call_vol": 91.0,
+      "put_vol": 23.0
+    },
+    {
+      "strike": 4155.0,
+      "call_vol": 69.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4160.0,
+      "call_vol": 99.0,
+      "put_vol": 17.0
+    },
+    {
+      "strike": 4165.0,
+      "call_vol": 21.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4170.0,
+      "call_vol": 78.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4175.0,
+      "call_vol": 63.0,
+      "put_vol": 6.0
+    },
+    {
+      "strike": 4180.0,
+      "call_vol": 28.0,
+      "put_vol": 1.0
+    },
+    {
+      "strike": 4185.0,
+      "call_vol": 13.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4190.0,
+      "call_vol": 15.0,
+      "put_vol": 2.0
+    },
+    {
+      "strike": 4195.0,
+      "call_vol": 17.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4200.0,
+      "call_vol": 280.0,
+      "put_vol": 4.0
+    },
+    {
+      "strike": 4205.0,
+      "call_vol": 1.0,
+      "put_vol": 0.0
+    },
+    {
+      "strike": 4210.0,
+      "call_vol": 22.0,
+      "put_vol": 0.0
     }
   ],
   "vrp": {
@@ -30719,7 +30803,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-10-23 22:49 UTC",
+      "timestamp": "2026-10-24 01:19 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -30727,7 +30811,7 @@
       "detail": "GC trading at 4010.00 >= Call Wall 4000.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-10-23 22:49 UTC",
+      "timestamp": "2026-10-24 01:19 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -30735,7 +30819,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-10-23 22:49 UTC",
+      "timestamp": "2026-10-24 01:19 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
