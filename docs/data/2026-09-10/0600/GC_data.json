@@ -2201,8 +2201,8 @@
           4098.5,
           4116.2,
           4035.6,
-          4074.9,
-          165763.0
+          4079.5,
+          166431.0
         ]
       ],
       "vwap": null
@@ -2210,44 +2210,12 @@
     "1h": {
       "ohlcv": [
         [
-          1791316800000,
-          4197.1,
-          4198.3,
-          4190.1,
-          4192.7,
-          0.0
-        ],
-        [
-          1791320400000,
-          4194.3,
-          4194.3,
-          4194.3,
-          4194.3,
-          0.0
-        ],
-        [
-          1791324000000,
-          4195.9,
-          4195.9,
-          4190.0,
-          4190.7,
-          0.0
-        ],
-        [
-          1791327600000,
-          4190.8,
-          4197.8,
-          4190.0,
-          4193.6,
-          1517.0
-        ],
-        [
           1791331200000,
           4193.3,
           4197.3,
           4182.9,
           4183.6,
-          3004.0
+          0.0
         ],
         [
           1791334800000,
@@ -6596,44 +6564,28 @@
         [
           1793998800000,
           4075.4,
-          4076.2,
+          4081.2,
           4071.8,
-          4074.9,
-          1131.0
+          4079.5,
+          1830.0
         ]
       ],
       "vwap": [
         [
-          1791316800000,
-          null
-        ],
-        [
-          1791320400000,
-          null
-        ],
-        [
-          1791324000000,
-          null
-        ],
-        [
-          1791327600000,
-          4193.8
-        ],
-        [
           1791331200000,
-          4189.9
+          null
         ],
         [
           1791334800000,
-          4184.31
+          4177.07
         ],
         [
           1791338400000,
-          4179.68
+          4173.53
         ],
         [
           1791342000000,
-          4177.63
+          4172.4
         ],
         [
           1791345600000,
@@ -8797,7 +8749,7 @@
         ],
         [
           1793998800000,
-          4066.15
+          4066.24
         ]
       ]
     },
@@ -12414,10 +12366,10 @@
         [
           1794001500000,
           4074.2,
-          4075.2,
+          4081.2,
           4073.9,
-          4074.9,
-          0.0
+          4079.5,
+          699.0
         ]
       ],
       "vwap": [
@@ -14227,7 +14179,7 @@
         ],
         [
           1794001500000,
-          4065.34
+          4065.41
         ]
       ]
     },
@@ -25060,10 +25012,26 @@
         [
           1794001500000,
           4074.2,
-          4075.2,
+          4075.8,
           4073.9,
-          4074.9,
-          0.0
+          4075.8,
+          119.0
+        ],
+        [
+          1794001800000,
+          4075.9,
+          4080.3,
+          4075.7,
+          4079.5,
+          246.0
+        ],
+        [
+          1794002100000,
+          4079.5,
+          4081.2,
+          4079.0,
+          4079.5,
+          334.0
         ]
       ],
       "vwap": [
@@ -30481,7 +30449,15 @@
         ],
         [
           1794001500000,
-          4065.52
+          4065.53
+        ],
+        [
+          1794001800000,
+          4065.56
+        ],
+        [
+          1794002100000,
+          4065.59
         ]
       ]
     }
@@ -31147,7 +31123,7 @@
           4098.5,
           4116.2,
           4035.6,
-          4074.9
+          4079.5
         ]
       }
     ]
@@ -31628,11 +31604,11 @@
   ],
   "vrp": {
     "iv_pct": 35.0,
-    "rv_pct": 23.28,
-    "vrp_pct": 11.72,
+    "rv_pct": 23.32,
+    "vrp_pct": 11.68,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (35.0%) > Realized Vol (23.28%). Net option sellers capture rich premium."
+    "description": "Implied Vol (35.0%) > Realized Vol (23.32%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 4.8,
@@ -31700,7 +31676,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-06 21:55 UTC",
+      "timestamp": "2026-11-07 01:28 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -31708,7 +31684,7 @@
       "detail": "GC trading at 4457.60 >= Call Wall 4440.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-11-06 21:55 UTC",
+      "timestamp": "2026-11-07 01:28 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_RICH",
@@ -31716,7 +31692,7 @@
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-11-06 21:55 UTC",
+      "timestamp": "2026-11-07 01:28 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -31728,24 +31704,24 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.31315517619526784,
-        "NQ": 0.23320103654104626
+        "ES": 0.31486975542935247,
+        "NQ": 0.23583694891257306
       },
       "ES": {
-        "GC": 0.31315517619526784,
+        "GC": 0.31486975542935247,
         "ES": 1.0,
-        "NQ": 0.9438161904081765
+        "NQ": 0.9433921905368517
       },
       "NQ": {
-        "GC": 0.23320103654104626,
-        "ES": 0.9438161904081765,
+        "GC": 0.23583694891257306,
+        "ES": 0.9433921905368517,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_OFF (Flight to Safe Haven)",
     "gc_es_corr": 0.31,
     "es_nq_corr": 0.94,
-    "gc_nq_corr": 0.23,
+    "gc_nq_corr": 0.24,
     "divergence_detected": false,
     "description": "Equities declining while Gold bids up. Capital fleeing to safe-haven assets."
   },
@@ -32379,10 +32355,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.518,
+    "prob_bull": 0.52,
     "prob_bear": 0.009,
-    "prob_range": 0.472,
-    "confidence_pct": 51,
-    "description": "Prob(Bull)=51.8%. Bullish order flow and call skew dominance."
+    "prob_range": 0.47,
+    "confidence_pct": 52,
+    "description": "Prob(Bull)=52.0%. Bullish order flow and call skew dominance."
   }
 }
