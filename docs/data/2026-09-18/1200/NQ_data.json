@@ -1,6 +1,6 @@
 {
   "bias": {
-    "price": 26300.0
+    "price": 26221.25
   },
   "oi_walls": null,
   "net_oi": null,
@@ -541,8 +541,8 @@
           26068.5,
           26436.0,
           25997.5,
-          26300.0,
-          68872.0
+          26221.25,
+          121906.0
         ]
       ],
       "vwap": null
@@ -26019,22 +26019,22 @@
           26068.5,
           26436.0,
           25997.5,
-          26300.0
+          26221.25
         ]
       }
     ]
   },
   "sd_bands": {
-    "price": 26300.0,
-    "sd1": 493.42,
-    "daily_vol_pct": 1.88,
+    "price": 26221.25,
+    "sd1": 491.45,
+    "daily_vol_pct": 1.87,
     "levels": {
-      "+1SD": 26793.42,
-      "+2SD": 27286.84,
-      "+3SD": 27780.27,
-      "-1SD": 25806.58,
-      "-2SD": 25313.16,
-      "-3SD": 24819.73
+      "+1SD": 26712.7,
+      "+2SD": 27204.15,
+      "+3SD": 27695.59,
+      "-1SD": 25729.8,
+      "-2SD": 25238.35,
+      "-3SD": 24746.91
     }
   },
   "sd_step": 0,
@@ -26042,17 +26042,17 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 0.0,
-    "rv_pct": 48.17,
-    "vrp_pct": -48.17,
+    "rv_pct": 48.2,
+    "vrp_pct": -48.2,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (48.17%) > Implied Vol (0.0%). Option buyers favored."
+    "description": "Realized Vol (48.2%) > Implied Vol (0.0%). Option buyers favored."
   },
   "skew_dynamics": null,
   "order_flow": null,
   "alerts": [
     {
-      "timestamp": "2026-11-26 09:04 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -26064,17 +26064,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5632631756215056,
-        "NQ": 0.5124940371804897
+        "ES": 0.5626178787170651,
+        "NQ": 0.5091542323621805
       },
       "ES": {
-        "GC": 0.5632631756215056,
+        "GC": 0.5626178787170651,
         "ES": 1.0,
-        "NQ": 0.9672005357399033
+        "NQ": 0.9669355033310696
       },
       "NQ": {
-        "GC": 0.5124940371804897,
-        "ES": 0.9672005357399033,
+        "GC": 0.5091542323621805,
+        "ES": 0.9669355033310696,
         "NQ": 1.0
       }
     },

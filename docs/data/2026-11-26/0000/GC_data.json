@@ -2311,8 +2311,8 @@
           3619.8,
           3634.7,
           3578.8,
-          3601.8,
-          51567.0
+          3595.2,
+          80908.0
         ]
       ],
       "vwap": null
@@ -27789,7 +27789,7 @@
           3619.8,
           3634.7,
           3578.8,
-          3601.8
+          3595.2
         ]
       }
     ]
@@ -28225,11 +28225,11 @@
   ],
   "vrp": {
     "iv_pct": 38.8,
-    "rv_pct": 36.63,
-    "vrp_pct": 2.17,
+    "rv_pct": 36.6,
+    "vrp_pct": 2.2,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (38.8%) and RV (36.63%) are balanced (VRP: +2.2%)."
+    "description": "IV (38.8%) and RV (36.6%) are balanced (VRP: +2.2%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -4.51,
@@ -28297,7 +28297,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 09:05 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -28305,7 +28305,7 @@
       "detail": "GC trading at 3605.40 >= Call Wall 3600.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-11-26 09:05 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28317,17 +28317,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5632631756215056,
-        "NQ": 0.5124940371804897
+        "ES": 0.5626178787170651,
+        "NQ": 0.5091542323621805
       },
       "ES": {
-        "GC": 0.5632631756215056,
+        "GC": 0.5626178787170651,
         "ES": 1.0,
-        "NQ": 0.9672005357399033
+        "NQ": 0.9669355033310696
       },
       "NQ": {
-        "GC": 0.5124940371804897,
-        "ES": 0.9672005357399033,
+        "GC": 0.5091542323621805,
+        "ES": 0.9669355033310696,
         "NQ": 1.0
       }
     },
@@ -28908,10 +28908,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
-    "prob_bull": 0.069,
-    "prob_bear": 0.767,
+    "prob_bull": 0.068,
+    "prob_bear": 0.766,
     "prob_range": 0.165,
     "confidence_pct": 76,
-    "description": "Prob(Bear)=76.7%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=76.6%. Elevated put flow and downside hedging pressure."
   }
 }

@@ -551,8 +551,8 @@
           3619.8,
           3634.7,
           3578.8,
-          3601.8,
-          51567.0
+          3595.2,
+          80908.0
         ]
       ],
       "vwap": null
@@ -26029,7 +26029,7 @@
           3619.8,
           3634.7,
           3578.8,
-          3601.8
+          3595.2
         ]
       }
     ]
@@ -26052,11 +26052,11 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 36.3,
-    "rv_pct": 36.63,
-    "vrp_pct": -0.33,
+    "rv_pct": 36.6,
+    "vrp_pct": -0.3,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (36.3%) and RV (36.63%) are balanced (VRP: -0.3%)."
+    "description": "IV (36.3%) and RV (36.6%) are balanced (VRP: -0.3%)."
   },
   "skew_dynamics": null,
   "order_flow": null,
@@ -26065,17 +26065,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5632631756215056,
-        "NQ": 0.5124940371804897
+        "ES": 0.5626178787170651,
+        "NQ": 0.5091542323621805
       },
       "ES": {
-        "GC": 0.5632631756215056,
+        "GC": 0.5626178787170651,
         "ES": 1.0,
-        "NQ": 0.9672005357399033
+        "NQ": 0.9669355033310696
       },
       "NQ": {
-        "GC": 0.5124940371804897,
-        "ES": 0.9672005357399033,
+        "GC": 0.5091542323621805,
+        "ES": 0.9669355033310696,
         "NQ": 1.0
       }
     },
@@ -26176,7 +26176,7 @@
     "action_signal": "CALL_SIDE_ACCELERATION",
     "prob_bull": 0.54,
     "prob_bear": 0.286,
-    "prob_range": 0.174,
+    "prob_range": 0.175,
     "confidence_pct": 54,
     "description": "Prob(Bull)=54.0%. Bullish order flow and call skew dominance."
   }

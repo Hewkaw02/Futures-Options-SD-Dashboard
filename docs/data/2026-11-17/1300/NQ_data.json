@@ -551,8 +551,8 @@
           26068.5,
           26436.0,
           25997.5,
-          26300.0,
-          68872.0
+          26221.25,
+          121906.0
         ]
       ],
       "vwap": null
@@ -26029,7 +26029,7 @@
           26068.5,
           26436.0,
           25997.5,
-          26300.0
+          26221.25
         ]
       }
     ]
@@ -26052,11 +26052,11 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 51.5,
-    "rv_pct": 48.17,
-    "vrp_pct": 3.33,
+    "rv_pct": 48.2,
+    "vrp_pct": 3.3,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (51.5%) > Realized Vol (48.17%). Net option sellers capture rich premium."
+    "description": "Implied Vol (51.5%) > Realized Vol (48.2%). Net option sellers capture rich premium."
   },
   "skew_dynamics": null,
   "order_flow": null,
@@ -26065,17 +26065,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5632631756215056,
-        "NQ": 0.5124940371804897
+        "ES": 0.5626178787170651,
+        "NQ": 0.5091542323621805
       },
       "ES": {
-        "GC": 0.5632631756215056,
+        "GC": 0.5626178787170651,
         "ES": 1.0,
-        "NQ": 0.9672005357399033
+        "NQ": 0.9669355033310696
       },
       "NQ": {
-        "GC": 0.5124940371804897,
-        "ES": 0.9672005357399033,
+        "GC": 0.5091542323621805,
+        "ES": 0.9669355033310696,
         "NQ": 1.0
       }
     },
@@ -26174,10 +26174,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.419,
-    "prob_bear": 0.319,
-    "prob_range": 0.262,
-    "confidence_pct": 41,
-    "description": "Prob(Bull)=41.9%. Bullish order flow and call skew dominance."
+    "prob_bull": 0.42,
+    "prob_bear": 0.32,
+    "prob_range": 0.261,
+    "confidence_pct": 42,
+    "description": "Prob(Bull)=42.0%. Bullish order flow and call skew dominance."
   }
 }

@@ -4564,10 +4564,10 @@
         [
           1795651200000,
           7190.5,
-          7254.75,
+          7256.25,
           7187.0,
-          7239.25,
-          94744.0
+          7234.5,
+          197911.0
         ]
       ],
       "vwap": null
@@ -30042,9 +30042,9 @@
         "x": "2026-11-26",
         "y": [
           7190.5,
-          7254.75,
+          7256.25,
           7187.0,
-          7239.25
+          7234.5
         ]
       }
     ]
@@ -30845,11 +30845,11 @@
   ],
   "vrp": {
     "iv_pct": 42.0,
-    "rv_pct": 32.14,
-    "vrp_pct": 9.86,
+    "rv_pct": 32.15,
+    "vrp_pct": 9.85,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (42.0%) > Realized Vol (32.14%). Net option sellers capture rich premium."
+    "description": "Implied Vol (42.0%) > Realized Vol (32.15%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -8.31,
@@ -30917,15 +30917,15 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 09:05 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_RICH",
-      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +9.9%)",
+      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +9.8%)",
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-11-26 09:05 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -30937,17 +30937,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5632631756215056,
-        "NQ": 0.5124940371804897
+        "ES": 0.5626178787170651,
+        "NQ": 0.5091542323621805
       },
       "ES": {
-        "GC": 0.5632631756215056,
+        "GC": 0.5626178787170651,
         "ES": 1.0,
-        "NQ": 0.9672005357399033
+        "NQ": 0.9669355033310696
       },
       "NQ": {
-        "GC": 0.5124940371804897,
-        "ES": 0.9672005357399033,
+        "GC": 0.5091542323621805,
+        "ES": 0.9669355033310696,
         "NQ": 1.0
       }
     },
@@ -31899,9 +31899,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.002,
-    "prob_bear": 0.868,
-    "prob_range": 0.13,
+    "prob_bear": 0.869,
+    "prob_range": 0.129,
     "confidence_pct": 86,
-    "description": "Prob(Bear)=86.8%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=86.9%. Elevated put flow and downside hedging pressure."
   }
 }

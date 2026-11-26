@@ -2701,10 +2701,10 @@
         [
           1795651200000,
           7190.5,
-          7254.75,
+          7256.25,
           7187.0,
-          7239.25,
-          94744.0
+          7234.5,
+          197911.0
         ]
       ],
       "vwap": null
@@ -28179,9 +28179,9 @@
         "x": "2026-11-26",
         "y": [
           7190.5,
-          7254.75,
+          7256.25,
           7187.0,
-          7239.25
+          7234.5
         ]
       }
     ]
@@ -29007,11 +29007,11 @@
   ],
   "vrp": {
     "iv_pct": 30.1,
-    "rv_pct": 32.14,
-    "vrp_pct": -2.04,
+    "rv_pct": 32.15,
+    "vrp_pct": -2.05,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (30.1%) and RV (32.14%) are balanced (VRP: -2.0%)."
+    "description": "IV (30.1%) and RV (32.15%) are balanced (VRP: -2.0%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -11.16,
@@ -29079,7 +29079,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 09:04 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "ES",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -29087,7 +29087,7 @@
       "detail": "ES trading at 7446.50 <= Put Wall 7450.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-11-26 09:04 UTC",
+      "timestamp": "2026-11-26 18:55 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -29099,17 +29099,17 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5632631756215056,
-        "NQ": 0.5124940371804897
+        "ES": 0.5626178787170651,
+        "NQ": 0.5091542323621805
       },
       "ES": {
-        "GC": 0.5632631756215056,
+        "GC": 0.5626178787170651,
         "ES": 1.0,
-        "NQ": 0.9672005357399033
+        "NQ": 0.9669355033310696
       },
       "NQ": {
-        "GC": 0.5124940371804897,
-        "ES": 0.9672005357399033,
+        "GC": 0.5091542323621805,
+        "ES": 0.9669355033310696,
         "NQ": 1.0
       }
     },
