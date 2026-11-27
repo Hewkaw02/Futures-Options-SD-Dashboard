@@ -6580,15 +6580,15 @@
           26350.75,
           25027.5,
           26100.25,
-          898554.0
+          1124020.0
         ],
         [
-          1795651200000,
+          1795737600000,
           26068.5,
-          26480.0,
+          26868.75,
           25997.5,
-          26440.5,
-          139816.0
+          26750.75,
+          231042.0
         ]
       ],
       "vwap": null
@@ -31471,7 +31471,7 @@
       "2026-11-23",
       "2026-11-24",
       "2026-11-25",
-      "2026-11-26"
+      "2026-11-27"
     ],
     "ohlc": [
       {
@@ -32060,12 +32060,12 @@
         ]
       },
       {
-        "x": "2026-11-26",
+        "x": "2026-11-27",
         "y": [
           26068.5,
-          26480.0,
+          26868.75,
           25997.5,
-          26440.5
+          26750.75
         ]
       }
     ]
@@ -33391,11 +33391,11 @@
   ],
   "vrp": {
     "iv_pct": 49.1,
-    "rv_pct": 48.16,
-    "vrp_pct": 0.94,
+    "rv_pct": 48.57,
+    "vrp_pct": 0.53,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (49.1%) and RV (48.16%) are balanced (VRP: +0.9%)."
+    "description": "IV (49.1%) and RV (48.57%) are balanced (VRP: +0.5%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -78.6,
@@ -33463,7 +33463,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -33475,26 +33475,26 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5704953837894131,
-        "NQ": 0.519277431736196
+        "ES": 0.58740690728815,
+        "NQ": 0.5370479163405928
       },
       "ES": {
-        "GC": 0.5704953837894131,
+        "GC": 0.58740690728815,
         "ES": 1.0,
-        "NQ": 0.9674592177000503
+        "NQ": 0.9683448360619719
       },
       "NQ": {
-        "GC": 0.519277431736196,
-        "ES": 0.9674592177000503,
+        "GC": 0.5370479163405928,
+        "ES": 0.9683448360619719,
         "NQ": 1.0
       }
     },
-    "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.57,
+    "macro_regime": "BALANCED_CORRELATION",
+    "gc_es_corr": 0.59,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.52,
+    "gc_nq_corr": 0.54,
     "divergence_detected": false,
-    "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
+    "description": "Normal inter-market correlation (ES/NQ: 0.97, GC/ES: 0.59)."
   },
   "scenarios": {
     "base_price": 30720.75,

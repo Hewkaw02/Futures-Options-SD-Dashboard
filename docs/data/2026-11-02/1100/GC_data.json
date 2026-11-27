@@ -2146,15 +2146,15 @@
           3588.9,
           3425.2,
           3535.8,
-          221635.0
+          124601.0
         ],
         [
-          1795651200000,
+          1795737600000,
           3619.8,
-          3634.7,
+          3711.9,
           3578.8,
-          3609.1,
-          91898.0
+          3698.7,
+          153332.0
         ]
       ],
       "vwap": null
@@ -27037,7 +27037,7 @@
       "2026-11-23",
       "2026-11-24",
       "2026-11-25",
-      "2026-11-26"
+      "2026-11-27"
     ],
     "ohlc": [
       {
@@ -27626,12 +27626,12 @@
         ]
       },
       {
-        "x": "2026-11-26",
+        "x": "2026-11-27",
         "y": [
           3619.8,
-          3634.7,
+          3711.9,
           3578.8,
-          3609.1
+          3698.7
         ]
       }
     ]
@@ -28082,11 +28082,11 @@
   ],
   "vrp": {
     "iv_pct": 24.2,
-    "rv_pct": 36.66,
-    "vrp_pct": -12.46,
+    "rv_pct": 37.67,
+    "vrp_pct": -13.47,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (36.66%) > Implied Vol (24.2%). Option buyers favored."
+    "description": "Realized Vol (37.67%) > Implied Vol (24.2%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -2.56,
@@ -28154,7 +28154,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -28162,15 +28162,15 @@
       "detail": "GC trading at 3916.00 <= Put Wall 3950.0. Potential Delta Cascade risk or major demand bounce."
     },
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_CHEAP",
-      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -12.5%)",
+      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -13.5%)",
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28182,26 +28182,26 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5704953837894131,
-        "NQ": 0.519277431736196
+        "ES": 0.58740690728815,
+        "NQ": 0.5370479163405928
       },
       "ES": {
-        "GC": 0.5704953837894131,
+        "GC": 0.58740690728815,
         "ES": 1.0,
-        "NQ": 0.9674592177000503
+        "NQ": 0.9683448360619719
       },
       "NQ": {
-        "GC": 0.519277431736196,
-        "ES": 0.9674592177000503,
+        "GC": 0.5370479163405928,
+        "ES": 0.9683448360619719,
         "NQ": 1.0
       }
     },
-    "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.57,
+    "macro_regime": "BALANCED_CORRELATION",
+    "gc_es_corr": 0.59,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.52,
+    "gc_nq_corr": 0.54,
     "divergence_detected": false,
-    "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
+    "description": "Normal inter-market correlation (ES/NQ: 0.97, GC/ES: 0.59)."
   },
   "scenarios": {
     "base_price": 3916.0,
@@ -28798,10 +28798,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
-    "prob_bull": 0.334,
-    "prob_bear": 0.643,
-    "prob_range": 0.024,
+    "prob_bull": 0.335,
+    "prob_bear": 0.646,
+    "prob_range": 0.019,
     "confidence_pct": 64,
-    "description": "Prob(Bear)=64.3%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=64.6%. Elevated put flow and downside hedging pressure."
   }
 }

@@ -4253,15 +4253,15 @@
           7224.0,
           6982.5,
           7195.75,
-          1695701.0
+          2129845.0
         ],
         [
-          1795651200000,
+          1795737600000,
           7190.5,
-          7272.75,
+          7343.0,
           7187.0,
-          7268.0,
-          221467.0
+          7327.75,
+          347711.0
         ]
       ],
       "vwap": null
@@ -29144,7 +29144,7 @@
       "2026-11-23",
       "2026-11-24",
       "2026-11-25",
-      "2026-11-26"
+      "2026-11-27"
     ],
     "ohlc": [
       {
@@ -29733,12 +29733,12 @@
         ]
       },
       {
-        "x": "2026-11-26",
+        "x": "2026-11-27",
         "y": [
           7190.5,
-          7272.75,
+          7343.0,
           7187.0,
-          7268.0
+          7327.75
         ]
       }
     ]
@@ -30574,11 +30574,11 @@
   ],
   "vrp": {
     "iv_pct": 16.2,
-    "rv_pct": 32.16,
-    "vrp_pct": -15.96,
+    "rv_pct": 32.39,
+    "vrp_pct": -16.19,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (32.16%) > Implied Vol (16.2%). Option buyers favored."
+    "description": "Realized Vol (32.39%) > Implied Vol (16.2%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -4.02,
@@ -30646,15 +30646,15 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_CHEAP",
-      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -16.0%)",
+      "title": "\ud83c\udfaf Discounted Option Premiums (VRP: -16.2%)",
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -30666,26 +30666,26 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5704953837894131,
-        "NQ": 0.519277431736196
+        "ES": 0.58740690728815,
+        "NQ": 0.5370479163405928
       },
       "ES": {
-        "GC": 0.5704953837894131,
+        "GC": 0.58740690728815,
         "ES": 1.0,
-        "NQ": 0.9674592177000503
+        "NQ": 0.9683448360619719
       },
       "NQ": {
-        "GC": 0.519277431736196,
-        "ES": 0.9674592177000503,
+        "GC": 0.5370479163405928,
+        "ES": 0.9683448360619719,
         "NQ": 1.0
       }
     },
-    "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.57,
+    "macro_regime": "BALANCED_CORRELATION",
+    "gc_es_corr": 0.59,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.52,
+    "gc_nq_corr": 0.54,
     "divergence_detected": false,
-    "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
+    "description": "Normal inter-market correlation (ES/NQ: 0.97, GC/ES: 0.59)."
   },
   "scenarios": {
     "base_price": 7769.25,
@@ -31679,7 +31679,7 @@
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.067,
     "prob_bear": 0.927,
-    "prob_range": 0.007,
+    "prob_range": 0.006,
     "confidence_pct": 92,
     "description": "Prob(Bear)=92.7%. Elevated put flow and downside hedging pressure."
   }

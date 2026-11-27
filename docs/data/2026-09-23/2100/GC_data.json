@@ -2285,15 +2285,15 @@
           3588.9,
           3425.2,
           3535.8,
-          221635.0
+          124601.0
         ],
         [
-          1795651200000,
+          1795737600000,
           3619.8,
-          3634.7,
+          3711.9,
           3578.8,
-          3609.1,
-          91898.0
+          3698.7,
+          153332.0
         ]
       ],
       "vwap": null
@@ -27176,7 +27176,7 @@
       "2026-11-23",
       "2026-11-24",
       "2026-11-25",
-      "2026-11-26"
+      "2026-11-27"
     ],
     "ohlc": [
       {
@@ -27765,12 +27765,12 @@
         ]
       },
       {
-        "x": "2026-11-26",
+        "x": "2026-11-27",
         "y": [
           3619.8,
-          3634.7,
+          3711.9,
           3578.8,
-          3609.1
+          3698.7
         ]
       }
     ]
@@ -28156,11 +28156,11 @@
   ],
   "vrp": {
     "iv_pct": 866.4,
-    "rv_pct": 36.66,
-    "vrp_pct": 829.74,
+    "rv_pct": 37.67,
+    "vrp_pct": 828.73,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (866.4%) > Realized Vol (36.66%). Net option sellers capture rich premium."
+    "description": "Implied Vol (866.4%) > Realized Vol (37.67%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 439.51,
@@ -28228,15 +28228,15 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_RICH",
-      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +829.7%)",
+      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +828.7%)",
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-11-27 02:04 UTC",
+      "timestamp": "2026-11-27 10:37 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28248,26 +28248,26 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5704953837894131,
-        "NQ": 0.519277431736196
+        "ES": 0.58740690728815,
+        "NQ": 0.5370479163405928
       },
       "ES": {
-        "GC": 0.5704953837894131,
+        "GC": 0.58740690728815,
         "ES": 1.0,
-        "NQ": 0.9674592177000503
+        "NQ": 0.9683448360619719
       },
       "NQ": {
-        "GC": 0.519277431736196,
-        "ES": 0.9674592177000503,
+        "GC": 0.5370479163405928,
+        "ES": 0.9683448360619719,
         "NQ": 1.0
       }
     },
-    "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.57,
+    "macro_regime": "BALANCED_CORRELATION",
+    "gc_es_corr": 0.59,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.52,
+    "gc_nq_corr": 0.54,
     "divergence_detected": false,
-    "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
+    "description": "Normal inter-market correlation (ES/NQ: 0.97, GC/ES: 0.59)."
   },
   "scenarios": {
     "base_price": 4322.7,
