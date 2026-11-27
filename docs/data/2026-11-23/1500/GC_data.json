@@ -2058,8 +2058,8 @@
           3619.8,
           3634.7,
           3578.8,
-          3595.2,
-          80908.0
+          3609.1,
+          91898.0
         ]
       ],
       "vwap": null
@@ -27536,7 +27536,7 @@
           3619.8,
           3634.7,
           3578.8,
-          3595.2
+          3609.1
         ]
       }
     ]
@@ -27947,11 +27947,11 @@
   ],
   "vrp": {
     "iv_pct": 36.7,
-    "rv_pct": 36.6,
-    "vrp_pct": 0.1,
+    "rv_pct": 36.66,
+    "vrp_pct": 0.04,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (36.7%) and RV (36.6%) are balanced (VRP: +0.1%)."
+    "description": "IV (36.7%) and RV (36.66%) are balanced (VRP: +0.0%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 6.01,
@@ -28019,7 +28019,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:04 UTC",
       "asset": "GC",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -28027,7 +28027,7 @@
       "detail": "GC trading at 3669.10 >= Call Wall 3650.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:04 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -28039,24 +28039,24 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5626178787170651,
-        "NQ": 0.5091542323621805
+        "ES": 0.5704953837894131,
+        "NQ": 0.519277431736196
       },
       "ES": {
-        "GC": 0.5626178787170651,
+        "GC": 0.5704953837894131,
         "ES": 1.0,
-        "NQ": 0.9669355033310696
+        "NQ": 0.9674592177000503
       },
       "NQ": {
-        "GC": 0.5091542323621805,
-        "ES": 0.9669355033310696,
+        "GC": 0.519277431736196,
+        "ES": 0.9674592177000503,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.56,
+    "gc_es_corr": 0.57,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.51,
+    "gc_nq_corr": 0.52,
     "divergence_detected": false,
     "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
   },
@@ -28645,10 +28645,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.915,
+    "prob_bull": 0.916,
     "prob_bear": 0.015,
-    "prob_range": 0.069,
+    "prob_range": 0.068,
     "confidence_pct": 91,
-    "description": "Prob(Bull)=91.5%. Bullish order flow and call skew dominance."
+    "description": "Prob(Bull)=91.6%. Bullish order flow and call skew dominance."
   }
 }

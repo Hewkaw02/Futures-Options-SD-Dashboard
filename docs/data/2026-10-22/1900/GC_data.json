@@ -1,6 +1,6 @@
 {
   "bias": {
-    "price": 3595.2,
+    "price": 3609.1,
     "iv": "122.99%"
   },
   "oi_walls": {
@@ -1511,8 +1511,8 @@
           3619.8,
           3634.7,
           3578.8,
-          3595.2,
-          80908.0
+          3609.1,
+          91898.0
         ]
       ],
       "vwap": null
@@ -26989,25 +26989,25 @@
           3619.8,
           3634.7,
           3578.8,
-          3595.2
+          3609.1
         ]
       }
     ]
   },
   "sd_bands": {
-    "price": 3595.2,
-    "sd1": 231.45,
+    "price": 3609.1,
+    "sd1": 232.35,
     "daily_vol_pct": 6.44,
     "levels": {
-      "+1SD": 3826.65,
-      "+2SD": 4058.11,
-      "+3SD": 4289.56,
-      "-1SD": 3363.75,
-      "-2SD": 3132.29,
-      "-3SD": 2900.84
+      "+1SD": 3841.45,
+      "+2SD": 4073.79,
+      "+3SD": 4306.14,
+      "-1SD": 3376.75,
+      "-2SD": 3144.41,
+      "-3SD": 2912.06
     }
   },
-  "sd_step": 231.4525277738535,
+  "sd_step": 232.34738484329512,
   "intraday_levels": {
     "oi_resistances": [
       [
@@ -27325,11 +27325,11 @@
   ],
   "vrp": {
     "iv_pct": 122.99,
-    "rv_pct": 36.6,
-    "vrp_pct": 86.39,
+    "rv_pct": 36.66,
+    "vrp_pct": 86.33,
     "regime": "EXPENSIVE",
     "signal": "SELL_PREMIUM",
-    "description": "Implied Vol (122.99%) > Realized Vol (36.6%). Net option sellers capture rich premium."
+    "description": "Implied Vol (122.99%) > Realized Vol (36.66%). Net option sellers capture rich premium."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 29.85,
@@ -27397,15 +27397,15 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:04 UTC",
       "asset": "GC",
       "severity": "INFO",
       "category": "VRP_RICH",
-      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +86.4%)",
+      "title": "\ud83d\udc8e Rich Option Premiums (VRP: +86.3%)",
       "detail": "Implied Volatility heavily overprices realized movement. Premium selling favored."
     },
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:04 UTC",
       "asset": "GC",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -27417,107 +27417,107 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5626178787170651,
-        "NQ": 0.5091542323621805
+        "ES": 0.5704953837894131,
+        "NQ": 0.519277431736196
       },
       "ES": {
-        "GC": 0.5626178787170651,
+        "GC": 0.5704953837894131,
         "ES": 1.0,
-        "NQ": 0.9669355033310696
+        "NQ": 0.9674592177000503
       },
       "NQ": {
-        "GC": 0.5091542323621805,
-        "ES": 0.9669355033310696,
+        "GC": 0.519277431736196,
+        "ES": 0.9674592177000503,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.56,
+    "gc_es_corr": 0.57,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.51,
+    "gc_nq_corr": 0.52,
     "divergence_detected": false,
     "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
   },
   "scenarios": {
-    "base_price": 3595.2,
-    "base_gex": 2009793.96,
-    "base_dex": 577358900.67,
+    "base_price": 3609.1,
+    "base_gex": 2218574.93,
+    "base_dex": 580408416.87,
     "scenarios": [
       {
         "shift_pct": -3.0,
-        "hypo_price": 3487.34,
-        "total_gex": 603295.34,
-        "total_dex": 556266776.37,
+        "hypo_price": 3500.83,
+        "total_gex": 748446.93,
+        "total_dex": 558678393.53,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 11416.78,
-        "dealer_delta_hedge_demand": -21092124.3
+        "vanna_exposure": 12432.99,
+        "dealer_delta_hedge_demand": -21730023.34
       },
       {
         "shift_pct": -2.0,
-        "hypo_price": 3523.3,
-        "total_gex": 1012643.17,
-        "total_dex": 562827619.5,
+        "hypo_price": 3536.92,
+        "total_gex": 1185558.95,
+        "total_dex": 565428265.02,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 14132.69,
-        "dealer_delta_hedge_demand": -14531281.17
+        "vanna_exposure": 15151.68,
+        "dealer_delta_hedge_demand": -14980151.85
       },
       {
         "shift_pct": -1.0,
-        "hypo_price": 3559.25,
-        "total_gex": 1487417.69,
-        "total_dex": 569840503.02,
+        "hypo_price": 3573.01,
+        "total_gex": 1683079.5,
+        "total_dex": 572656301.56,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 16770.43,
-        "dealer_delta_hedge_demand": -7518397.65
+        "vanna_exposure": 17716.96,
+        "dealer_delta_hedge_demand": -7752115.31
       },
       {
         "shift_pct": 0.0,
-        "hypo_price": 3595.2,
-        "total_gex": 2009793.96,
-        "total_dex": 577358900.67,
+        "hypo_price": 3609.1,
+        "total_gex": 2218574.93,
+        "total_dex": 580408416.87,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 19122.57,
-        "dealer_delta_hedge_demand": 0.0
+        "vanna_exposure": 19904.92,
+        "dealer_delta_hedge_demand": -0.0
       },
       {
         "shift_pct": 1.0,
-        "hypo_price": 3631.15,
-        "total_gex": 2549802.05,
-        "total_dex": 585411533.35,
+        "hypo_price": 3645.19,
+        "total_gex": 2756391.99,
+        "total_dex": 588700772.62,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 20948.68,
-        "dealer_delta_hedge_demand": 8052632.68
+        "vanna_exposure": 21463.26,
+        "dealer_delta_hedge_demand": 8292355.75
       },
       {
         "shift_pct": 2.0,
-        "hypo_price": 3667.1,
-        "total_gex": 3063163.68,
-        "total_dex": 593989979.48,
+        "hypo_price": 3681.28,
+        "total_gex": 3245619.48,
+        "total_dex": 597506527.46,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 21990.87,
-        "dealer_delta_hedge_demand": 16631078.81
+        "vanna_exposure": 22130.04,
+        "dealer_delta_hedge_demand": 17098110.59
       },
       {
         "shift_pct": 3.0,
-        "hypo_price": 3703.06,
-        "total_gex": 3489567.22,
-        "total_dex": 603034863.49,
+        "hypo_price": 3717.37,
+        "total_gex": 3618418.81,
+        "total_dex": 606741320.11,
         "gex_regime": "STABLE (Positive Gamma)",
-        "vanna_exposure": 21995.48,
-        "dealer_delta_hedge_demand": 25675962.82
+        "vanna_exposure": 21655.92,
+        "dealer_delta_hedge_demand": 26332903.24
       }
     ],
     "vanna_rally_scenarios": [
       {
         "iv_shift_pct": -5.0,
-        "dealer_rebalance_usd": -3398445.35,
-        "dealer_rebalance_contracts": -9.5,
+        "dealer_rebalance_usd": -3589236.97,
+        "dealer_rebalance_contracts": -9.9,
         "vanna_rally_direction": "SELL_UNDERLYING"
       },
       {
         "iv_shift_pct": -2.5,
-        "dealer_rebalance_usd": -1713746.64,
-        "dealer_rebalance_contracts": -4.8,
+        "dealer_rebalance_usd": -1800117.9,
+        "dealer_rebalance_contracts": -5.0,
         "vanna_rally_direction": "SELL_UNDERLYING"
       },
       {
@@ -27528,14 +27528,14 @@
       },
       {
         "iv_shift_pct": 2.5,
-        "dealer_rebalance_usd": 1714897.99,
-        "dealer_rebalance_contracts": 4.8,
+        "dealer_rebalance_usd": 1783051.0,
+        "dealer_rebalance_contracts": 4.9,
         "vanna_rally_direction": "BUY_UNDERLYING (Vanna Rally)"
       },
       {
         "iv_shift_pct": 5.0,
-        "dealer_rebalance_usd": 3406034.46,
-        "dealer_rebalance_contracts": 9.5,
+        "dealer_rebalance_usd": 3524508.59,
+        "dealer_rebalance_contracts": 9.8,
         "vanna_rally_direction": "BUY_UNDERLYING (Vanna Rally)"
       }
     ],
@@ -27545,52 +27545,52 @@
     "pin_score": 0.0,
     "gamma_concentration_pct": 0.0,
     "pinning_zone": [
-      3577.2,
-      3613.2
+      3591.1,
+      3627.1
     ],
-    "pin_target_strike": 3595.2,
+    "pin_target_strike": 3609.1,
     "pin_magnet_active": false,
     "description": "Low pin risk (DTE 5.0d). Market is free-floating away from expiry compression.",
     "pin_probabilities": [
       {
         "strike": 3850.0,
         "open_interest": 13,
-        "probability_pct": 1.43
+        "probability_pct": 1.35
       },
       {
         "strike": 3875.0,
         "open_interest": 255,
-        "probability_pct": 28.99
+        "probability_pct": 27.54
       },
       {
         "strike": 3900.0,
         "open_interest": 12,
-        "probability_pct": 1.36
+        "probability_pct": 1.31
       },
       {
         "strike": 3925.0,
         "open_interest": 6,
-        "probability_pct": 0.62
+        "probability_pct": 0.61
       },
       {
         "strike": 3950.0,
         "open_interest": 30,
-        "probability_pct": 2.34
+        "probability_pct": 2.39
       },
       {
         "strike": 3970.0,
         "open_interest": 2,
-        "probability_pct": 0.09
+        "probability_pct": 0.1
       },
       {
         "strike": 3975.0,
         "open_interest": 32,
-        "probability_pct": 1.14
+        "probability_pct": 1.25
       },
       {
         "strike": 3980.0,
         "open_interest": 2,
-        "probability_pct": 0.05
+        "probability_pct": 0.06
       },
       {
         "strike": 3985.0,
@@ -27605,17 +27605,17 @@
       {
         "strike": 3995.0,
         "open_interest": 11,
-        "probability_pct": 0.07
+        "probability_pct": 0.09
       },
       {
         "strike": 4000.0,
         "open_interest": 31,
-        "probability_pct": 0.09
+        "probability_pct": 0.12
       },
       {
         "strike": 4005.0,
         "open_interest": 4,
-        "probability_pct": 0.0
+        "probability_pct": 0.01
       },
       {
         "strike": 4010.0,
@@ -27655,7 +27655,7 @@
       {
         "strike": 4050.0,
         "open_interest": 116,
-        "probability_pct": 0.07
+        "probability_pct": 0.11
       },
       {
         "strike": 4055.0,
@@ -27705,117 +27705,117 @@
       {
         "strike": 4100.0,
         "open_interest": 92,
-        "probability_pct": 0.08
+        "probability_pct": 0.11
       },
       {
         "strike": 4105.0,
         "open_interest": 28,
-        "probability_pct": 0.05
+        "probability_pct": 0.06
       },
       {
         "strike": 4110.0,
         "open_interest": 28,
-        "probability_pct": 0.08
+        "probability_pct": 0.1
       },
       {
         "strike": 4115.0,
         "open_interest": 29,
-        "probability_pct": 0.11
+        "probability_pct": 0.14
       },
       {
         "strike": 4120.0,
         "open_interest": 36,
-        "probability_pct": 0.24
+        "probability_pct": 0.27
       },
       {
         "strike": 4125.0,
         "open_interest": 133,
-        "probability_pct": 0.99
+        "probability_pct": 1.14
       },
       {
         "strike": 4130.0,
         "open_interest": 102,
-        "probability_pct": 1.14
+        "probability_pct": 1.27
       },
       {
         "strike": 4135.0,
         "open_interest": 33,
-        "probability_pct": 0.38
+        "probability_pct": 0.42
       },
       {
         "strike": 4140.0,
         "open_interest": 48,
-        "probability_pct": 0.77
+        "probability_pct": 0.84
       },
       {
         "strike": 4145.0,
         "open_interest": 52,
-        "probability_pct": 0.95
+        "probability_pct": 1.02
       },
       {
         "strike": 4150.0,
         "open_interest": 142,
-        "probability_pct": 2.98
+        "probability_pct": 3.15
       },
       {
         "strike": 4155.0,
         "open_interest": 131,
-        "probability_pct": 2.6
+        "probability_pct": 2.76
       },
       {
         "strike": 4160.0,
         "open_interest": 67,
-        "probability_pct": 1.71
+        "probability_pct": 1.78
       },
       {
         "strike": 4165.0,
         "open_interest": 27,
-        "probability_pct": 0.74
+        "probability_pct": 0.76
       },
       {
         "strike": 4170.0,
         "open_interest": 123,
-        "probability_pct": 3.64
+        "probability_pct": 3.73
       },
       {
         "strike": 4175.0,
         "open_interest": 235,
-        "probability_pct": 7.37
+        "probability_pct": 7.52
       },
       {
         "strike": 4180.0,
         "open_interest": 117,
-        "probability_pct": 3.26
+        "probability_pct": 3.35
       },
       {
         "strike": 4185.0,
         "open_interest": 72,
-        "probability_pct": 2.49
+        "probability_pct": 2.52
       },
       {
         "strike": 4190.0,
         "open_interest": 108,
-        "probability_pct": 3.88
+        "probability_pct": 3.9
       },
       {
         "strike": 4195.0,
         "open_interest": 452,
-        "probability_pct": 16.87
+        "probability_pct": 16.89
       },
       {
         "strike": 4200.0,
         "open_interest": 184,
-        "probability_pct": 7.08
+        "probability_pct": 7.06
       },
       {
         "strike": 4205.0,
         "open_interest": 28,
-        "probability_pct": 0.91
+        "probability_pct": 0.92
       },
       {
         "strike": 4210.0,
         "open_interest": 28,
-        "probability_pct": 1.13
+        "probability_pct": 1.12
       },
       {
         "strike": 4215.0,
@@ -27825,12 +27825,12 @@
       {
         "strike": 4220.0,
         "open_interest": 18,
-        "probability_pct": 0.76
+        "probability_pct": 0.75
       },
       {
         "strike": 4225.0,
         "open_interest": 30,
-        "probability_pct": 1.28
+        "probability_pct": 1.26
       },
       {
         "strike": 4230.0,
@@ -27840,12 +27840,12 @@
       {
         "strike": 4235.0,
         "open_interest": 7,
-        "probability_pct": 0.31
+        "probability_pct": 0.3
       },
       {
         "strike": 4240.0,
         "open_interest": 17,
-        "probability_pct": 0.75
+        "probability_pct": 0.74
       },
       {
         "strike": 4245.0,
@@ -27858,93 +27858,93 @@
       {
         "strike": 3875.0,
         "open_interest": 255,
-        "probability_pct": 28.99
+        "probability_pct": 27.54
       },
       {
         "strike": 4195.0,
         "open_interest": 452,
-        "probability_pct": 16.87
+        "probability_pct": 16.89
       },
       {
         "strike": 4175.0,
         "open_interest": 235,
-        "probability_pct": 7.37
+        "probability_pct": 7.52
       }
     ]
   },
   "monte_carlo": {
-    "spot": 3595.2,
+    "spot": 3609.1,
     "iv_pct": 122.99,
     "cones": [
       {
         "day": 1,
-        "p5": 3207.2,
-        "p10": 3301.9,
-        "p25": 3437.1,
-        "p50": 3587.4,
-        "p75": 3746.5,
-        "p90": 3894.5,
-        "p95": 3986.0
+        "p5": 3219.6,
+        "p10": 3314.6,
+        "p25": 3450.3,
+        "p50": 3601.3,
+        "p75": 3761.0,
+        "p90": 3909.6,
+        "p95": 4001.5
       },
       {
         "day": 3,
-        "p5": 2979.1,
-        "p10": 3090.3,
-        "p25": 3310.1,
-        "p50": 3572.5,
-        "p75": 3858.0,
-        "p90": 4133.1,
-        "p95": 4306.9
+        "p5": 2990.6,
+        "p10": 3102.3,
+        "p25": 3322.9,
+        "p50": 3586.3,
+        "p75": 3873.0,
+        "p90": 4149.1,
+        "p95": 4323.5
       },
       {
         "day": 5,
-        "p5": 2795.4,
-        "p10": 2941.8,
-        "p25": 3226.5,
-        "p50": 3559.4,
-        "p75": 3920.6,
-        "p90": 4310.1,
-        "p95": 4542.3
+        "p5": 2806.2,
+        "p10": 2953.2,
+        "p25": 3239.0,
+        "p50": 3573.2,
+        "p75": 3935.7,
+        "p90": 4326.8,
+        "p95": 4559.9
       },
       {
         "day": 10,
-        "p5": 2532.6,
-        "p10": 2733.9,
-        "p25": 3070.8,
-        "p50": 3552.4,
-        "p75": 4058.3,
-        "p90": 4605.9,
-        "p95": 4933.1
+        "p5": 2542.4,
+        "p10": 2744.4,
+        "p25": 3082.7,
+        "p50": 3566.2,
+        "p75": 4074.0,
+        "p90": 4623.7,
+        "p95": 4952.1
       },
       {
         "day": 15,
-        "p5": 2313.9,
-        "p10": 2538.8,
-        "p25": 2964.6,
-        "p50": 3494.4,
-        "p75": 4168.7,
-        "p90": 4854.1,
-        "p95": 5306.7
+        "p5": 2322.9,
+        "p10": 2548.7,
+        "p25": 2976.1,
+        "p50": 3507.9,
+        "p75": 4184.9,
+        "p90": 4872.9,
+        "p95": 5327.2
       },
       {
         "day": 20,
-        "p5": 2114.3,
-        "p10": 2412.5,
-        "p25": 2847.6,
-        "p50": 3472.8,
-        "p75": 4212.1,
-        "p90": 5034.5,
-        "p95": 5582.9
+        "p5": 2122.5,
+        "p10": 2421.9,
+        "p25": 2858.7,
+        "p50": 3486.2,
+        "p75": 4228.3,
+        "p90": 5053.9,
+        "p95": 5604.5
       },
       {
         "day": 30,
-        "p5": 1867.5,
-        "p10": 2142.9,
-        "p25": 2645.1,
-        "p50": 3404.1,
-        "p75": 4312.6,
-        "p90": 5367.7,
-        "p95": 6190.4
+        "p5": 1874.7,
+        "p10": 2151.2,
+        "p25": 2655.3,
+        "p50": 3417.2,
+        "p75": 4329.2,
+        "p90": 5388.5,
+        "p95": 6214.3
       }
     ],
     "barrier_odds": {

@@ -4528,10 +4528,10 @@
         [
           1795651200000,
           7190.5,
-          7256.25,
+          7272.75,
           7187.0,
-          7234.5,
-          197911.0
+          7268.0,
+          221467.0
         ]
       ],
       "vwap": null
@@ -30006,9 +30006,9 @@
         "x": "2026-11-26",
         "y": [
           7190.5,
-          7256.25,
+          7272.75,
           7187.0,
-          7234.5
+          7268.0
         ]
       }
     ]
@@ -30814,11 +30814,11 @@
   ],
   "vrp": {
     "iv_pct": 23.0,
-    "rv_pct": 32.15,
-    "vrp_pct": -9.15,
+    "rv_pct": 32.16,
+    "vrp_pct": -9.16,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (32.15%) > Implied Vol (23.0%). Option buyers favored."
+    "description": "Realized Vol (32.16%) > Implied Vol (23.0%). Option buyers favored."
   },
   "skew_dynamics": {
     "risk_reversal_25d": -7.62,
@@ -30886,7 +30886,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:05 UTC",
       "asset": "ES",
       "severity": "CRITICAL",
       "category": "WALL_BREACH",
@@ -30894,7 +30894,7 @@
       "detail": "ES trading at 7231.75 >= Call Wall 7200.0. Monitor for Gamma Squeeze continuation or mean-reversion rejection."
     },
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:05 UTC",
       "asset": "ES",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -30902,7 +30902,7 @@
       "detail": "Options are statistically cheap relative to price velocity. Long gamma setups favored."
     },
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:05 UTC",
       "asset": "ES",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -30914,24 +30914,24 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5626178787170651,
-        "NQ": 0.5091542323621805
+        "ES": 0.5704953837894131,
+        "NQ": 0.519277431736196
       },
       "ES": {
-        "GC": 0.5626178787170651,
+        "GC": 0.5704953837894131,
         "ES": 1.0,
-        "NQ": 0.9669355033310696
+        "NQ": 0.9674592177000503
       },
       "NQ": {
-        "GC": 0.5091542323621805,
-        "ES": 0.9669355033310696,
+        "GC": 0.519277431736196,
+        "ES": 0.9674592177000503,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.56,
+    "gc_es_corr": 0.57,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.51,
+    "gc_nq_corr": 0.52,
     "divergence_detected": false,
     "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
   },
@@ -31881,9 +31881,9 @@
     "regime": "MOMENTUM_BEAR",
     "action_signal": "PUT_SIDE_DEFENSE",
     "prob_bull": 0.015,
-    "prob_bear": 0.976,
+    "prob_bear": 0.977,
     "prob_range": 0.009,
     "confidence_pct": 97,
-    "description": "Prob(Bear)=97.6%. Elevated put flow and downside hedging pressure."
+    "description": "Prob(Bear)=97.7%. Elevated put flow and downside hedging pressure."
   }
 }

@@ -1,6 +1,6 @@
 {
   "bias": {
-    "price": 26221.25
+    "price": 26440.5
   },
   "oi_walls": null,
   "net_oi": null,
@@ -539,10 +539,10 @@
         [
           1795651200000,
           26068.5,
-          26436.0,
+          26480.0,
           25997.5,
-          26221.25,
-          121906.0
+          26440.5,
+          139816.0
         ]
       ],
       "vwap": null
@@ -26017,24 +26017,24 @@
         "x": "2026-11-26",
         "y": [
           26068.5,
-          26436.0,
+          26480.0,
           25997.5,
-          26221.25
+          26440.5
         ]
       }
     ]
   },
   "sd_bands": {
-    "price": 26221.25,
-    "sd1": 491.45,
-    "daily_vol_pct": 1.87,
+    "price": 26440.5,
+    "sd1": 497.43,
+    "daily_vol_pct": 1.88,
     "levels": {
-      "+1SD": 26712.7,
-      "+2SD": 27204.15,
-      "+3SD": 27695.59,
-      "-1SD": 25729.8,
-      "-2SD": 25238.35,
-      "-3SD": 24746.91
+      "+1SD": 26937.93,
+      "+2SD": 27435.36,
+      "+3SD": 27932.79,
+      "-1SD": 25943.07,
+      "-2SD": 25445.64,
+      "-3SD": 24948.21
     }
   },
   "sd_step": 0,
@@ -26042,17 +26042,17 @@
   "intraday_volume_profile": null,
   "vrp": {
     "iv_pct": 0.0,
-    "rv_pct": 48.2,
-    "vrp_pct": -48.2,
+    "rv_pct": 48.16,
+    "vrp_pct": -48.16,
     "regime": "CHEAP",
     "signal": "BUY_PREMIUM",
-    "description": "Realized Vol (48.2%) > Implied Vol (0.0%). Option buyers favored."
+    "description": "Realized Vol (48.16%) > Implied Vol (0.0%). Option buyers favored."
   },
   "skew_dynamics": null,
   "order_flow": null,
   "alerts": [
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:04 UTC",
       "asset": "NQ",
       "severity": "INFO",
       "category": "VRP_CHEAP",
@@ -26064,24 +26064,24 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5626178787170651,
-        "NQ": 0.5091542323621805
+        "ES": 0.5704953837894131,
+        "NQ": 0.519277431736196
       },
       "ES": {
-        "GC": 0.5626178787170651,
+        "GC": 0.5704953837894131,
         "ES": 1.0,
-        "NQ": 0.9669355033310696
+        "NQ": 0.9674592177000503
       },
       "NQ": {
-        "GC": 0.5091542323621805,
-        "ES": 0.9669355033310696,
+        "GC": 0.519277431736196,
+        "ES": 0.9674592177000503,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.56,
+    "gc_es_corr": 0.57,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.51,
+    "gc_nq_corr": 0.52,
     "divergence_detected": false,
     "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
   },

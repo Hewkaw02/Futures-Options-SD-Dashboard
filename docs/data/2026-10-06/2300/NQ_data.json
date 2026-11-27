@@ -5786,10 +5786,10 @@
         [
           1795651200000,
           26068.5,
-          26436.0,
+          26480.0,
           25997.5,
-          26221.25,
-          121906.0
+          26440.5,
+          139816.0
         ]
       ],
       "vwap": null
@@ -31264,9 +31264,9 @@
         "x": "2026-11-26",
         "y": [
           26068.5,
-          26436.0,
+          26480.0,
           25997.5,
-          26221.25
+          26440.5
         ]
       }
     ]
@@ -32362,11 +32362,11 @@
   ],
   "vrp": {
     "iv_pct": 50.2,
-    "rv_pct": 48.2,
-    "vrp_pct": 2.0,
+    "rv_pct": 48.16,
+    "vrp_pct": 2.04,
     "regime": "FAIR",
     "signal": "NEUTRAL",
-    "description": "IV (50.2%) and RV (48.2%) are balanced (VRP: +2.0%)."
+    "description": "IV (50.2%) and RV (48.16%) are balanced (VRP: +2.0%)."
   },
   "skew_dynamics": {
     "risk_reversal_25d": 8.77,
@@ -32434,7 +32434,7 @@
   },
   "alerts": [
     {
-      "timestamp": "2026-11-26 18:55 UTC",
+      "timestamp": "2026-11-27 02:04 UTC",
       "asset": "NQ",
       "severity": "WARNING",
       "category": "UNUSUAL_FLOW",
@@ -32446,24 +32446,24 @@
     "matrix": {
       "GC": {
         "GC": 1.0,
-        "ES": 0.5626178787170651,
-        "NQ": 0.5091542323621805
+        "ES": 0.5704953837894131,
+        "NQ": 0.519277431736196
       },
       "ES": {
-        "GC": 0.5626178787170651,
+        "GC": 0.5704953837894131,
         "ES": 1.0,
-        "NQ": 0.9669355033310696
+        "NQ": 0.9674592177000503
       },
       "NQ": {
-        "GC": 0.5091542323621805,
-        "ES": 0.9669355033310696,
+        "GC": 0.519277431736196,
+        "ES": 0.9674592177000503,
         "NQ": 1.0
       }
     },
     "macro_regime": "RISK_ON (Equity Inflow / Gold Outflow)",
-    "gc_es_corr": 0.56,
+    "gc_es_corr": 0.57,
     "es_nq_corr": 0.97,
-    "gc_nq_corr": 0.51,
+    "gc_nq_corr": 0.52,
     "divergence_detected": false,
     "description": "Equities rallying with Gold under pressure. Capital favoring risk assets."
   },
@@ -33912,10 +33912,10 @@
   "ml_regime": {
     "regime": "MOMENTUM_BULL",
     "action_signal": "CALL_SIDE_ACCELERATION",
-    "prob_bull": 0.935,
+    "prob_bull": 0.934,
     "prob_bear": 0.006,
     "prob_range": 0.06,
     "confidence_pct": 93,
-    "description": "Prob(Bull)=93.5%. Bullish order flow and call skew dominance."
+    "description": "Prob(Bull)=93.4%. Bullish order flow and call skew dominance."
   }
 }
